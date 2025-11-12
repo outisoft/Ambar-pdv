@@ -159,6 +159,7 @@ export default function POS({ auth, products }: PosProps) {
                                 cartItems={cartItems}
                                 onRemoveFromCart={handleRemoveFromCart}
                                 onUpdateQuantity={handleUpdateQuantity}
+                                onClearCart={handleClearCart}
                             />
                         </div>
                     </div>

@@ -8,31 +8,24 @@ interface Props {
     cartItems: CartItem[];
     onRemoveFromCart: (id: number) => void; // <-- Nueva prop
     onUpdateQuantity: (productId: number, newQuantity: number) => void;
+    onClearCart: () => void;
 }
 
 export default function Cart({
     cartItems,
     onRemoveFromCart,
     onUpdateQuantity,
+    onClearCart,
 }: Props) {
     const total = cartItems.reduce(
         (acc, item) => acc + item.price * item.quantity,
         0,
     );
 
-    // 2. ¡Aquí está la magia del frontend!
-    //    'data' tendrá los datos del formulario
-    //    'post' es la función para enviar
-    //    'processing' nos dice si está cargando
-    //    'errors' contendrá los errores del backend (ej. ¡sin stock!)
     const { data, setData, post, processing, errors, reset } = useForm({
         items: cartItems, // Los datos que enviaremos
     });
 
-    // 3. Cada vez que el carrito (prop) cambie, actualizamos el formulario (data)
-    //    (Esto es un hook de React: 'useEffect')
-    //    ¡No olvides importarlo!
-    //    import { useEffect } from 'react';
     useEffect(() => {
         setData('items', cartItems);
     }, [cartItems]);
@@ -136,13 +129,26 @@ export default function Cart({
                     </div>
 
                     {/* 6. El botón de envío */}
-                    <button
-                        type="submit"
-                        disabled={cartItems.length === 0 || processing}
-                        className="mt-4 w-full rounded bg-green-500 p-2 text-white hover:bg-green-600 disabled:bg-gray-400"
-                    >
-                        {processing ? 'Procesando...' : 'Procesar Venta'}
-                    </button>
+                    <div className="mt-4 space-y-2">
+                        {/* Botón de Procesar Venta */}
+                        <button
+                            type="submit"
+                            disabled={cartItems.length === 0 || processing}
+                            className="w-full rounded bg-green-500 p-2 text-white hover:bg-green-600 disabled:bg-gray-400"
+                        >
+                            {processing ? 'Procesando...' : 'Procesar Venta'}
+                        </button>
+
+                        {/* 3. AÑADE ESTE BOTÓN */}
+                        <button
+                            type="button" // ¡Importante! Para que no envíe el formulario
+                            disabled={cartItems.length === 0 || processing}
+                            onClick={onClearCart} // Llama a la función del padre
+                            className="w-full rounded bg-red-500 p-2 text-white hover:bg-red-600 disabled:bg-gray-400"
+                        >
+                            Vaciar Carrito
+                        </button>
+                    </div>
                 </>
             )}
         </form>
