@@ -1,12 +1,10 @@
 // resources/js/Pages/POS.tsx
+import Cart from '@/components/Cart';
+import ProductCard from '@/components/ProductCard';
 import AuthenticatedLayout from '@/layouts/app-layout'; // Usando tu ruta correcta
 import { CartItem, PageProps, Product } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react'; // ¡Importamos el hook useState!
-
-// Importamos los nuevos componentes
-import Cart from '@/components/Cart';
-import ProductCard from '@/components/ProductCard';
+import { useEffect, useState } from 'react';
 
 // Definimos las props que esta página recibe de Laravel
 type PosProps = PageProps & {
@@ -44,17 +42,37 @@ export default function POS({ auth, products }: PosProps) {
         }
     };
 
+    const handleRemoveFromCart = (productIdToRemove: number) => {
+        // Usamos .filter() para crear un NUEVO array
+        // que incluya solo los items cuyo ID NO coincida
+        const newCart = cartItems.filter(
+            (item) => item.id !== productIdToRemove,
+        );
+        setCartItems(newCart);
+    };
+
     const handleClearCart = () => {
         setCartItems([]);
     };
+
+    useEffect(() => {
+        const handleSuccess = () => {
+            handleClearCart();
+        };
+
+        // 1. Capturamos la función de "limpieza" que 'router.on' nos devuelve
+        const removeListener = router.on('success', handleSuccess);
+
+        // 2. En el 'return', llamamos a esa función de limpieza
+        return () => {
+            removeListener();
+        };
+    }, []); // El array vacío [] significa que este efecto se ejecuta solo una vez
 
     // ↓↓↓ AÑADE ESTO ↓↓↓
     // Inertia nos permite escuchar 'onSuccess' en la navegación.
     // Si la venta es exitosa (paso 2.2), Laravel nos redirige.
     // Escuchamos esa redirección y limpiamos el carrito.
-    router.on('success', () => {
-        handleClearCart();
-    });
 
     // 3. Renderizamos todo
     return (
@@ -81,9 +99,6 @@ export default function POS({ auth, products }: PosProps) {
                                 </h3>
 
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                    {/* 4. Pasamos la función 'handleAddToCart' como prop
-                       a cada ProductCard
-                  */}
                                     {products.map((product) => (
                                         <ProductCard
                                             key={product.id}
@@ -98,7 +113,10 @@ export default function POS({ auth, products }: PosProps) {
                         {/* Columna del Carrito */}
                         <div className="md:col-span-1">
                             {/* ↓↓↓ MODIFICA ESTA LÍNEA ↓↓↓ */}
-                            <Cart cartItems={cartItems} />
+                            <Cart
+                                cartItems={cartItems}
+                                onRemoveFromCart={handleRemoveFromCart} // <-- Pasamos la nueva prop
+                            />
                         </div>
                     </div>
                 </div>

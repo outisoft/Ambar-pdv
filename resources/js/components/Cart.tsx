@@ -6,9 +6,10 @@ import { FormEvent, useEffect } from 'react'; // Para el tipo del formulario
 // 1. Actualizamos las Props (ya no necesitamos onClearCart)
 interface Props {
     cartItems: CartItem[];
+    onRemoveFromCart: (id: number) => void; // <-- Nueva prop
 }
 
-export default function Cart({ cartItems }: Props) {
+export default function Cart({ cartItems, onRemoveFromCart }: Props) {
     const total = cartItems.reduce(
         (acc, item) => acc + item.price * item.quantity,
         0,
@@ -77,6 +78,14 @@ export default function Cart({ cartItems }: Props) {
                                 <p className="font-bold">
                                     ${(item.price * item.quantity).toFixed(2)}
                                 </p>
+                                <button
+                                    type="button" // ¡Importante! Para que no envíe el formulario
+                                    onClick={() => onRemoveFromCart(item.id)}
+                                    className="font-bold text-red-500 hover:text-red-700"
+                                    aria-label="Eliminar item"
+                                >
+                                    &times; {/* Este es el símbolo 'X' */}
+                                </button>
                             </div>
                         ))}
                     </div>
