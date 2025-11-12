@@ -21,25 +21,67 @@ export default function POS({ auth, products }: PosProps) {
 
     // 2. Creamos la función para añadir al carrito
     const handleAddToCart = (productToAdd: Product) => {
-        // Revisa si el producto ya está en el carrito
         const existingItem = cartItems.find(
             (item) => item.id === productToAdd.id,
         );
 
         if (existingItem) {
-            // Si existe, actualizamos la cantidad (de forma inmutable)
-            setCartItems(
-                cartItems.map(
-                    (item) =>
+            // --- INICIO DE LA MEJORA ---
+            // Comprueba el stock antes de añadir más
+            if (existingItem.quantity < productToAdd.stock) {
+                setCartItems(
+                    cartItems.map((item) =>
                         item.id === productToAdd.id
-                            ? { ...item, quantity: item.quantity + 1 } // Incrementa cantidad
-                            : item, // Retorna los demás sin cambios
-                ),
-            );
+                            ? { ...item, quantity: item.quantity + 1 }
+                            : item,
+                    ),
+                );
+            } else {
+                // Opcional: Avisar al usuario que no hay más stock
+                alert(
+                    `No puedes añadir más de ${productToAdd.name}, stock máximo alcanzado.`,
+                );
+            }
+            // --- FIN DE LA MEJORA ---
         } else {
-            // Si es nuevo, lo añadimos al array (de forma inmutable)
-            setCartItems([...cartItems, { ...productToAdd, quantity: 1 }]);
+            // Solo añade si hay stock disponible
+            if (productToAdd.stock > 0) {
+                setCartItems([...cartItems, { ...productToAdd, quantity: 1 }]);
+            } else {
+                alert(`Producto ${productToAdd.name} sin stock.`);
+            }
         }
+    };
+
+    // ... (justo después de handleAddToCart)
+
+    const handleUpdateQuantity = (productId: number, newQuantity: number) => {
+        // Si la nueva cantidad es 0 o menos, simplemente eliminamos el item
+        if (newQuantity <= 0) {
+            handleRemoveFromCart(productId);
+            return;
+        }
+
+        // Buscamos el producto original para saber su stock máximo
+        const product = products.find((p) => p.id === productId);
+        if (!product) return; // No debería pasar, pero es buena práctica
+
+        // Comprobamos contra el stock máximo
+        if (newQuantity > product.stock) {
+            alert(`Stock máximo alcanzado para ${product.name}.`);
+            // Opcional: Seteamos al stock máximo en lugar de no hacer nada
+            // newQuantity = product.stock;
+            return; // O quitamos este 'return' si usamos la línea de arriba
+        }
+
+        // Actualizamos la cantidad para ese item
+        setCartItems(
+            cartItems.map((item) =>
+                item.id === productId
+                    ? { ...item, quantity: newQuantity }
+                    : item,
+            ),
+        );
     };
 
     const handleRemoveFromCart = (productIdToRemove: number) => {
@@ -115,7 +157,8 @@ export default function POS({ auth, products }: PosProps) {
                             {/* ↓↓↓ MODIFICA ESTA LÍNEA ↓↓↓ */}
                             <Cart
                                 cartItems={cartItems}
-                                onRemoveFromCart={handleRemoveFromCart} // <-- Pasamos la nueva prop
+                                onRemoveFromCart={handleRemoveFromCart}
+                                onUpdateQuantity={handleUpdateQuantity}
                             />
                         </div>
                     </div>

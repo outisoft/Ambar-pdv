@@ -7,9 +7,14 @@ import { FormEvent, useEffect } from 'react'; // Para el tipo del formulario
 interface Props {
     cartItems: CartItem[];
     onRemoveFromCart: (id: number) => void; // <-- Nueva prop
+    onUpdateQuantity: (productId: number, newQuantity: number) => void;
 }
 
-export default function Cart({ cartItems, onRemoveFromCart }: Props) {
+export default function Cart({
+    cartItems,
+    onRemoveFromCart,
+    onUpdateQuantity,
+}: Props) {
     const total = cartItems.reduce(
         (acc, item) => acc + item.price * item.quantity,
         0,
@@ -71,6 +76,39 @@ export default function Cart({ cartItems, onRemoveFromCart }: Props) {
                             >
                                 <div>
                                     <p className="font-semibold">{item.name}</p>
+                                    <div className="mt-1 flex items-center space-x-2">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                onUpdateQuantity(
+                                                    item.id,
+                                                    item.quantity - 1,
+                                                )
+                                            }
+                                            className="rounded bg-gray-200 px-2 hover:bg-gray-300"
+                                        >
+                                            -
+                                        </button>
+                                        <span className="text-sm text-gray-600">
+                                            x {item.quantity}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                onUpdateQuantity(
+                                                    item.id,
+                                                    item.quantity + 1,
+                                                )
+                                            }
+                                            // Deshabilitamos el botón si la cantidad alcanza el stock
+                                            disabled={
+                                                item.quantity >= item.stock
+                                            }
+                                            className="rounded bg-gray-200 px-2 hover:bg-gray-300 disabled:cursor-not-allowed disabled:bg-gray-100"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
                                     <p className="text-sm text-gray-600">
                                         ${item.price} x {item.quantity}
                                     </p>
