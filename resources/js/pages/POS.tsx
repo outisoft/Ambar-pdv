@@ -5,6 +5,7 @@ import AuthenticatedLayout from '@/layouts/app-layout'; // Usando tu ruta correc
 import { CartItem, PageProps, Product } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 // Definimos las props que esta página recibe de Laravel
 type PosProps = PageProps & {
@@ -99,6 +100,8 @@ export default function POS({ auth, products }: PosProps) {
 
     useEffect(() => {
         const handleSuccess = () => {
+            // 2. MUESTRA EL TOAST ANTES DE LIMPIAR
+            toast.success('¡Venta procesada con éxito!');
             handleClearCart();
         };
 

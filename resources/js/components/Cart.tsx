@@ -2,6 +2,7 @@
 import { CartItem } from '@/types';
 import { useForm } from '@inertiajs/react'; // <-- ¡Importa useForm!
 import { FormEvent, useEffect } from 'react'; // Para el tipo del formulario
+import toast from 'react-hot-toast';
 
 // 1. Actualizamos las Props (ya no necesitamos onClearCart)
 interface Props {
@@ -34,7 +35,16 @@ export default function Cart({
     const submit = (e: FormEvent) => {
         e.preventDefault();
         post(route('sales.store'), {
-            // onSuccess: () => reset(), // No necesitamos reset, la página se recarga
+            // 2. AÑADE EL MANEJADOR 'onError'
+            onError: (formErrors) => {
+                if (formErrors.stock) {
+                    toast.error(formErrors.stock);
+                }
+                if (formErrors.general) {
+                    toast.error(formErrors.general);
+                }
+                // Puedes añadir más si tienes otros errores
+            },
         });
     };
 
@@ -45,16 +55,6 @@ export default function Cart({
             className="h-full rounded-lg border bg-gray-50 p-4 shadow-sm"
         >
             <h3 className="mb-4 text-lg font-medium text-gray-900">Carrito</h3>
-
-            {/* Mostramos errores generales o de stock */}
-            {errors.general && (
-                <div className="mb-2 text-sm text-red-500">
-                    {errors.general}
-                </div>
-            )}
-            {errors.stock && (
-                <div className="mb-2 text-sm text-red-500">{errors.stock}</div>
-            )}
 
             {cartItems.length === 0 ? (
                 <p className="text-gray-500">El carrito está vacío.</p>
