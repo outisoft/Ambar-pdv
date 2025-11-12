@@ -41,3 +41,16 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export type Product = {
+    id: number;
+    name: string;
+    price: number;
+    stock: number;
+    // Añade otros campos si los tienes
+};
+
+// Un item del carrito es un Producto + una cantidad
+export type CartItem = Product & {
+    quantity: number;
+};

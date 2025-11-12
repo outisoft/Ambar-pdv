@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\POSController;
+use App\Http\Controllers\SaleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -9,6 +11,14 @@ Route::get('/', function () {
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
+
+Route::get('/pos', [POSController::class, 'index'])
+    ->middleware(['auth', 'verified']) // Solo usuarios logueados
+    ->name('pos');
+
+Route::post('/sales', [SaleController::class, 'store'])
+    ->middleware(['auth'])
+    ->name('sales.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {

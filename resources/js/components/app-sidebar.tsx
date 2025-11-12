@@ -22,6 +22,11 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
+    {
+        title: 'POS',
+        href: '/pos',
+        icon: LayoutGrid,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
