@@ -52,102 +52,120 @@ export default function Cart({
         // 5. ¡Envolvemos todo en un <form>!
         <form
             onSubmit={submit}
-            className="h-full rounded-lg border bg-gray-50 p-4 shadow-sm"
+            className="h-full rounded-xl border bg-white p-4 shadow-md"
         >
-            <h3 className="mb-4 text-lg font-medium text-gray-900">Carrito</h3>
+            <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Carrito</h3>
+                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                    {cartItems.length} items
+                </span>
+            </div>
 
             {cartItems.length === 0 ? (
-                <p className="text-gray-500">El carrito está vacío.</p>
+                <p className="rounded-lg border border-dashed bg-gray-50 p-4 text-center text-gray-500">
+                    El carrito está vacío.
+                </p>
             ) : (
                 <>
-                    {/* ... (tu .map() de cartItems. No cambia nada aquí) ... */}
-                    <div className="mb-4 space-y-2">
+                    <div className="mb-4 max-h-80 space-y-3 overflow-y-auto pr-1">
                         {cartItems.map((item) => (
                             <div
                                 key={item.id}
-                                className="flex items-center justify-between"
+                                className="flex items-center justify-between rounded-lg border bg-white p-3 transition hover:bg-gray-50"
                             >
                                 <div>
-                                    <p className="font-semibold">{item.name}</p>
+                                    <p className="font-semibold text-gray-900">
+                                        {item.name}
+                                    </p>
                                     <div className="mt-1 flex items-center space-x-2">
                                         <button
                                             type="button"
+                                            aria-label={`Disminuir cantidad de ${item.name}`}
                                             onClick={() =>
                                                 onUpdateQuantity(
                                                     item.id,
                                                     item.quantity - 1,
                                                 )
                                             }
-                                            className="rounded bg-gray-200 px-2 hover:bg-gray-300"
+                                            className="rounded-md border bg-white px-2 py-1 text-gray-700 transition hover:bg-gray-100"
                                         >
-                                            -
+                                            –
                                         </button>
-                                        <span className="text-sm text-gray-600">
-                                            x {item.quantity}
+                                        <span className="min-w-[2ch] text-center text-sm text-gray-700 tabular-nums">
+                                            {item.quantity}
                                         </span>
                                         <button
                                             type="button"
+                                            aria-label={`Aumentar cantidad de ${item.name}`}
                                             onClick={() =>
                                                 onUpdateQuantity(
                                                     item.id,
                                                     item.quantity + 1,
                                                 )
                                             }
-                                            // Deshabilitamos el botón si la cantidad alcanza el stock
                                             disabled={
                                                 item.quantity >= item.stock
                                             }
-                                            className="rounded bg-gray-200 px-2 hover:bg-gray-300 disabled:cursor-not-allowed disabled:bg-gray-100"
+                                            className="rounded-md border bg-white px-2 py-1 text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             +
                                         </button>
                                     </div>
-                                    <p className="text-sm text-gray-600">
+                                    <p className="mt-1 text-sm text-gray-600">
                                         ${item.price} x {item.quantity}
                                     </p>
                                 </div>
-                                <p className="font-bold">
-                                    ${(item.price * item.quantity).toFixed(2)}
-                                </p>
-                                <button
-                                    type="button" // ¡Importante! Para que no envíe el formulario
-                                    onClick={() => onRemoveFromCart(item.id)}
-                                    className="font-bold text-red-500 hover:text-red-700"
-                                    aria-label="Eliminar item"
-                                >
-                                    &times; {/* Este es el símbolo 'X' */}
-                                </button>
+                                <div className="flex items-center space-x-3">
+                                    <p className="font-bold text-gray-900 tabular-nums">
+                                        $
+                                        {(item.price * item.quantity).toFixed(
+                                            2,
+                                        )}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            onRemoveFromCart(item.id)
+                                        }
+                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-red-500 transition hover:bg-red-50 hover:text-red-600 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none"
+                                        aria-label={`Eliminar ${item.name} del carrito`}
+                                        title="Eliminar"
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
 
-                    <hr className="my-4" />
+                    <div className="sticky bottom-0 space-y-3 border-t pt-3">
+                        <div className="flex items-center justify-between text-base font-semibold text-gray-900">
+                            <span>Total</span>
+                            <span className="tabular-nums">
+                                ${total.toFixed(2)}
+                            </span>
+                        </div>
 
-                    <div className="flex justify-between text-lg font-bold">
-                        <span>Total:</span>
-                        <span>${total.toFixed(2)}</span>
-                    </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                type="submit"
+                                disabled={cartItems.length === 0 || processing}
+                                className="col-span-2 rounded-lg bg-emerald-600 p-2 text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {processing
+                                    ? 'Procesando...'
+                                    : 'Procesar Venta'}
+                            </button>
 
-                    {/* 6. El botón de envío */}
-                    <div className="mt-4 space-y-2">
-                        {/* Botón de Procesar Venta */}
-                        <button
-                            type="submit"
-                            disabled={cartItems.length === 0 || processing}
-                            className="w-full rounded bg-green-500 p-2 text-white hover:bg-green-600 disabled:bg-gray-400"
-                        >
-                            {processing ? 'Procesando...' : 'Procesar Venta'}
-                        </button>
-
-                        {/* 3. AÑADE ESTE BOTÓN */}
-                        <button
-                            type="button" // ¡Importante! Para que no envíe el formulario
-                            disabled={cartItems.length === 0 || processing}
-                            onClick={onClearCart} // Llama a la función del padre
-                            className="w-full rounded bg-red-500 p-2 text-white hover:bg-red-600 disabled:bg-gray-400"
-                        >
-                            Vaciar Carrito
-                        </button>
+                            <button
+                                type="button"
+                                disabled={cartItems.length === 0 || processing}
+                                onClick={onClearCart}
+                                className="col-span-2 rounded-lg bg-red-600 p-2 text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                Vaciar Carrito
+                            </button>
+                        </div>
                     </div>
                 </>
             )}

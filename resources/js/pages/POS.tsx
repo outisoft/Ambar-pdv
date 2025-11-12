@@ -137,13 +137,13 @@ export default function POS({ auth, products }: PosProps) {
                     {/* Usamos un grid de 2 columnas */}
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                         {/* Columna de Productos (ocupa 2 de 3 partes) */}
-                        <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg md:col-span-2">
+                        <div className="rounded-xl border bg-white shadow md:col-span-2">
                             <div className="p-6 text-gray-900">
-                                <h3 className="mb-4 text-lg font-medium text-gray-900">
+                                <h3 className="mb-4 text-lg font-semibold text-gray-900">
                                     Catálogo de Productos
                                 </h3>
 
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                     {products.map((product) => (
                                         <ProductCard
                                             key={product.id}
@@ -156,7 +156,7 @@ export default function POS({ auth, products }: PosProps) {
                         </div>
 
                         {/* Columna del Carrito */}
-                        <div className="md:col-span-1">
+                        <div className="self-start md:sticky md:top-6 md:col-span-1">
                             {/* ↓↓↓ MODIFICA ESTA LÍNEA ↓↓↓ */}
                             <Cart
                                 cartItems={cartItems}
