@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\POSController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -20,7 +21,9 @@ Route::post('/sales', [SaleController::class, 'store'])
     ->middleware(['auth'])
     ->name('sales.store');
 
+
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('products', ProductController::class);
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
