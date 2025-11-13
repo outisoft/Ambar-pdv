@@ -62,24 +62,43 @@ class ProductController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Product $product) // <-- Inyección automática del modelo
     {
-        //
+        // Renderizamos la vista 'Edit' y le pasamos el producto que queremos editar
+        return Inertia::render('products/edit', [
+            'product' => $product,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Product $product)
     {
-        //
+        // 1. Validamos (igual que en store)
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+        ]);
+
+        // 2. Actualizamos el producto con los nuevos datos
+        $product->update($validatedData);
+
+        // 3. Redirigimos
+        return redirect()->route('products.index')->with('success', 'Producto actualizado correctamente.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Product $product)
     {
-        //
+        // 1. Eliminar el producto
+        $product->delete();
+
+        // 2. Redirigir de vuelta con un mensaje (si usas notificaciones toast, esto lo activará)
+        return redirect()->route('products.index')->with('success', 'Producto eliminado correctamente.');
     }
 }

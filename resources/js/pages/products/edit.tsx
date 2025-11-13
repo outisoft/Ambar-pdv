@@ -1,62 +1,53 @@
-// resources/js/Pages/Products/Create.tsx
+// resources/js/Pages/Products/Edit.tsx
 import AuthenticatedLayout from '@/layouts/app-layout';
-import { PageProps } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react'; // Importa Link y useForm
-import { FormEvent } from 'react'; // Para el tipo del evento del formulario
+import { PageProps, Product } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { FormEvent } from 'react';
 
-export default function Create({ auth }: PageProps) {
-    // 1. Inicializa el hook useForm con los campos de tu producto
-    const { data, setData, post, processing, errors } = useForm({
-        name: '',
-        description: '',
-        price: 0,
-        stock: 0,
+// 1. Definimos las props: necesitamos el producto a editar
+type EditProps = PageProps & {
+    product: Product;
+};
+
+export default function Edit({ auth, product }: EditProps) {
+    // 2. Inicializamos el formulario CON los datos del producto existente
+    const { data, setData, put, processing, errors } = useForm({
+        name: product.name,
+        description: product.description || '', // Manejamos el caso null
+        price: product.price,
+        stock: product.stock,
     });
 
-    // 2. Función que maneja el envío del formulario
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        // 3. 'post' envía los 'data' a la ruta 'products.store'
-        post(route('products.store'), {
-            onSuccess: () => {
-                // Opcional: Mostrar toast de éxito
-                // toast.success('Producto creado!');
-            },
-        });
+        // 3. Usamos 'put' y la ruta 'products.update' pasando el ID del producto
+        put(route('products.update', product.id));
     };
 
     return (
         <AuthenticatedLayout
             user={auth.user}
+            // Puedes ajustar el header si quieres
             header={
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl leading-tight font-semibold text-gray-800">
-                        Crear Nuevo Producto
-                    </h2>
-                    <Link
-                        href={route('products.index')}
-                        className="rounded bg-gray-500 px-4 py-2 text-white shadow-sm hover:bg-gray-600"
-                    >
-                        Volver
-                    </Link>
-                </div>
+                <h2 className="text-xl leading-tight font-semibold text-gray-800">
+                    Editar Producto: {product.name}
+                </h2>
             }
         >
-            <Head title="Crear Producto" />
+            <Head title="Editar Producto" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     <div className="rounded-xl border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-800">
                         <div className="border-b border-gray-100 px-6 py-4 dark:border-gray-700">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                Nuevo Producto
+                                Editar: {product.name}
                             </h3>
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Completa los campos para registrar un producto.
+                                Actualiza la información del producto.
                             </p>
                         </div>
                         <div className="p-6">
-                            {/* 4. Formulario */}
                             <form onSubmit={submit} className="space-y-6">
                                 <div className="grid gap-6 sm:grid-cols-2">
                                     <div className="sm:col-span-2">
@@ -74,7 +65,6 @@ export default function Create({ auth }: PageProps) {
                                                 setData('name', e.target.value)
                                             }
                                             className="w-full rounded-lg border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-                                            placeholder="Ej: Monitor 24''"
                                         />
                                         {errors.name && (
                                             <p className="mt-1 text-xs text-rose-500">
@@ -101,7 +91,6 @@ export default function Create({ auth }: PageProps) {
                                                 )
                                             }
                                             className="w-full resize-y rounded-lg border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-                                            placeholder="Detalles breves del producto"
                                         />
                                         {errors.description && (
                                             <p className="mt-1 text-xs text-rose-500">
@@ -129,7 +118,6 @@ export default function Create({ auth }: PageProps) {
                                                 )
                                             }
                                             className="w-full rounded-lg border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-                                            placeholder="0.00"
                                         />
                                         {errors.price && (
                                             <p className="mt-1 text-xs text-rose-500">
@@ -156,7 +144,6 @@ export default function Create({ auth }: PageProps) {
                                                 )
                                             }
                                             className="w-full rounded-lg border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-                                            placeholder="0"
                                         />
                                         {errors.stock && (
                                             <p className="mt-1 text-xs text-rose-500">
@@ -179,8 +166,8 @@ export default function Create({ auth }: PageProps) {
                                         className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-indigo-600 dark:hover:bg-indigo-500"
                                     >
                                         {processing
-                                            ? 'Guardando...'
-                                            : 'Guardar Producto'}
+                                            ? 'Actualizando...'
+                                            : 'Actualizar'}
                                     </button>
                                 </div>
                             </form>
