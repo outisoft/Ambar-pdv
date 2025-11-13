@@ -7,6 +7,7 @@ use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // ¡Importante! Para transacciones
 use Illuminate\Validation\ValidationException; // Para errores de stock
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SaleController extends Controller
 {
@@ -79,7 +80,9 @@ class SaleController extends Controller
 
                 // 8. Si todo salió bien, Inertia redirige (o podemos devolver OK)
                 // Redirigimos de vuelta al TPV con un mensaje de éxito.
-                return redirect()->route('pos')->with('success', '¡Venta procesada con éxito!');
+                return redirect()->route('pos')
+                    ->with('success', 'Venta procesada.')
+                    ->with('last_sale_id', $sale->id);
             });
 
         } catch (ValidationException $e) {
@@ -89,5 +92,23 @@ class SaleController extends Controller
             // Cualquier otro error
             return redirect()->back()->withErrors(['general' => 'Ocurrió un error inesperado.']);
         }
+    }
+
+    public function ticket(Sale $sale)
+    {
+        // Cargamos las relaciones necesarias para la vista
+        $sale->load(['items.product']); // (y 'user' si lo usas)
+
+        // Cargamos la vista de Blade y le pasamos la venta
+        $pdf = Pdf::loadView('sales.ticket', compact('sale'));
+
+        // Configuración opcional del papel (ancho, alto).
+        // 80mm de ancho (aprox 226pt). El alto 'auto' es difícil en PDF,
+        // así que ponemos uno muy alto o usamos formato estándar.
+        // Para simplicidad, usaremos un formato custom estrecho.
+        $pdf->setPaper([0, 0, 226, 600], 'portrait'); 
+
+        // 'stream' abre el PDF en el navegador en lugar de descargarlo ('download')
+        return $pdf->stream('ticket-'.$sale->id.'.pdf');
     }
 }

@@ -3,9 +3,8 @@ import Cart from '@/components/Cart';
 import ProductCard from '@/components/ProductCard';
 import AuthenticatedLayout from '@/layouts/app-layout'; // Usando tu ruta correcta
 import { CartItem, PageProps, Product } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
 
 // Definimos las props que esta página recibe de Laravel
 type PosProps = PageProps & {
@@ -13,6 +12,8 @@ type PosProps = PageProps & {
 };
 
 export default function POS({ auth, products }: PosProps) {
+    const { props } = usePage();
+    const flash = props.flash as any;
     // ---- ¡AQUÍ ESTÁ LA MAGIA! ----
     // 1. Creamos el estado.
     //    cartItems = el valor actual (un array)
@@ -99,20 +100,34 @@ export default function POS({ auth, products }: PosProps) {
     };
 
     useEffect(() => {
+        // Si de repente llega un 'last_sale_id', abrimos la ventana
+        if (flash?.last_sale_id) {
+            const url = route('sales.ticket', flash.last_sale_id);
+
+            // Imprimimos en consola para verificar que el dato llega
+            console.log('Abriendo ticket para venta ID:', flash.last_sale_id);
+
+            window.open(url, '_blank', 'width=400,height=600');
+        }
+    }, [flash]); // <-- Se ejecuta cada vez que 'flash' cambia
+
+    // ---------------------------------------------------------
+    // EFECTO 2: LIMPIAR CARRITO (Vigila navegación exitosa)
+    // ---------------------------------------------------------
+    useEffect(() => {
         const handleSuccess = () => {
-            // 2. MUESTRA EL TOAST ANTES DE LIMPIAR
-            toast.success('¡Venta procesada con éxito!');
             handleClearCart();
+            // Ya no intentamos abrir el ticket aquí para evitar problemas de sincronización
         };
 
-        // 1. Capturamos la función de "limpieza" que 'router.on' nos devuelve
+        // Suscribirse al evento
         const removeListener = router.on('success', handleSuccess);
 
-        // 2. En el 'return', llamamos a esa función de limpieza
+        // Limpiar suscripción
         return () => {
             removeListener();
         };
-    }, []); // El array vacío [] significa que este efecto se ejecuta solo una vez
+    }, []);
 
     // ↓↓↓ AÑADE ESTO ↓↓↓
     // Inertia nos permite escuchar 'onSuccess' en la navegación.

@@ -19,6 +19,7 @@ Route::get('/pos', [POSController::class, 'index'])
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/sales/{sale}/ticket', [SaleController::class, 'ticket'])->name('sales.ticket');
     Route::resource('products', ProductController::class);
     Route::resource('sales', SaleController::class);
     Route::get('dashboard', function () {

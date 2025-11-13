@@ -176,12 +176,46 @@ export default function Index({ auth, sales }: SalesProps) {
                                                                     </ul>
                                                                 </td>
                                                                 <td className="px-6 py-4 text-right font-bold whitespace-nowrap text-emerald-600 tabular-nums dark:text-emerald-400">
-                                                                    $
-                                                                    {Number(
-                                                                        sale.total,
-                                                                    ).toFixed(
-                                                                        2,
-                                                                    )}
+                                                                    <div className="flex items-center justify-end gap-2">
+                                                                        <span>
+                                                                            $
+                                                                            {Number(
+                                                                                sale.total,
+                                                                            ).toFixed(
+                                                                                2,
+                                                                            )}
+                                                                        </span>
+                                                                        <a
+                                                                            href={route(
+                                                                                'sales.ticket',
+                                                                                sale.id,
+                                                                            )}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            aria-label={`Imprimir ticket de la venta #${sale.id}`}
+                                                                            title="Imprimir ticket"
+                                                                            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
+                                                                        >
+                                                                            {/* Icono impresora */}
+                                                                            <svg
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                viewBox="0 0 24 24"
+                                                                                fill="none"
+                                                                                stroke="currentColor"
+                                                                                strokeWidth="1.5"
+                                                                                className="h-4 w-4"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v7H6v-7z"
+                                                                                />
+                                                                            </svg>
+                                                                            <span className="hidden sm:inline">
+                                                                                Ticket
+                                                                            </span>
+                                                                        </a>
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         ),
