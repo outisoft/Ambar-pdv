@@ -1,6 +1,7 @@
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import { ThemeSwitch } from '@/components/theme-switch';
 import {
     Sidebar,
     SidebarContent,
@@ -17,10 +18,12 @@ import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
+    //validacion si su rol tiene acceso a cada item
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+        roles: ['admin'],
     },
     {
         title: 'POS',
@@ -31,6 +34,7 @@ const mainNavItems: NavItem[] = [
         title: 'Products',
         href: '/products',
         icon: LayoutGrid,
+        roles: ['admin'],
     },
     {
         title: 'Sales',
@@ -72,8 +76,11 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
-                <NavUser />
+                <div className="space-y-2">
+                    <ThemeSwitch />
+                    <NavFooter items={footerNavItems} className="mt-2" />
+                    <NavUser />
+                </div>
             </SidebarFooter>
         </Sidebar>
     );

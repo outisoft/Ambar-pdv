@@ -20,6 +20,7 @@ export interface NavItem {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    roles?: string[];
 }
 
 export interface SharedData {
@@ -36,6 +37,8 @@ export interface User {
     email: string;
     avatar?: string;
     email_verified_at: string | null;
+    roles: string[]; // Array de strings
+    permissions: string[]; // Array de strings
     two_factor_enabled?: boolean;
     created_at: string;
     updated_at: string;

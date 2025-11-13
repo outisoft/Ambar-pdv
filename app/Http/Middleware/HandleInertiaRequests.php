@@ -43,7 +43,15 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? [
+                    // Enviamos los datos normales del usuario
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    // ↓↓↓ AÑADIMOS ESTO: Sus roles y permisos ↓↓↓
+                    'roles' => $request->user()->getRoleNames(), // Retorna array ['admin']
+                    'permissions' => $request->user()->getAllPermissions()->pluck('name'), // Retorna array ['ver dashboard', ...]
+                ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
