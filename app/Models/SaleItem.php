@@ -20,4 +20,10 @@ class SaleItem extends Model
         'quantity',
         'price',
     ];
+
+    // En app/Models/SaleItem.php
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

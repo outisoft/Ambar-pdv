@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Product;
 use App\Models\Sale;
 use Illuminate\Http\Request;
@@ -9,6 +10,18 @@ use Illuminate\Validation\ValidationException; // Para errores de stock
 
 class SaleController extends Controller
 {
+    public function index()
+    {
+        // Traemos las ventas + los items vendidos + el nombre del producto original
+        $sales = Sale::with(['items.product']) 
+            ->latest() // Ordenamos por la más reciente
+            ->paginate(10); // Paginamos de 10 en 10
+
+        return Inertia::render('sales/index', [
+            'sales' => $sales
+        ]);
+    }
+
     public function store(Request $request)
     {
         // 1. Validación de los datos recibidos (el carrito)

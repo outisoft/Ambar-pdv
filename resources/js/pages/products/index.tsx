@@ -32,22 +32,7 @@ export default function Index({ auth, products }: ProductIndexProps) {
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-xl leading-tight font-semibold text-gray-900 dark:text-gray-100">
-                        Gestión de Productos
-                    </h2>
-                    <Link
-                        href={route('products.create')}
-                        className="rounded-lg bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:bg-indigo-600 dark:hover:bg-indigo-500"
-                    >
-                        Crear Nuevo Producto
-                    </Link>
-                </div>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="Productos" />
 
             <div className="py-12">

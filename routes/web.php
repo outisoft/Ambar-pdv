@@ -17,13 +17,10 @@ Route::get('/pos', [POSController::class, 'index'])
     ->middleware(['auth', 'verified']) // Solo usuarios logueados
     ->name('pos');
 
-Route::post('/sales', [SaleController::class, 'store'])
-    ->middleware(['auth'])
-    ->name('sales.store');
-
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class);
+    Route::resource('sales', SaleController::class);
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
