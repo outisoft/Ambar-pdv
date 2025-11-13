@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/layouts/app-layout';
 import { PageProps, Product } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
+import toast from 'react-hot-toast';
 
 // 1. Definimos las props: necesitamos el producto a editar
 type EditProps = PageProps & {
@@ -21,7 +22,18 @@ export default function Edit({ auth, product }: EditProps) {
     const submit = (e: FormEvent) => {
         e.preventDefault();
         // 3. Usamos 'put' y la ruta 'products.update' pasando el ID del producto
-        put(route('products.update', product.id));
+        put(route('products.update', product.id), {
+            onSuccess: () =>
+                toast.success('Producto actualizado correctamente.'),
+            onError: (errs) => {
+                const first = Object.values(errs)[0];
+                toast.error(
+                    typeof first === 'string'
+                        ? first
+                        : 'Error al actualizar el producto.',
+                );
+            },
+        });
     };
 
     return (

@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/layouts/app-layout'; // Tu layout
 import { PageProps, Product } from '@/types'; // Importamos el tipo Product
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 // 1. Definimos las props que esta página espera recibir de Laravel
 type ProductIndexProps = PageProps & {
@@ -26,6 +27,9 @@ export default function Index({ auth, products }: ProductIndexProps) {
     const confirmDelete = () => {
         if (productToDelete) {
             router.delete(route('products.destroy', productToDelete.id), {
+                onSuccess: () =>
+                    toast.success('Producto eliminado correctamente.'),
+                onError: () => toast.error('No se pudo eliminar el producto.'),
                 onFinish: () => cancelDelete(),
             });
         }

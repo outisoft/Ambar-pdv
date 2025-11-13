@@ -1,8 +1,9 @@
 // resources/js/Pages/Products/Create.tsx
 import AuthenticatedLayout from '@/layouts/app-layout';
 import { PageProps } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react'; // Importa Link y useForm
+import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react'; // Para el tipo del evento del formulario
+import toast from 'react-hot-toast'; // Importa toast
 
 export default function Create({ auth }: PageProps) {
     // 1. Inicializa el hook useForm con los campos de tu producto
@@ -18,9 +19,14 @@ export default function Create({ auth }: PageProps) {
         e.preventDefault();
         // 3. 'post' envía los 'data' a la ruta 'products.store'
         post(route('products.store'), {
-            onSuccess: () => {
-                // Opcional: Mostrar toast de éxito
-                // toast.success('Producto creado!');
+            onSuccess: () => toast.success('Producto creado correctamente.'),
+            onError: (errs) => {
+                const first = Object.values(errs)[0];
+                toast.error(
+                    typeof first === 'string'
+                        ? first
+                        : 'Error al crear el producto.',
+                );
             },
         });
     };
