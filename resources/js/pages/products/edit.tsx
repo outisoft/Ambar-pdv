@@ -13,6 +13,7 @@ type EditProps = PageProps & {
 export default function Edit({ auth, product }: EditProps) {
     // 2. Inicializamos el formulario CON los datos del producto existente
     const { data, setData, put, processing, errors } = useForm({
+        barcode: product.barcode || '',
         name: product.name,
         description: product.description || '', // Manejamos el caso null
         price: product.price,
@@ -63,6 +64,33 @@ export default function Edit({ auth, product }: EditProps) {
                             <form onSubmit={submit} className="space-y-6">
                                 <div className="grid gap-6 sm:grid-cols-2">
                                     <div className="sm:col-span-2">
+                                        <label
+                                            htmlFor="barcode"
+                                            className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                                        >
+                                            Código de Barras
+                                        </label>
+                                        <input
+                                            id="barcode"
+                                            type="text"
+                                            value={data.barcode}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'barcode',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="w-full rounded-lg border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                                            placeholder="Ej: 1234567890123"
+                                        />
+                                        {errors.barcode && (
+                                            <p className="mt-1 text-xs text-rose-500">
+                                                {errors.barcode}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
                                         <label
                                             htmlFor="name"
                                             className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"

@@ -38,6 +38,7 @@ class ProductController extends Controller
     {
         // 1. Validar los datos del formulario
         $validatedData = $request->validate([
+            'barcode' => 'nullable|string|unique:products,barcode',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
@@ -77,6 +78,7 @@ class ProductController extends Controller
     {
         // 1. Validamos (igual que en store)
         $validatedData = $request->validate([
+            'barcode' => 'nullable|string|unique:products,barcode,' . $product->id,
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',

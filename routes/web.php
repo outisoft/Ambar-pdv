@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
@@ -22,9 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/sales/{sale}/ticket', [SaleController::class, 'ticket'])->name('sales.ticket');
     Route::resource('products', ProductController::class);
     Route::resource('sales', SaleController::class);
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 require __DIR__.'/settings.php';

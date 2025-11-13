@@ -8,6 +8,7 @@ import toast from 'react-hot-toast'; // Importa toast
 export default function Create({ auth }: PageProps) {
     // 1. Inicializa el hook useForm con los campos de tu producto
     const { data, setData, post, processing, errors } = useForm({
+        barcode: '',
         name: '',
         description: '',
         price: 0,
@@ -65,6 +66,33 @@ export default function Create({ auth }: PageProps) {
                             {/* 4. Formulario */}
                             <form onSubmit={submit} className="space-y-6">
                                 <div className="grid gap-6 sm:grid-cols-2">
+                                    <div className="sm:col-span-2">
+                                        <label
+                                            htmlFor="barcode"
+                                            className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                                        >
+                                            Código de barras
+                                        </label>
+                                        <input
+                                            id="barcode"
+                                            type="text"
+                                            value={data.barcode}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'barcode',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="w-full rounded-lg border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                                            placeholder="Ej: 1234567890123"
+                                        />
+                                        {errors.barcode && (
+                                            <p className="mt-1 text-xs text-rose-500">
+                                                {errors.barcode}
+                                            </p>
+                                        )}
+                                    </div>
+
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="name"

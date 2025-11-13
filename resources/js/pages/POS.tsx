@@ -5,6 +5,7 @@ import AuthenticatedLayout from '@/layouts/app-layout'; // Usando tu ruta correc
 import { CartItem, PageProps, Product } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 // Definimos las props que esta página recibe de Laravel
 type PosProps = PageProps & {
@@ -99,6 +100,25 @@ export default function POS({ auth, products }: PosProps) {
         setCartItems([]);
     };
 
+    // Barra de búsqueda + filtrado
+    const [searchTerm, setSearchTerm] = useState('');
+    const filteredProducts = products.filter(
+        (product) =>
+            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.barcode?.includes(searchTerm),
+    );
+
+    const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            const exactMatch = products.find((p) => p.barcode === searchTerm);
+            if (exactMatch) {
+                handleAddToCart(exactMatch);
+                setSearchTerm('');
+                toast.success(`Añadido: ${exactMatch.name}`);
+            }
+        }
+    };
+
     useEffect(() => {
         // Si de repente llega un 'last_sale_id', abrimos la ventana
         if (flash?.last_sale_id) {
@@ -129,11 +149,6 @@ export default function POS({ auth, products }: PosProps) {
         };
     }, []);
 
-    // ↓↓↓ AÑADE ESTO ↓↓↓
-    // Inertia nos permite escuchar 'onSuccess' en la navegación.
-    // Si la venta es exitosa (paso 2.2), Laravel nos redirige.
-    // Escuchamos esa redirección y limpiamos el carrito.
-
     // 3. Renderizamos todo
     return (
         <AuthenticatedLayout
@@ -145,34 +160,71 @@ export default function POS({ auth, products }: PosProps) {
             }
         >
             <Head title="Punto de Venta" />
-
-            {/* Cambiamos el layout a 2 columnas */}
             <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    {/* Usamos un grid de 2 columnas */}
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    {/* Barra de búsqueda */}
+                    <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow dark:border-gray-700 dark:bg-gray-800">
+                        <div className="relative">
+                            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">
+                                {/* Icono lupa */}
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    className="h-5 w-5"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="m21 21-4.35-4.35m1.6-4.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+                                    />
+                                </svg>
+                            </span>
+                            <input
+                                type="text"
+                                placeholder="Escanea un código o busca por nombre..."
+                                className="w-full rounded-lg border-gray-300 bg-white py-2.5 pr-3 pl-10 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={handleSearchKeyDown}
+                                autoFocus
+                                aria-label="Buscar producto por nombre o código de barras"
+                            />
+                        </div>
+                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            Resultados: {filteredProducts.length}
+                        </div>
+                    </div>
+
+                    {/* Reintroducimos el layout con carrito */}
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                         {/* Columna de Productos (ocupa 2 de 3 partes) */}
-                        <div className="rounded-xl border bg-white shadow md:col-span-2">
-                            <div className="p-6 text-gray-900">
-                                <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                        <div className="rounded-xl border bg-white shadow md:col-span-2 dark:border-gray-700 dark:bg-gray-800">
+                            <div className="p-6">
+                                <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
                                     Catálogo de Productos
                                 </h3>
-
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                    {products.map((product) => (
+                                    {filteredProducts.map((product) => (
                                         <ProductCard
                                             key={product.id}
                                             product={product}
                                             onAddToCart={handleAddToCart}
                                         />
                                     ))}
+                                    {filteredProducts.length === 0 && (
+                                        <div className="col-span-full rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-500 dark:border-gray-600 dark:text-gray-400">
+                                            No se encontraron productos.
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
                         {/* Columna del Carrito */}
-                        <div className="self-start md:sticky md:top-6 md:col-span-1">
-                            {/* ↓↓↓ MODIFICA ESTA LÍNEA ↓↓↓ */}
+                        <div className="self-start md:sticky md:top-6">
                             <Cart
                                 cartItems={cartItems}
                                 onRemoveFromCart={handleRemoveFromCart}
@@ -181,6 +233,9 @@ export default function POS({ auth, products }: PosProps) {
                             />
                         </div>
                     </div>
+
+                    {/* Eliminamos el contenedor "solo tarjetas" previo */}
+                    {/* ...existing code removed (bloque único de cards sin carrito) ... */}
                 </div>
             </div>
         </AuthenticatedLayout>
