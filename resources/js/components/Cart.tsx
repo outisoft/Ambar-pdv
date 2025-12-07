@@ -24,12 +24,17 @@ export default function Cart({
     );
 
     const { data, setData, post, processing, errors, reset } = useForm({
-        items: cartItems, // Los datos que enviaremos
+        items: cartItems,
+        payment_method: 'cash',
     });
 
     useEffect(() => {
         setData('items', cartItems);
     }, [cartItems]);
+
+    const handlePaymentChange = (method: string) => {
+        setData('payment_method', method);
+    };
 
     // 4. La función que maneja el envío
     const submit = (e: FormEvent) => {
@@ -136,6 +141,52 @@ export default function Cart({
                                 </div>
                             </div>
                         ))}
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
+                        <div className="grid grid-cols-3 gap-2">
+
+                            {/* EFECTIVO */}
+                            <button
+                                type="button"
+                                onClick={() => handlePaymentChange('cash')}
+                                className={`p-2 border rounded text-sm flex flex-col items-center justify-center gap-1 ${data.payment_method === 'cash'
+                                        ? 'bg-green-100 border-green-500 text-green-700 ring-1 ring-green-500'
+                                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <span>💵</span> {/* O usa un Icono SVG */}
+                                <span>Efectivo</span>
+                            </button>
+
+                            {/* TARJETA */}
+                            <button
+                                type="button"
+                                onClick={() => handlePaymentChange('card')}
+                                className={`p-2 border rounded text-sm flex flex-col items-center justify-center gap-1 ${data.payment_method === 'card'
+                                        ? 'bg-blue-100 border-blue-500 text-blue-700 ring-1 ring-blue-500'
+                                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <span>💳</span>
+                                <span>Tarjeta</span>
+                            </button>
+
+                            {/* TRANSFERENCIA */}
+                            <button
+                                type="button"
+                                onClick={() => handlePaymentChange('transfer')}
+                                className={`p-2 border rounded text-sm flex flex-col items-center justify-center gap-1 ${data.payment_method === 'transfer'
+                                        ? 'bg-purple-100 border-purple-500 text-purple-700 ring-1 ring-purple-500'
+                                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <span>📱</span>
+                                <span>Transf.</span>
+                            </button>
+                        </div>
+                        {errors.payment_method && <p className="text-red-500 text-xs mt-1">Selecciona un método</p>}
                     </div>
 
                     <div className="sticky bottom-0 space-y-3 border-t pt-3">

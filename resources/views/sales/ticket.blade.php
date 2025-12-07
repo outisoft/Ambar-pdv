@@ -90,12 +90,24 @@
         }
     </style>
 </head>
+@php
+    $settings = \App\Models\Setting::first();
+@endphp
 <body>
+
     <div class="ticket">
         <div class="header">
-            <!-- Puedes colocar un logo: <img src="{{ asset('img/logo.png') }}" alt="Logo" style="max-width:60px" /> -->
-            <h1>MI TIENDA TPV</h1>
-            <p>Calle Falsa 123<br/>Ciudad, País<br/>Tel: 555-5555</p>
+            @if($settings->logo_path)
+                {{-- public_path es necesario para dompdf en lugar de asset() --}}
+                <img src="{{ public_path('storage/' . $settings->logo_path) }}" style="max-width: 40mm; max-height: 20mm;">
+                <br>
+            @endif
+            <h1>{{ $settings->shop_name }}</h1>
+            <p>
+                {{ $settings->address }}<br>
+                Tel: {{ $settings->phone }}<br>
+                @if($settings->tax_id) RFC: {{ $settings->tax_id }} @endif
+            </p>
         </div>
 
         <div class="line"></div>
@@ -104,6 +116,12 @@
             <p><strong>Ticket:</strong> #{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</p>
             <p><strong>Fecha:</strong> {{ $sale->created_at->format('d/m/Y H:i') }}</p>
             {{-- Si tienes cajero: <p><strong>Cajero:</strong> {{ $sale->user->name }}</p> --}}
+            <strong>Pago:</strong>
+            @switch($sale->payment_method)
+                @case('cash') EFECTIVO @break
+                @case('card') TARJETA @break
+                @case('transfer') TRANSF. @break
+            @endswitch
         </div>
 
         <div class="line"></div>

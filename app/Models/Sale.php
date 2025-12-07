@@ -16,11 +16,18 @@ class Sale extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'cash_register_id',
+        'payment_method',
         'total',
     ];
 
     public function items(): HasMany
     {
         return $this->hasMany(SaleItem::class);
+    }
+
+    public function cashRegister()
+    {
+        return $this->belongsTo(CashRegister::class);
     }
 }

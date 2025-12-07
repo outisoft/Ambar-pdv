@@ -193,8 +193,14 @@ export default function POS({ auth, products }: PosProps) {
                                 aria-label="Buscar producto por nombre o código de barras"
                             />
                         </div>
-                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            Resultados: {filteredProducts.length}
+                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
+                            <span>Resultados: {filteredProducts.length}</span>
+                            <a
+                                href={route('cash_register.close')}
+                                className="flex items-center gap-2 rounded border border-red-300 bg-red-100 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-200"
+                            >
+                                🔒 Cerrar Caja
+                            </a>
                         </div>
                     </div>
 

@@ -15,17 +15,25 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::firstOrCreate(
+        /*User::firstOrCreate(
             ['email' => 'test@example.com'],
             [
                 'name' => 'Test User',
                 'password' => 'password',
                 'email_verified_at' => now(),
             ]
-        );
+        );*/
 
         $this->call([
+            UserSeeder::class,
+            RoleSeeder::class,
             ProductSeeder::class,
+        ]);
+
+        \App\Models\Setting::create([
+            'shop_name' => 'Mi TPV Laravel',
+            'address' => 'Calle Configuración 123',
+            'phone' => '555-0000',
         ]);
     }
 }

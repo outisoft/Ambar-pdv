@@ -19,6 +19,11 @@ class ProductSeeder extends Seeder
             'stock' => 100
         ]);
         Product::create([
+            'name' => 'Coca-Cola 2L',
+            'price' => 25.00,
+            'stock' => 100
+        ]);
+        Product::create([
             'name' => 'Sabritas Originales',
             'price' => 16.00,
             'stock' => 80
@@ -28,9 +33,15 @@ class ProductSeeder extends Seeder
             'price' => 14.00,
             'stock' => 120
         ]);
+        
         Product::create([
             'name' => 'Agua Bonafont 500ml',
             'price' => 10.00,
+            'stock' => 150
+        ]);
+        Product::create([
+            'name' => 'Agua Bonafont 1L',
+            'price' => 12.00,
             'stock' => 150
         ]);
         Product::create([

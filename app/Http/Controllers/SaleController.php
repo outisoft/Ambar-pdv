@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // ¡Importante! Para transacciones
 use Illuminate\Validation\ValidationException; // Para errores de stock
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 class SaleController extends Controller
 {
@@ -30,15 +31,25 @@ class SaleController extends Controller
             'items' => ['required', 'array'],
             'items.*.id' => ['required', 'exists:products,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'payment_method' => ['required', 'string', 'in:cash,card,transfer'],
         ]);
 
         $cartItems = $request->input('items');
+
+        // Verificar caja abierta ANTES de la transacción
+        $register = \App\Models\CashRegister::where('user_id', Auth::id())
+                ->where('status', 'open')
+                ->first();
+
+        if (!$register) {
+            return redirect()->back()->withErrors(['general' => 'No tienes una caja abierta. Por favor, abre caja antes de realizar ventas.']);
+        }
 
         // ¡¡CLAVE!! Usamos una transacción de BD.
         // Si algo falla (ej. no hay stock), se revierte TODO.
         // No se creará la venta, ni se descontará stock parcial.
         try {
-            return DB::transaction(function () use ($cartItems) {
+            return DB::transaction(function () use ($cartItems, $register, $request) {
                 
                 $serverTotal = 0;
                 $itemsToCreate = [];
@@ -72,7 +83,9 @@ class SaleController extends Controller
 
                 // 6. Crear la Venta
                 $sale = Sale::create([
+                    'cash_register_id' => $register->id,
                     'total' => $serverTotal,
+                    'payment_method' => $request->payment_method,
                 ]);
 
                 // 7. Insertar los SaleItems en la BD
@@ -89,8 +102,9 @@ class SaleController extends Controller
             // Si atrapamos el error de stock, devolvemos el error a React
             return redirect()->back()->withErrors($e->errors());
         } catch (\Exception $e) {
-            // Cualquier otro error
-            return redirect()->back()->withErrors(['general' => 'Ocurrió un error inesperado.']);
+            // Cualquier otro error: Logueamos y mostramos el mensaje real para depuración
+            \Illuminate\Support\Facades\Log::error('Error en venta: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['general' => 'Error: ' . $e->getMessage()]);
         }
     }
 

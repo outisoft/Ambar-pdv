@@ -20,4 +20,9 @@ class Product extends Model
         'price',
         'stock',
     ];
+
+    protected $casts = [
+        'price' => 'float', // O 'decimal:2'
+        'stock' => 'integer',
+    ];
 }
