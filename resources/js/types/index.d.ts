@@ -50,6 +50,7 @@ export type Product = {
     name: string;
     price: number;
     stock: number;
+    min_stock: number;
     // Añade otros campos si los tienes
 };
 
