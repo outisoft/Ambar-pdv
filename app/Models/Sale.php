@@ -18,6 +18,7 @@ class Sale extends Model
     protected $fillable = [
         'cash_register_id',
         'payment_method',
+        'client_id',
         'total',
     ];
 
@@ -29,5 +30,10 @@ class Sale extends Model
     public function cashRegister()
     {
         return $this->belongsTo(CashRegister::class);
+    }
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
@@ -38,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::resource('clients', ClientController::class);
     Route::resource('products', ProductController::class);
     Route::get('/configuracion', [SettingController::class, 'edit'])->name('configuracion.edit');
     Route::post('/configuracion', [SettingController::class, 'update'])->name('configuracion.update');

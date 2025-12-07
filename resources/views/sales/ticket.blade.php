@@ -122,6 +122,19 @@
                 @case('card') TARJETA @break
                 @case('transfer') TRANSF. @break
             @endswitch
+
+            @if($sale->client)
+                <div class="line"></div>
+                <strong>CLIENTE:</strong> {{ $sale->client->name }}<br>
+                @if($sale->client->tax_id) 
+                    <strong>RFC/NIT:</strong> {{ $sale->client->tax_id }}<br> 
+                @endif
+                @if($sale->client->address) 
+                    <strong>Dir:</strong> {{ Str::limit($sale->client->address, 30) }} 
+                @endif
+            @else
+                <strong>Cliente:</strong> Público General
+            @endif
         </div>
 
         <div class="line"></div>

@@ -2,7 +2,7 @@
 import Cart from '@/components/Cart';
 import ProductCard from '@/components/ProductCard';
 import AuthenticatedLayout from '@/layouts/app-layout'; // Usando tu ruta correcta
-import { CartItem, PageProps, Product } from '@/types';
+import { CartItem, PageProps, Product, Client } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -10,9 +10,10 @@ import toast from 'react-hot-toast';
 // Definimos las props que esta página recibe de Laravel
 type PosProps = PageProps & {
     products: Product[];
+    clients: Client[];
 };
 
-export default function POS({ auth, products }: PosProps) {
+export default function POS({ auth, products, clients }: PosProps) {
     const { props } = usePage();
     const flash = props.flash as any;
     // ---- ¡AQUÍ ESTÁ LA MAGIA! ----
@@ -206,6 +207,7 @@ export default function POS({ auth, products }: PosProps) {
 
                     {/* Reintroducimos el layout con carrito */}
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+
                         {/* Columna de Productos (ocupa 2 de 3 partes) */}
                         <div className="rounded-xl border bg-white shadow md:col-span-2 dark:border-gray-700 dark:bg-gray-800">
                             <div className="p-6">
@@ -233,6 +235,7 @@ export default function POS({ auth, products }: PosProps) {
                         <div className="self-start md:sticky md:top-6">
                             <Cart
                                 cartItems={cartItems}
+                                clients={clients}
                                 onRemoveFromCart={handleRemoveFromCart}
                                 onUpdateQuantity={handleUpdateQuantity}
                                 onClearCart={handleClearCart}

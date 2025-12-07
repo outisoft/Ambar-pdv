@@ -32,6 +32,7 @@ class SaleController extends Controller
             'items.*.id' => ['required', 'exists:products,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'payment_method' => ['required', 'string', 'in:cash,card,transfer'],
+            'client_id' => ['nullable', 'exists:clients,id'],
         ]);
 
         $cartItems = $request->input('items');
@@ -86,6 +87,7 @@ class SaleController extends Controller
                     'cash_register_id' => $register->id,
                     'total' => $serverTotal,
                     'payment_method' => $request->payment_method,
+                    'client_id' => $request->client_id,
                 ]);
 
                 // 7. Insertar los SaleItems en la BD

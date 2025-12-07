@@ -57,3 +57,12 @@ export type Product = {
 export type CartItem = Product & {
     quantity: number;
 };
+
+export interface Client {
+    id: number;
+    name: string;
+    email?: string;
+    phone?: string;
+    tax_id?: string;
+    address?: string;
+}
