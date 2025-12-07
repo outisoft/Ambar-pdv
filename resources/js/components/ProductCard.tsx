@@ -1,4 +1,3 @@
-// resources/js/Components/ProductCard.tsx
 import { Product } from '@/types'; // Importaremos tu tipo 'Product'
 
 // Definimos las props que espera este componente
