@@ -25,6 +25,7 @@ Route::middleware(['auth', 'verified', 'check_register'])->group(function () {
     Route::post('/sales', [SaleController::class, 'store'])->name('sales.store');
     Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
     Route::get('/sales/{sale}/ticket', [SaleController::class, 'ticket'])->name('sales.ticket');
+    Route::delete('/sales/{sale}', [SaleController::class, 'destroy'])->name('sales.destroy');
     
     // ... (Perfil, etc.)
 });

@@ -20,6 +20,7 @@ class Sale extends Model
         'payment_method',
         'client_id',
         'total',
+        'status',
     ];
 
     public function items(): HasMany

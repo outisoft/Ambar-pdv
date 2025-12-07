@@ -5,7 +5,7 @@ use Inertia\Inertia;
 use App\Models\Product;
 use App\Models\Sale;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // ¡Importante! Para transacciones
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException; // Para errores de stock
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
@@ -126,5 +126,41 @@ class SaleController extends Controller
 
         // 'stream' abre el PDF en el navegador en lugar de descargarlo ('download')
         return $pdf->stream('ticket-'.$sale->id.'.pdf');
+    }
+
+    public function destroy(Sale $sale)
+    {
+        // 1. Validaciones de seguridad
+        if ($sale->status === 'cancelled') {
+            return redirect()->back()->with('error', 'Esta venta ya fue anulada.');
+        }
+
+        // Opcional: Impedir anular ventas de cajas cerradas
+        // if ($sale->cashRegister->status === 'closed') { ... }
+
+        try {
+            DB::transaction(function () use ($sale) {
+                
+                // 2. Devolver Stock
+                // Recorremos los items de la venta
+                foreach ($sale->items as $item) {
+                    $product = $item->product;
+                    if ($product) {
+                        $product->stock += $item->quantity; // Sumamos lo que se vendió
+                        $product->save();
+                    }
+                }
+
+                // 3. Marcar venta como anulada
+                $sale->update(['status' => 'cancelled']);
+
+                // Opcional: Si quieres guardar QUIÉN la anuló, podrías tener una columna 'cancelled_by'
+            });
+
+            return redirect()->back()->with('success', 'Venta anulada y stock restaurado.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al anular la venta: ' + $e->getMessage());
+        }
     }
 }

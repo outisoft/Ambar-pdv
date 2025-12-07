@@ -50,6 +50,19 @@ class CashRegisterController extends Controller
             ->firstOrFail();
 
         // AHORA SEPARAMOS LOS TOTALES
+        $systemSales = $register->sales()
+            ->where('status', '!=', 'cancelled') // <-- FILTRO CLAVE
+            ->sum('total');
+
+        $cashSales = $register->sales()
+            ->where('payment_method', 'cash')
+            ->where('status', '!=', 'cancelled') // <-- FILTRO CLAVE
+            ->sum('total');
+
+        $nonCashSales = $register->sales()
+            ->whereIn('payment_method', ['card', 'transfer'])
+            ->where('status', '!=', 'cancelled') // <-- FILTRO CLAVE
+            ->sum('total');
         
         // 1. Ventas TOTALES (Sistema)
         $totalSystemSales = $register->sales()->sum('total');

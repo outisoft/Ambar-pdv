@@ -15,10 +15,14 @@ class DashboardController extends Controller
         $today = Carbon::today();
 
         // 1. Total vendido HOY
-        $todaySales = Sale::whereDate('created_at', $today)->sum('total');
+        $todaySales = Sale::whereDate('created_at', $today)
+            ->where('status', '!=', 'cancelled') // <-- Ignorar anuladas
+            ->sum('total');
 
         // 2. Cantidad de ventas HOY
-        $todayTransactions = Sale::whereDate('created_at', $today)->count();
+        $todayTransactions = Sale::whereDate('created_at', $today)
+            ->where('status', '!=', 'cancelled') // <-- Ignorar anuladas
+            ->count();
 
         // 3. Datos para el gráfico (Últimos 7 días)
         // Esto agrupa las ventas por fecha y suma los totales
@@ -27,6 +31,7 @@ class DashboardController extends Controller
                 DB::raw('SUM(total) as total')
             )
             ->where('created_at', '>=', Carbon::now()->subDays(7))
+            ->where('status', '!=', 'cancelled') // <-- Ignorar anuladas
             ->groupBy('date')
             ->orderBy('date', 'asc')
             ->get();
