@@ -67,3 +67,8 @@ export interface Client {
     tax_id?: string;
     address?: string;
 }
+
+export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
+    auth: Auth;
+    [key: string]: unknown;
+};

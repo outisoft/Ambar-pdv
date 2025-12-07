@@ -4,6 +4,7 @@ import { PageProps, Product } from '@/types'; // Importamos el tipo Product
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { FileSpreadsheet, Plus } from 'lucide-react';
 
 // 1. Definimos las props que esta página espera recibir de Laravel
 type ProductIndexProps = PageProps & {
@@ -41,16 +42,31 @@ export default function Index({ auth, products }: ProductIndexProps) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+
+                    {/* ... (existing imports) */}
+
+                    {/* ... (inside component) */}
+
                     <div className="flex items-center justify-between gap-3">
                         <h2 className="text-xl leading-tight font-semibold text-gray-900 dark:text-gray-100">
                             Gestión de Productos
                         </h2>
-                        <Link
-                            href={route('products.create')}
-                            className="rounded-lg bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:bg-indigo-600 dark:hover:bg-indigo-500"
-                        >
-                            Crear Nuevo Producto
-                        </Link>
+                        <div className="flex items-center gap-2">
+                            <a
+                                href={route('products.export')}
+                                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none transition-colors"
+                            >
+                                <FileSpreadsheet className="h-4 w-4" />
+                                <span className="hidden sm:inline">Exportar Excel</span>
+                            </a>
+                            <Link
+                                href={route('products.create')}
+                                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-colors"
+                            >
+                                <Plus className="h-4 w-4" />
+                                <span className="hidden sm:inline">Crear Nuevo</span>
+                            </Link>
+                        </div>
                     </div>
                     <br />
                     <div className="rounded-xl border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-800">
@@ -73,11 +89,10 @@ export default function Index({ auth, products }: ProductIndexProps) {
                                                 </p>
                                             </div>
                                             <span
-                                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                                                    product.stock > 0
+                                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${product.stock > 0
                                                         ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
                                                         : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
-                                                }`}
+                                                    }`}
                                             >
                                                 Stock: {product.stock}
                                             </span>
@@ -134,11 +149,10 @@ export default function Index({ auth, products }: ProductIndexProps) {
                                             {products.map((product, i) => (
                                                 <tr
                                                     key={product.id}
-                                                    className={`transition hover:bg-indigo-50/70 dark:hover:bg-indigo-900/20 ${
-                                                        i % 2
+                                                    className={`transition hover:bg-indigo-50/70 dark:hover:bg-indigo-900/20 ${i % 2
                                                             ? 'bg-gray-50/40 dark:bg-gray-800'
                                                             : 'bg-white dark:bg-gray-800'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-gray-100">
                                                         {product.name}
@@ -148,12 +162,10 @@ export default function Index({ auth, products }: ProductIndexProps) {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <span
-                                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                                                                product.stock >
-                                                                0
+                                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${product.stock > 0
                                                                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
                                                                     : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
-                                                            }`}
+                                                                }`}
                                                         >
                                                             {product.stock}
                                                         </span>

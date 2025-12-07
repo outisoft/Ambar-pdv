@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Product; // <-- Importa el modelo
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Exports\ProductsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -90,6 +92,11 @@ class ProductController extends Controller
 
         // 3. Redirigimos
         return redirect()->route('products.index')->with('success', 'Producto actualizado correctamente.');
+    }
+
+    public function export() 
+    {
+        return Excel::download(new ProductsExport, 'inventario.xlsx');
     }
 
     /**
