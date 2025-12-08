@@ -25,9 +25,10 @@ class DatabaseSeeder extends Seeder
         );*/
 
         $this->call([
-            UserSeeder::class,
+            //UserSeeder::class,
             RoleSeeder::class,
-            ProductSeeder::class,
+            SaaSSeeder::class,
+            //ProductSeeder::class,
         ]);
 
         \App\Models\Setting::create([

@@ -23,6 +23,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'company_id',
+        'branch_id',
     ];
 
     /**
@@ -50,4 +52,6 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+    public function company() { return $this->belongsTo(Company::class); }
+    public function branch() { return $this->belongsTo(Branch::class); }
 }

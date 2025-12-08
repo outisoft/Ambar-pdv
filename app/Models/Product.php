@@ -25,4 +25,14 @@ class Product extends Model
         'price' => 'float', // O 'decimal:2'
         'stock' => 'integer',
     ];
+
+    // Un producto pertenece al catálogo de una empresa
+    public function company() { return $this->belongsTo(Company::class); }
+
+    // Un producto existe en muchas sucursales con diferente stock
+    public function branches() {
+        return $this->belongsToMany(Branch::class)
+                    ->withPivot('stock', 'min_stock')
+                    ->withTimestamps();
+    }
 }

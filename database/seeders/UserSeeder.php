@@ -17,6 +17,24 @@ class UserSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@admin.com',
             'password' => 'admin',
+            'company_id' => null, 
+            'branch_id' => null,
+        ]);
+
+        User::create([
+            'name' => 'Gerente',
+            'email' => 'gerente@gerente.com',
+            'password' => 'gerente',
+            'company_id' => 1, 
+            'branch_id' => null,
+        ]);
+
+        User::create([
+            'name' => 'Cajero',
+            'email' => 'cajero@cajero.com',
+            'password' => 'cajero',
+            'company_id' => 1, 
+            'branch_id' => 1,
         ]);
     }
 }

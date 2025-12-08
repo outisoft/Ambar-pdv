@@ -45,6 +45,11 @@ const mainNavItems: NavItem[] = [
 
 const footerNavItems: NavItem[] = [
     {
+        title: 'Users',
+        href: '/users',
+        icon: LayoutGrid,
+    },
+    {
         title: 'Settings',
         href: '/configuracion',
         icon: LayoutGrid,

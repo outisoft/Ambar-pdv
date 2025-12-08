@@ -19,4 +19,10 @@ class CashRegister extends Model
     {
         return $this->hasMany(Sale::class);
     }
+
+    // Relación: Una caja pertenece a un usuario
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
