@@ -14,7 +14,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { BookOpen, Folder, LayoutDashboard, LayoutGrid, Settings, UsersRound, Building2, MapPinHouse, History, Box, CreditCard } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -22,24 +22,24 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
-        icon: LayoutGrid,
+        icon: LayoutDashboard,
         roles: ['admin'],
     },
     {
         title: 'POS',
         href: '/pos',
-        icon: LayoutGrid,
+        icon: CreditCard,
     },
     {
         title: 'Products',
         href: '/products',
-        icon: LayoutGrid,
+        icon: Box,
         roles: ['admin'],
     },
     {
         title: 'Sales',
         href: '/sales',
-        icon: LayoutGrid,
+        icon: History,
     },
 ];
 
@@ -47,22 +47,22 @@ const footerNavItems: NavItem[] = [
     {
         title: 'Users',
         href: '/users',
-        icon: LayoutGrid,
+        icon: UsersRound,
     },
     {
         title: 'Companies',
         href: '/companies',
-        icon: LayoutGrid,
+        icon: Building2, //companies
     },
     {
         title: 'Branches',
         href: '/branches',
-        icon: LayoutGrid,
+        icon: MapPinHouse, //branches
     },
     {
         title: 'Settings',
         href: '/configuracion',
-        icon: LayoutGrid,
+        icon: Settings,
     },
 ];
 
