@@ -50,6 +50,16 @@ const footerNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
+        title: 'Companies',
+        href: '/companies',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Branches',
+        href: '/branches',
+        icon: LayoutGrid,
+    },
+    {
         title: 'Settings',
         href: '/configuracion',
         icon: LayoutGrid,

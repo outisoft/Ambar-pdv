@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Branch extends Model
 {
+    protected $fillable = [
+        'name',
+        'address',
+        'company_id',
+    ];
     // Relación muchos a muchos con productos, incluyendo el stock
     public function products() {
         return $this->belongsToMany(Product::class)
