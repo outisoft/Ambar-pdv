@@ -58,7 +58,7 @@ export default function Login({
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-sm"
+                                            className="ml-auto text-sm hover:text-[#FF750F] transition-colors"
                                             tabIndex={5}
                                         >
                                             Forgot password?
@@ -88,7 +88,7 @@ export default function Login({
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
+                                className="mt-4 w-full bg-[#FF750F] hover:bg-[#e0660d] text-white font-bold transition-all shadow-md hover:shadow-lg focus-visible:ring-[#FF750F]"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
@@ -101,7 +101,7 @@ export default function Login({
                         {canRegister && (
                             <div className="text-center text-sm text-muted-foreground">
                                 Don't have an account?{' '}
-                                <TextLink href={register()} tabIndex={5}>
+                                <TextLink href={register()} tabIndex={5} className="hover:text-[#FF750F] transition-colors font-medium">
                                     Sign up
                                 </TextLink>
                             </div>
