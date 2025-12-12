@@ -68,13 +68,19 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="sidebar">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
-                                <AppLogo />
+                            <Link href={dashboard()} prefetch className="flex items-center gap-3">
+                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#FF750F] to-[#FF4433] text-sidebar-primary-foreground">
+                                    <LayoutDashboard className="size-4" />
+                                </div>
+                                <div className="grid flex-1 text-left text-sm leading-tight">
+                                    <span className="truncate font-semibold">Ambar<span className="text-[#FF750F]">.</span></span>
+                                    <span className="truncate text-xs">Punto de Venta</span>
+                                </div>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -86,11 +92,8 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <div className="space-y-2">
-                    <ThemeSwitch />
-                    <NavFooter items={footerNavItems} className="mt-2" />
-                    <NavUser />
-                </div>
+                <NavFooter items={footerNavItems} />
+                <NavUser />
             </SidebarFooter>
         </Sidebar>
     );
