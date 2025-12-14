@@ -4,7 +4,26 @@ import { PageProps, Product } from '@/types'; // Importamos el tipo Product
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { FileSpreadsheet, Plus } from 'lucide-react';
+import { FileSpreadsheet, Plus, Search, MoreHorizontal, Pencil, Trash2, Package } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuLabel,
+    DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 
 // 1. Definimos las props que esta página espera recibir de Laravel
 type ProductIndexProps = PageProps & {
@@ -40,198 +59,132 @@ export default function Index({ auth, products }: ProductIndexProps) {
         <AuthenticatedLayout>
             <Head title="Productos" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-6 p-6">
 
-                    {/* ... (existing imports) */}
-
-                    {/* ... (inside component) */}
-
-                    <div className="flex items-center justify-between gap-3">
-                        <h2 className="text-xl leading-tight font-semibold text-gray-900 dark:text-gray-100">
-                            Gestión de Productos
-                        </h2>
-                        <div className="flex items-center gap-2">
-                            <a
-                                href={route('products.export')}
-                                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none transition-colors"
-                            >
-                                <FileSpreadsheet className="h-4 w-4" />
-                                <span className="hidden sm:inline">Exportar Excel</span>
-                            </a>
-                            <Link
-                                href={route('products.create')}
-                                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-colors"
-                            >
-                                <Plus className="h-4 w-4" />
-                                <span className="hidden sm:inline">Crear Nuevo</span>
-                            </Link>
-                        </div>
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                            Productos
+                        </h1>
+                        <p className="text-muted-foreground mt-1">
+                            Gestiona tu inventario y catálogo de productos.
+                        </p>
                     </div>
-                    <br />
-                    <div className="rounded-xl border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-800">
-                        {/* Contenido */}
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                            {/* Vista móvil: tarjetas */}
-                            <div className="grid gap-3 md:hidden">
-                                {products.map((product) => (
-                                    <div
-                                        key={product.id}
-                                        className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
-                                    >
-                                        <div className="flex items-start justify-between">
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                                    Nombre
-                                                </p>
-                                                <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                                    {product.name}
-                                                </p>
+                    <div className="flex gap-3">
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Buscar producto..."
+                                className="pl-9 w-full md:w-[250px]"
+                            />
+                        </div>
+                        <a href={route('products.export')}>
+                            <Button variant="outline" className="gap-2">
+                                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                                <span className="hidden sm:inline">Exportar</span>
+                            </Button>
+                        </a>
+                        <Link href={route('products.create')}>
+                            <button className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Nuevo Producto
+                            </button>
+                        </Link>
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="bg-card text-card-foreground rounded-xl border shadow-sm overflow-hidden">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                <TableHead className="w-[300px]">Producto</TableHead>
+                                <TableHead>Precio</TableHead>
+                                <TableHead>Stock</TableHead>
+                                <TableHead className="text-right">Acciones</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {products.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                                        No se encontraron productos en el inventario.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                products.map((product) => (
+                                    <TableRow key={product.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-lg bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-primary">
+                                                    <Package className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-foreground">{product.name}</div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        Code: <span className="font-mono">{product.barcode || 'N/A'}</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <span
-                                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${product.stock > 0
-                                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                                                        : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
-                                                    }`}
-                                            >
-                                                Stock: {product.stock}
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="font-semibold text-foreground">
+                                                ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
                                             </span>
-                                        </div>
-
-                                        <div className="mt-3">
-                                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                                Precio
-                                            </p>
-                                            <p className="font-semibold text-indigo-700 tabular-nums dark:text-indigo-300">
-                                                ${product.price}
-                                            </p>
-                                        </div>
-
-                                        <div className="mt-4 flex justify-end gap-3">
-                                            <a
-                                                href="#"
-                                                className="rounded-md px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
-                                            >
-                                                Editar
-                                            </a>
-                                            <a
-                                                href="#"
-                                                className="rounded-md px-3 py-1.5 text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-900/20"
-                                            >
-                                                Eliminar
-                                            </a>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Vista desktop: tabla */}
-                            <div className="hidden md:block">
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                        <thead className="sticky top-0 z-10 bg-gray-50/80 backdrop-blur dark:bg-gray-900/40">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-300">
-                                                    Nombre
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-300">
-                                                    Precio
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-300">
-                                                    Stock
-                                                </th>
-                                                <th className="px-6 py-3 text-right text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-300">
-                                                    Acciones
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                                            {products.map((product, i) => (
-                                                <tr
-                                                    key={product.id}
-                                                    className={`transition hover:bg-indigo-50/70 dark:hover:bg-indigo-900/20 ${i % 2
-                                                            ? 'bg-gray-50/40 dark:bg-gray-800'
-                                                            : 'bg-white dark:bg-gray-800'
-                                                        }`}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant={product.stock > 0 ? "outline" : "destructive"} className={product.stock > 0 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : ""}>
+                                                {product.stock} u.
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <Link href={route('products.edit', product.id)}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
+                                                        <Pencil className="w-4 h-4" />
+                                                    </Button>
+                                                </Link>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                    onClick={() => openDeleteModal(product)}
                                                 >
-                                                    <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                                        {product.name}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm whitespace-nowrap text-indigo-700 tabular-nums dark:text-indigo-300">
-                                                        ${product.price}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span
-                                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${product.stock > 0
-                                                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                                                                    : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
-                                                                }`}
-                                                        >
-                                                            {product.stock}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right whitespace-nowrap">
-                                                        <Link
-                                                            href={route(
-                                                                'products.edit',
-                                                                product.id,
-                                                            )}
-                                                            className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium text-indigo-600 ring-1 ring-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-300 dark:ring-indigo-400/40 dark:hover:bg-indigo-900/30"
-                                                        >
-                                                            Editar
-                                                        </Link>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                openDeleteModal(
-                                                                    product,
-                                                                )
-                                                            }
-                                                            className="ml-2 inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-300 dark:ring-rose-400/40 dark:hover:bg-rose-900/30"
-                                                        >
-                                                            Eliminar
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
                 </div>
             </div>
 
             {showDeleteModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-                    <div className="relative w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    <div className="relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-lg">
+                        <h3 className="text-lg font-semibold text-foreground">
                             Confirmar eliminación
                         </h3>
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        <p className="mt-2 text-sm text-muted-foreground">
                             ¿Seguro que deseas eliminar{' '}
-                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                            <span className="font-medium text-foreground">
                                 {productToDelete?.name}
                             </span>
                             ? Esta acción no se puede deshacer.
                         </p>
                         <div className="mt-6 flex justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={cancelDelete}
-                                className="rounded-md px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-300 hover:bg-gray-50 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700/60"
-                            >
+                            <Button variant="outline" onClick={cancelDelete}>
                                 Cancelar
-                            </button>
-                            <button
-                                type="button"
-                                onClick={confirmDelete}
-                                className="rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:outline-none dark:bg-rose-600 dark:hover:bg-rose-500"
-                            >
+                            </Button>
+                            <Button variant="destructive" onClick={confirmDelete}>
                                 Eliminar
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

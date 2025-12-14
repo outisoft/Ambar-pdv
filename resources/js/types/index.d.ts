@@ -42,12 +42,16 @@ export interface User {
     two_factor_enabled?: boolean;
     created_at: string;
     updated_at: string;
+    company?: { id: number; name: string };
+    branch?: { id: number; name: string };
     [key: string]: unknown; // This allows for additional properties...
 }
 
 export type Product = {
     id: number;
     name: string;
+    barcode?: string;
+    description?: string;
     price: number;
     stock: number;
     min_stock: number;

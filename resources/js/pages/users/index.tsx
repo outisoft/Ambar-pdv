@@ -1,11 +1,29 @@
-// resources/js/Pages/Users/Index.tsx
 import AuthenticatedLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
 import { PageProps, User } from '@/types';
-import { Plus, Pencil, Trash2, Shield, Building2, Store } from 'lucide-react';
+import { Plus, Pencil, Trash2, Shield, Building2, Store, Search, MoreHorizontal, User as UserIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge'; // Warning: Verify Badge existence or use custom span style if missing
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuLabel,
+    DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 
 // Extendemos el tipo User para incluir las relaciones que vienen del backend
-interface UserWithRelations extends User {
+interface UserWithRelations extends Omit<User, 'roles'> {
     roles: { name: string }[];
     branch?: { name: string };
     company?: { name: string };
@@ -14,7 +32,7 @@ interface UserWithRelations extends User {
 interface Props extends PageProps {
     users: {
         data: UserWithRelations[];
-        links: any[];
+        links: any[]; // Pagination links
     };
 }
 
@@ -26,180 +44,151 @@ export default function Index({ auth, users }: Props) {
         }
     };
 
-    const getRoleBadgeColor = (roleName: string) => {
+    const getRoleBadgeVariant = (roleName: string) => {
         switch (roleName) {
-            case 'super-admin': return 'bg-purple-100 text-purple-700 border-purple-200';
-            case 'gerente': return 'bg-blue-100 text-blue-700 border-blue-200';
-            case 'cajero': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-            default: return 'bg-gray-100 text-gray-700 border-gray-200';
+            case 'super-admin': return 'default'; // dark/primary
+            case 'gerente': return 'secondary'; // gray/secondary
+            case 'cajero': return 'outline'; // clear
+            default: return 'outline';
         }
     };
+
+    const getRoleBadgeColorClass = (roleName: string) => {
+        switch (roleName) {
+            case 'super-admin': return 'bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-100';
+            case 'gerente': return 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100';
+            case 'cajero': return 'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100';
+            default: return 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100';
+        }
+    }
+
 
     return (
         <AuthenticatedLayout>
             <Head title="Usuarios" />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-6 p-6">
 
-                    {/* Header */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-                                Gestión de Usuarios
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                Administra los accesos y roles del personal.
-                            </p>
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                            Usuarios
+                        </h1>
+                        <p className="text-muted-foreground mt-1">
+                            Administra los accesos y roles del equipo.
+                        </p>
+                    </div>
+                    <div className="flex gap-3">
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Buscar usuario..."
+                                className="pl-9 w-full md:w-[250px]"
+                            />
                         </div>
-                        <Link
-                            href={route('users.create')}
-                            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            <Plus className="h-5 w-5" />
-                            <span>Nuevo Usuario</span>
+                        <Link href={route('users.create')}>
+                            <button className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Nuevo Usuario
+                            </button>
                         </Link>
                     </div>
+                </div>
 
-                    {/* Content */}
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-xl border border-gray-200 dark:border-gray-700">
-
-                        {/* Mobile View (Cards) */}
-                        <div className="grid gap-4 p-4 sm:hidden">
-                            {users.data.map((user) => (
-                                <div key={user.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm flex flex-col gap-3">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-bold text-gray-900 dark:text-gray-100">{user.name}</h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
-                                        </div>
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getRoleBadgeColor(user.roles[0]?.name || '')}`}>
-                                            {user.roles[0]?.name || 'Sin rol'}
-                                        </span>
-                                    </div>
-
-                                    <div className="flex flex-col gap-1 text-sm text-gray-600 dark:text-gray-300">
-                                        {user.branch && (
-                                            <div className="flex items-center gap-2">
-                                                <Store className="w-4 h-4 text-gray-400" />
-                                                <span>{user.branch.name}</span>
+                {/* Content */}
+                <div className="bg-card text-card-foreground rounded-xl border shadow-sm overflow-hidden">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                <TableHead className="w-[300px]">Usuario</TableHead>
+                                <TableHead>Rol</TableHead>
+                                {auth.user.roles.includes('super-admin') && (
+                                    <TableHead>Empresa</TableHead>
+                                )}
+                                <TableHead>Sucursal</TableHead>
+                                <TableHead className="text-right">Acciones</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {users.data.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                        No se encontraron usuarios registrados.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                users.data.map((user) => (
+                                    <TableRow key={user.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                                    {user.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-foreground">{user.name}</div>
+                                                    <div className="text-xs text-muted-foreground">{user.email}</div>
+                                                </div>
                                             </div>
-                                        )}
-                                        {auth.user.roles.includes('super-admin') && user.company && (
-                                            <div className="flex items-center gap-2">
-                                                <Building2 className="w-4 h-4 text-gray-400" />
-                                                <span>{user.company.name}</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex justify-end gap-2 mt-2 border-t border-gray-100 dark:border-gray-700 pt-3">
-                                        <Link
-                                            href={route('users.edit', user.id)}
-                                            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
-                                        >
-                                            <Pencil className="w-4 h-4" /> Editar
-                                        </Link>
-                                        <button
-                                            onClick={() => handleDelete(user.id)}
-                                            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4" /> Eliminar
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Desktop View (Table) */}
-                        <div className="hidden sm:block overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead className="bg-gray-50 dark:bg-gray-900/50">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Usuario</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Rol</th>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRoleBadgeColorClass(user.roles[0]?.name || '')}`}>
+                                                <Shield className="w-3 h-3 mr-1" />
+                                                {user.roles[0]?.name || 'Sin rol'}
+                                            </span>
+                                        </TableCell>
                                         {auth.user.roles.includes('super-admin') && (
-                                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Empresa</th>
-                                        )}
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Sucursal</th>
-                                        <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    {users.data.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                                                No se encontraron usuarios registrados.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        users.data.map((user) => (
-                                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="flex items-center">
-                                                        <div className="flex-shrink-0 h-10 w-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-lg">
-                                                            {user.name.charAt(0).toUpperCase()}
-                                                        </div>
-                                                        <div className="ml-4">
-                                                            <div className="text-sm font-bold text-gray-900 dark:text-gray-100">{user.name}</div>
-                                                            <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
-                                                        </div>
+                                            <TableCell>
+                                                {user.company ? (
+                                                    <div className="flex items-center gap-2 text-sm text-foreground">
+                                                        <Building2 className="w-4 h-4 text-muted-foreground" />
+                                                        {user.company.name}
                                                     </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${getRoleBadgeColor(user.roles[0]?.name || '')}`}>
-                                                        <Shield className="w-3 h-3 mr-1" />
-                                                        {user.roles[0]?.name || 'Sin rol'}
-                                                    </span>
-                                                </td>
-
-                                                {auth.user.roles.includes('super-admin') && (
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                        {user.company ? (
-                                                            <div className="flex items-center gap-1.5">
-                                                                <Building2 className="w-4 h-4 text-gray-400" />
-                                                                {user.company.name}
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-gray-400 italic">---</span>
-                                                        )}
-                                                    </td>
+                                                ) : (
+                                                    <span className="text-muted-foreground italic text-xs">---</span>
                                                 )}
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                    {user.branch ? (
-                                                        <div className="flex items-center gap-1.5">
-                                                            <Store className="w-4 h-4 text-gray-400" />
-                                                            {user.branch.name}
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-gray-400 italic">Global / Ninguna</span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <div className="flex justify-end gap-3">
-                                                        <Link
-                                                            href={route('users.edit', user.id)}
-                                                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
-                                                            title="Editar"
-                                                        >
-                                                            <Pencil className="w-5 h-5" />
+                                            </TableCell>
+                                        )}
+                                        <TableCell>
+                                            {user.branch ? (
+                                                <div className="flex items-center gap-2 text-sm text-foreground">
+                                                    <Store className="w-4 h-4 text-muted-foreground" />
+                                                    {user.branch.name}
+                                                </div>
+                                            ) : (
+                                                <span className="text-muted-foreground italic text-xs">Global / Ninguna</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                                        <MoreHorizontal className="w-4 h-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href={route('users.edit', user.id)} className="cursor-pointer">
+                                                            <Pencil className="w-4 h-4 mr-2" /> Editar
                                                         </Link>
-                                                        <button
-                                                            onClick={() => handleDelete(user.id)}
-                                                            className="text-gray-400 hover:text-red-600 transition-colors"
-                                                            title="Eliminar"
-                                                        >
-                                                            <Trash2 className="w-5 h-5" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleDelete(user.id)}
+                                                        className="cursor-pointer text-destructive focus:text-destructive"
+                                                    >
+                                                        <Trash2 className="w-4 h-4 mr-2" /> Eliminar
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
                 </div>
             </div>
         </AuthenticatedLayout>

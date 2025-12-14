@@ -1,7 +1,8 @@
 import AuthenticatedLayout from '@/layouts/app-layout';
 import { Head, Link } from '@inertiajs/react';
-import { Building2, Store, ArrowLeft, Pencil, MapPin, Plus } from 'lucide-react';
+import { Building2, Store, ArrowLeft, Pencil, MapPin, Plus, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 interface Branch {
     id: number;
@@ -25,112 +26,105 @@ export default function Show({ company }: Props) {
         <AuthenticatedLayout>
             <Head title={`Empresa: ${company.name}`} />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+            <div className="flex flex-col gap-6 p-6">
 
-                    {/* Header / Company Details */}
-                    <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-8 border border-gray-100 dark:border-gray-700">
-                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                            <div className="flex items-center gap-6">
-                                {/* Logo */}
-                                <div className="h-24 w-24 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex items-center justify-center overflow-hidden shrink-0">
-                                    {company.logo_path ? (
-                                        <img
-                                            src={`/storage/${company.logo_path}`}
-                                            alt={company.name}
-                                            className="h-full w-full object-contain p-2"
-                                        />
-                                    ) : (
-                                        <Building2 className="h-10 w-10 text-gray-400" />
-                                    )}
-                                </div>
-
-                                {/* Info */}
-                                <div>
-                                    <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-                                        {company.name}
-                                    </h2>
-                                    <p className="text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
-                                        <span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                            ID: {company.id}
-                                        </span>
-                                        <span>•</span>
-                                        <span>{company.branches.length} Sucursales registradas</span>
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex items-center gap-3 w-full md:w-auto">
-                                <Link href={route('companies.index')}>
-                                    <Button variant="outline" className="w-full md:w-auto">
-                                        <ArrowLeft className="w-4 h-4 mr-2" /> Volver
-                                    </Button>
-                                </Link>
-                                <Link href={route('companies.edit', company.id)}>
-                                    <Button className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white">
-                                        <Pencil className="w-4 h-4 mr-2" /> Editar Empresa
-                                    </Button>
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Branches Section */}
+                {/* Header */}
+                <div className="flex items-center gap-4">
+                    <Link href={route('companies.index')}>
+                        <Button variant="ghost" size="icon">
+                            <ArrowLeft className="w-5 h-5" />
+                        </Button>
+                    </Link>
                     <div>
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                <Store className="w-5 h-5 text-indigo-500" /> Sucursales
-                            </h3>
-                            <Link href={route('branches.create', { company_id: company.id })}>
-                                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                                    <Plus className="w-4 h-4 mr-2" /> Nueva Sucursal
-                                </Button>
-                            </Link>
-                        </div>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                            {company.name}
+                        </h1>
+                        <p className="text-muted-foreground flex items-center gap-2 mt-1">
+                            Ref: #{company.id}
+                        </p>
+                    </div>
+                    <div className="ml-auto">
+                        <Link href={route('companies.edit', company.id)}>
+                            <Button className="bg-primary hover:bg-primary/90">
+                                <Pencil className="w-4 h-4 mr-2" /> Editar
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
 
-                        {company.branches.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {company.branches.map((branch) => (
-                                    <div
-                                        key={branch.id}
-                                        className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow"
-                                    >
-                                        <div className="flex items-start justify-between mb-4">
-                                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                                <Store className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                                            </div>
-                                            {/* Future: Branch actions dropdown */}
-                                        </div>
-                                        <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
-                                            {branch.name}
-                                        </h4>
-                                        {branch.address && (
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-start gap-2">
-                                                <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
-                                                {branch.address}
-                                            </p>
-                                        )}
-                                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-xs text-gray-500">
-                                            <span>ID: {branch.id}</span>
-                                            {/* Future: Link to branch details */}
-                                        </div>
-                                    </div>
-                                ))}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Main Info */}
+                    <div className="md:col-span-1 space-y-6">
+                        <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-6 text-center">
+                            <div className="h-32 w-32 mx-auto rounded-full bg-muted flex items-center justify-center overflow-hidden border mb-4">
+                                {company.logo_path ? (
+                                    <img
+                                        src={`/storage/${company.logo_path}`}
+                                        alt={company.name}
+                                        className="h-full w-full object-contain"
+                                    />
+                                ) : (
+                                    <Building2 className="h-12 w-12 text-muted-foreground" />
+                                )}
                             </div>
-                        ) : (
-                            <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center border border-dashed border-gray-300 dark:border-gray-700">
-                                <div className="bg-gray-50 dark:bg-gray-900/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Store className="w-8 h-8 text-gray-400" />
-                                </div>
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Sin sucursales</h3>
-                                <p className="text-gray-500 dark:text-gray-400 mt-1">
-                                    Esta empresa aún no tiene sucursales registradas.
-                                </p>
-                            </div>
-                        )}
+                            <h2 className="font-bold text-xl">{company.name}</h2>
+                            <p className="text-sm text-muted-foreground mt-1">{company.branches.length} Sucursales</p>
+                        </div>
                     </div>
 
+                    {/* Branches List */}
+                    <div className="md:col-span-2">
+                        <div className="bg-card text-card-foreground rounded-xl border shadow-sm">
+                            <div className="p-6 border-b flex items-center justify-between">
+                                <h3 className="font-semibold text-lg flex items-center gap-2">
+                                    <Store className="w-5 h-5 text-primary" /> Sucursales
+                                </h3>
+                                <Link href={route('branches.create', { company_id: company.id })}>
+                                    <Button size="sm" variant="secondary">
+                                        <Plus className="w-4 h-4 mr-2" /> Nueva Sucursal
+                                    </Button>
+                                </Link>
+                            </div>
+                            <div className="p-6">
+                                {company.branches.length > 0 ? (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {company.branches.map((branch) => (
+                                            <div
+                                                key={branch.id}
+                                                className="group flex flex-col justify-between rounded-lg border bg-muted/20 p-4 hover:border-primary/50 hover:bg-muted/40 transition-colors"
+                                            >
+                                                <div>
+                                                    <div className="flex items-center justify-between">
+                                                        <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                                                            {branch.name}
+                                                        </h4>
+                                                        <Link href={route('branches.show', branch.id)}>
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                                                                <ArrowLeft className="w-4 h-4 rotate-180" />
+                                                            </Button>
+                                                        </Link>
+                                                    </div>
+                                                    {branch.address ? (
+                                                        <p className="text-sm text-muted-foreground mt-2 flex items-start gap-1.5">
+                                                            <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                                                            {branch.address}
+                                                        </p>
+                                                    ) : (
+                                                        <p className="text-xs text-muted-foreground mt-2 italic">Sin dirección</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-10 text-muted-foreground">
+                                        <Store className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                                        <p>No hay sucursales registradas.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </AuthenticatedLayout>

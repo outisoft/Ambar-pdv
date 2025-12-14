@@ -18,12 +18,11 @@ class Product extends Model
         'name',
         'description',
         'price',
-        'stock',
+        'company_id', // Ensure this is also fillable as we are using it
     ];
 
     protected $casts = [
-        'price' => 'float', // O 'decimal:2'
-        'stock' => 'integer',
+        'price' => 'float',
     ];
 
     // Un producto pertenece al catálogo de una empresa

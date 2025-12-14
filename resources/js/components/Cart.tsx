@@ -3,7 +3,11 @@ import { CartItem, Client } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { FormEvent, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { User } from 'lucide-react';
+import { User, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Smartphone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { cn } from "@/lib/utils";
 
 interface Props {
     cartItems: CartItem[];
@@ -28,197 +32,206 @@ export default function Cart({
     const { data, setData, post, processing, errors } = useForm({
         items: cartItems,
         payment_method: 'cash',
-        client_id: '' as string | number, // Inicializamos vacío
+        client_id: '' as string | number,
     });
 
     useEffect(() => {
         setData('items', cartItems);
     }, [cartItems]);
 
-    const handlePaymentChange = (method: string) => {
-        setData('payment_method', method);
-    };
-
     const submit = (e: FormEvent) => {
         e.preventDefault();
         post(route('sales.store'), {
             onError: (formErrors) => {
-                if (formErrors.stock) {
-                    toast.error(formErrors.stock);
-                }
-                if (formErrors.general) {
-                    toast.error(formErrors.general);
-                }
+                if (formErrors.stock) toast.error(formErrors.stock);
+                if (formErrors.general) toast.error(formErrors.general);
             },
         });
     };
 
+    const handlePaymentChange = (method: string) => {
+        setData('payment_method', method);
+    };
+
     return (
-        <form
-            onSubmit={submit}
-            className="h-full rounded-xl border bg-white p-4 shadow-md flex flex-col"
-        >
-            <div className="mb-4 flex items-center justify-between border-b pb-3">
-                <h3 className="text-lg font-semibold text-gray-900">Carrito</h3>
-                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
-                    {cartItems.length} items
-                </span>
-            </div>
-
-            {/* SECCIÓN DE CLIENTE (Estratégica: Arriba) */}
-            <div className="mb-4">
-                <label className="mb-1 block text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cliente
-                </label>
-                <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <User className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <select
-                        className="block w-full rounded-lg border-gray-300 pl-10 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        value={data.client_id}
-                        onChange={(e) => setData('client_id', e.target.value)}
-                    >
-                        <option value="">-- Público General --</option>
-                        {clients.map((client) => (
-                            <option key={client.id} value={client.id}>
-                                {client.name}
-                            </option>
-                        ))}
-                    </select>
+        <Card className="h-full flex flex-col shadow-lg border-2 overflow-hidden">
+            <CardHeader className="bg-muted/50 p-4 pb-2">
+                <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                        <ShoppingCart className="w-5 h-5" /> Carrito
+                    </CardTitle>
+                    <Badge variant="secondary" className="font-mono">
+                        {cartItems.reduce((acc, item) => acc + item.quantity, 0)} items
+                    </Badge>
                 </div>
-            </div>
+            </CardHeader>
 
-            {/* LISTA DE ITEMS (Scrollable) */}
-            <div className="flex-1 overflow-y-auto pr-1 mb-4 min-h-0">
-                {cartItems.length === 0 ? (
-                    <div className="flex h-40 items-center justify-center rounded-lg border border-dashed bg-gray-50 text-gray-500">
-                        <p>Carrito vacío</p>
+            <CardContent className="flex-1 flex flex-col p-4 gap-4 min-h-0">
+                <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                        <User className="w-3 h-3" /> Cliente
+                    </label>
+                    {/* Native select for reliability and speed in high-interaction POS */}
+                    <div className="relative">
+                        <select
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            value={data.client_id}
+                            onChange={(e) => setData('client_id', e.target.value)}
+                        >
+                            <option value="">-- Público General --</option>
+                            {clients.map((client) => (
+                                <option key={client.id} value={client.id}>
+                                    {client.name} {client.tax_id ? `(${client.tax_id})` : ''}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                ) : (
-                    <div className="space-y-3">
-                        {cartItems.map((item) => (
-                            <div
-                                key={item.id}
-                                className="flex items-center justify-between rounded-lg border bg-white p-3 transition hover:bg-gray-50"
-                            >
-                                <div>
-                                    <p className="font-semibold text-gray-900 text-sm">
-                                        {item.name}
-                                    </p>
-                                    <div className="mt-1 flex items-center space-x-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                                            className="rounded-md border bg-white px-2 py-0.5 text-xs text-gray-700 hover:bg-gray-100"
-                                        >
-                                            –
-                                        </button>
-                                        <span className="min-w-[2ch] text-center text-sm text-gray-700 tabular-nums">
-                                            {item.quantity}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                                            disabled={item.quantity >= item.stock}
-                                            className="rounded-md border bg-white px-2 py-0.5 text-xs text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-                                        >
-                                            +
-                                        </button>
-                                    </div>
-                                    <p className="mt-0.5 text-xs text-gray-500">
-                                        ${item.price} c/u
-                                    </p>
-                                </div>
-                                <div className="flex items-center space-x-3">
-                                    <p className="font-bold text-gray-900 tabular-nums text-sm">
-                                        ${(item.price * item.quantity).toFixed(2)}
-                                    </p>
-                                    <button
-                                        type="button"
-                                        onClick={() => onRemoveFromCart(item.id)}
-                                        className="text-red-400 hover:text-red-600"
-                                    >
-                                        &times;
-                                    </button>
-                                </div>
+                </div>
+
+                <div className="flex-1 border rounded-md relative overflow-hidden bg-muted/20">
+                    <div className="absolute inset-0 overflow-y-auto p-2">
+                        {cartItems.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-50 gap-2">
+                                <ShoppingCart className="w-12 h-12" />
+                                <p className="text-sm font-medium">Carrito vacío</p>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {cartItems.map((item) => (
+                                    <div
+                                        key={item.id}
+                                        className="flex flex-col gap-2 rounded-lg border bg-background p-3 shadow-sm"
+                                    >
+                                        <div className="flex justify-between items-start gap-2">
+                                            <span className="font-medium text-sm line-clamp-2 leading-tight">
+                                                {item.name}
+                                            </span>
+                                            <span className="font-mono font-bold text-sm shrink-0">
+                                                ${(item.price * item.quantity).toFixed(2)}
+                                            </span>
+                                        </div>
 
-            {/* FOOTER DEL CARRITO (Método de pago y Totales) */}
-            <div className="border-t pt-3 mt-auto">
-                <div className="mb-3">
-                    <label className="mb-2 block text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 rounded-sm"
+                                                    onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                                                >
+                                                    <Minus className="w-3 h-3" />
+                                                </Button>
+                                                <span className="w-8 text-center text-sm font-mono font-medium tabular-nums">
+                                                    {item.quantity}
+                                                </span>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 rounded-sm"
+                                                    disabled={item.quantity >= item.stock}
+                                                    onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                                                >
+                                                    <Plus className="w-3 h-3" />
+                                                </Button>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-muted-foreground">
+                                                    ${item.price.toFixed(2)} c/u
+                                                </span>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                    onClick={() => onRemoveFromCart(item.id)}
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </CardContent>
+
+            <CardFooter className="flex-col gap-4 bg-muted/50 p-4 pt-2 border-t">
+                <div className="w-full space-y-2">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         Método de Pago
                     </label>
                     <div className="grid grid-cols-3 gap-2">
-                        <button
+                        <Button
                             type="button"
+                            variant={data.payment_method === 'cash' ? "default" : "outline"}
                             onClick={() => handlePaymentChange('cash')}
-                            className={`flex flex-col items-center justify-center rounded border p-2 text-xs transition ${data.payment_method === 'cash'
-                                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-500'
-                                    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                                }`}
+                            className={cn(
+                                "flex items-center justify-center gap-2 h-auto py-2 text-xs",
+                                data.payment_method === 'cash' && "bg-emerald-600 hover:bg-emerald-700"
+                            )}
                         >
-                            <span className="text-lg">💵</span>
-                            <span>Efectivo</span>
-                        </button>
-                        <button
+                            <Banknote className="w-3.5 h-3.5" /> Efectivo
+                        </Button>
+                        <Button
                             type="button"
+                            variant={data.payment_method === 'card' ? "default" : "outline"}
                             onClick={() => handlePaymentChange('card')}
-                            className={`flex flex-col items-center justify-center rounded border p-2 text-xs transition ${data.payment_method === 'card'
-                                    ? 'border-blue-500 bg-blue-50 text-blue-700 ring-1 ring-blue-500'
-                                    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                                }`}
+                            className={cn(
+                                "flex items-center justify-center gap-2 h-auto py-2 text-xs",
+                                data.payment_method === 'card' && "bg-blue-600 hover:bg-blue-700"
+                            )}
                         >
-                            <span className="text-lg">💳</span>
-                            <span>Tarjeta</span>
-                        </button>
-                        <button
+                            <CreditCard className="w-3.5 h-3.5" /> Tarjeta
+                        </Button>
+                        <Button
                             type="button"
+                            variant={data.payment_method === 'transfer' ? "default" : "outline"}
                             onClick={() => handlePaymentChange('transfer')}
-                            className={`flex flex-col items-center justify-center rounded border p-2 text-xs transition ${data.payment_method === 'transfer'
-                                    ? 'border-purple-500 bg-purple-50 text-purple-700 ring-1 ring-purple-500'
-                                    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                                }`}
+                            className={cn(
+                                "flex items-center justify-center gap-2 h-auto py-2 text-xs",
+                                data.payment_method === 'transfer' && "bg-purple-600 hover:bg-purple-700"
+                            )}
                         >
-                            <span className="text-lg">📱</span>
-                            <span>Transf.</span>
-                        </button>
+                            <Smartphone className="w-3.5 h-3.5" /> Transf.
+                        </Button>
                     </div>
                     {errors.payment_method && (
-                        <p className="mt-1 text-xs text-red-500">
-                            {errors.payment_method}
-                        </p>
+                        <p className="text-xs text-destructive font-medium">{errors.payment_method}</p>
                     )}
                 </div>
 
-                <div className="mb-3 flex items-center justify-between text-lg font-bold text-gray-900">
-                    <span>Total</span>
-                    <span className="tabular-nums">${total.toFixed(2)}</span>
+                <div className="w-full flex justify-between items-end">
+                    <span className="text-muted-foreground font-medium">Total a Pagar</span>
+                    <span className="text-3xl font-extrabold tracking-tight text-primary">
+                        ${total.toFixed(2)}
+                    </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                    <button
-                        type="submit"
-                        disabled={cartItems.length === 0 || processing}
-                        className="col-span-2 rounded-lg bg-black py-2.5 text-sm font-bold text-white shadow hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {processing ? 'Procesando...' : 'Cobrar'}
-                    </button>
-                    <button
+                <div className="grid grid-cols-4 gap-2 w-full">
+                    <Button
                         type="button"
+                        variant="outline"
                         onClick={onClearCart}
                         disabled={cartItems.length === 0 || processing}
-                        className="col-span-2 rounded-lg border border-gray-300 bg-white py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        className="col-span-1"
                     >
                         Cancelar
-                    </button>
+                    </Button>
+                    <Button
+                        onClick={submit}
+                        disabled={cartItems.length === 0 || processing}
+                        className="col-span-3 text-lg font-bold shadow-md"
+                        size="lg"
+                    >
+                        {processing ? 'Procesando...' : 'COBRAR'}
+                    </Button>
                 </div>
-            </div>
-        </form>
+            </CardFooter>
+        </Card>
     );
 }

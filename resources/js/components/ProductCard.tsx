@@ -1,5 +1,8 @@
 import { Product } from '@/types';
 import { Plus, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface Props {
     product: Product;
@@ -11,58 +14,49 @@ export default function ProductCard({ product, onAddToCart }: Props) {
     const isOutOfStock = product.stock === 0;
 
     return (
-        <div
-            className={`group flex flex-col justify-between rounded-lg border bg-white p-4 transition-all duration-200 hover:border-blue-600 hover:shadow-md ${isOutOfStock ? 'opacity-60 grayscale' : ''
-                }`}
-        >
-            <div>
-                {/* Header: Name and Price */}
-                <div className="flex justify-between items-start mb-2">
-                    <h4 className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight">
+        <Card className={`group flex flex-col justify-between transition-all duration-200 hover:border-primary hover:shadow-md ${isOutOfStock ? 'opacity-60' : ''}`}>
+            <CardHeader className="p-4 pb-2 space-y-2">
+                <div className="flex justify-between items-start gap-2">
+                    <h4 className="text-sm font-bold leading-tight line-clamp-2 min-h-[2.5rem]">
                         {product.name}
                     </h4>
-                    <div className="text-right">
-                        <span className="block text-lg font-extrabold text-gray-900">
-                            ${Number(product.price).toFixed(2)}
-                        </span>
-                    </div>
+                    <span className="text-lg font-extrabold text-primary shrink-0">
+                        ${Number(product.price).toFixed(2)}
+                    </span>
                 </div>
-
-                {/* Stock Status - Booking Style Urgency */}
-                <div className="mb-4 min-h-[1.5rem]">
+            </CardHeader>
+            <CardContent className="p-4 pt-0 pb-2">
+                <div className="min-h-[1.5rem] flex items-center">
                     {isOutOfStock ? (
-                        <span className="text-xs font-bold text-red-600 flex items-center gap-1">
+                        <Badge variant="destructive" className="text-[10px] px-1.5 h-5 gap-1">
                             <AlertCircle className="w-3 h-3" /> Agotado
-                        </span>
+                        </Badge>
                     ) : isLowStock ? (
-                        <span className="text-xs font-bold text-red-600 flex items-center gap-1 animate-pulse">
-                            <AlertCircle className="w-3 h-3" /> ¡Solo quedan {product.stock}!
-                        </span>
+                        <Badge variant="secondary" className="text-[10px] px-1.5 h-5 gap-1 text-orange-600 bg-orange-100 dark:bg-orange-900/20 dark:text-orange-400">
+                            <AlertCircle className="w-3 h-3" /> Solo {product.stock}
+                        </Badge>
                     ) : (
-                        <span className="text-xs font-medium text-green-600 flex items-center gap-1">
+                        <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                             <CheckCircle2 className="w-3 h-3" /> Disponible
-                        </span>
+                        </div>
                     )}
                 </div>
-            </div>
-
-            {/* Action Button */}
-            <button
-                onClick={() => onAddToCart(product)}
-                disabled={isOutOfStock}
-                className={`w-full rounded-md py-2 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${isOutOfStock
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
-                    }`}
-            >
-                {isOutOfStock ? (
-                    'No disponible'
-                ) : (
-                    <>
-                        Seleccionar <Plus className="w-4 h-4" />
-                    </>
-                )}
-            </button>
-        </div>
+            </CardContent>
+            <CardFooter className="p-3 pt-0">
+                <Button
+                    onClick={() => onAddToCart(product)}
+                    disabled={isOutOfStock}
+                    size="sm"
+                    className="w-full font-bold shadow-sm"
+                    variant={isOutOfStock ? "ghost" : "default"}
+                >
+                    {isOutOfStock ? 'Sin Stock' : (
+                        <>
+                            Agregar <Plus className="w-4 h-4 ml-1" />
+                        </>
+                    )}
+                </Button>
+            </CardFooter>
+        </Card>
     );
 }

@@ -39,8 +39,9 @@ class SaleController extends Controller
 
         // Verificar caja abierta ANTES de la transacción
         $register = \App\Models\CashRegister::where('user_id', Auth::id())
-                ->where('status', 'open')
-                ->first();
+            ->where('branch_id', Auth::user()->branch_id)
+            ->where('status', 'open')
+            ->first();
 
         if (!$register) {
             return redirect()->back()->withErrors(['general' => 'No tienes una caja abierta. Por favor, abre caja antes de realizar ventas.']);

@@ -1,7 +1,8 @@
 import AuthenticatedLayout from '@/layouts/app-layout';
 import { Head, Link } from '@inertiajs/react';
-import { Building2, Plus, Pencil, Trash2, MoreHorizontal } from 'lucide-react';
+import { Building2, Plus, Pencil, Trash2, MoreHorizontal, Search, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,143 +25,135 @@ export default function Index({ companies }: Props) {
         <AuthenticatedLayout>
             <Head title="Empresas" />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-6 p-6">
 
-                    {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-                                Empresas
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                Gestiona las empresas registradas en el sistema.
-                            </p>
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                            Empresas
+                        </h1>
+                        <p className="text-muted-foreground mt-1">
+                            Gestiona las entidades corporativas del sistema.
+                        </p>
+                    </div>
+                    <div className="flex gap-3">
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Buscar empresa..."
+                                className="pl-9 w-full md:w-[250px]"
+                            />
                         </div>
                         <Link href={route('companies.create')}>
-                            <Button className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all">
-                                <Plus className="w-4 h-4 mr-2" /> Nueva Empresa
-                            </Button>
+                            <button className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Nueva Empresa
+                            </button>
                         </Link>
                     </div>
+                </div>
 
-                    {/* Grid Content */}
-                    {companies.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {companies.map((company) => (
-                                <div
-                                    key={company.id}
-                                    className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-300 overflow-hidden"
-                                >
-                                    {/* Card Header / Banner Placeholder */}
-                                    <div className="h-24 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 flex items-center justify-center">
-                                        {company.logo_path ? (
+                {/* Grid Content */}
+                {companies.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {companies.map((company) => (
+                            <div
+                                key={company.id}
+                                className="group relative bg-card text-card-foreground rounded-xl border shadow-sm transition-all hover:shadow-md overflow-hidden"
+                            >
+                                {/* Card Header / Banner */}
+                                <div className="h-32 bg-muted/30 flex items-center justify-center border-b">
+                                    {company.logo_path ? (
+                                        <div className="h-20 w-20 rounded-xl bg-background shadow-sm p-2 flex items-center justify-center">
                                             <img
                                                 src={`/storage/${company.logo_path}`}
                                                 alt={company.name}
-                                                className="h-16 w-16 object-contain rounded-lg bg-white dark:bg-gray-800 p-1 shadow-sm"
+                                                className="h-full w-full object-contain"
                                             />
-                                        ) : (
-                                            <Building2 className="w-10 h-10 text-indigo-300 dark:text-indigo-700/50" />
-                                        )}
-                                    </div>
+                                        </div>
+                                    ) : (
+                                        <div className="h-20 w-20 rounded-xl bg-background shadow-sm flex items-center justify-center">
+                                            <Building2 className="w-10 h-10 text-muted-foreground/50" />
+                                        </div>
+                                    )}
+                                </div>
 
-                                    {/* Card Body */}
-                                    <div className="p-5">
-                                        <div className="flex items-start justify-between">
-                                            <div>
-                                                <Link href={route('companies.show', company.id)} className="block">
-                                                    <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                                        {company.name}
-                                                    </h3>
-                                                </Link>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                    ID: {company.id}
-                                                </p>
-                                            </div>
-
-                                            {/* Actions Dropdown */}
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                                                        <MoreHorizontal className="w-4 h-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href={route('companies.show', company.id)} className="flex items-center cursor-pointer">
-                                                            <Building2 className="w-4 h-4 mr-2 text-gray-500" /> Ver Detalles
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href={route('companies.edit', company.id)} className="flex items-center cursor-pointer">
-                                                            <Pencil className="w-4 h-4 mr-2 text-blue-500" /> Editar
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <Link
-                                                            href={route('companies.destroy', company.id)}
-                                                            method="delete"
-                                                            as="button"
-                                                            className="flex items-center cursor-pointer text-red-600 focus:text-red-600"
-                                                        >
-                                                            <Trash2 className="w-4 h-4 mr-2" /> Eliminar
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                {/* Card Body */}
+                                <div className="p-5">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <Link href={route('companies.show', company.id)} className="block">
+                                                <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
+                                                    {company.name}
+                                                </h3>
+                                            </Link>
+                                            <p className="text-xs text-muted-foreground mt-1 font-mono">
+                                                REF: {company.id.toString().padStart(4, '0')}
+                                            </p>
                                         </div>
 
-                                        {/* Footer / Stats (Placeholder for future) */}
-                                        <Link href={route('companies.show', company.id)} className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                                            <span>Ver detalles</span>
-                                            <ArrowRightIcon className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1" />
-                                        </Link>
+                                        {/* Actions Dropdown */}
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                                    <MoreHorizontal className="w-4 h-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem asChild>
+                                                    <Link href={route('companies.show', company.id)} className="cursor-pointer">
+                                                        <Building2 className="w-4 h-4 mr-2" /> Ver Detalles
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem asChild>
+                                                    <Link href={route('companies.edit', company.id)} className="cursor-pointer">
+                                                        <Pencil className="w-4 h-4 mr-2" /> Editar
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem asChild>
+                                                    <Link
+                                                        href={route('companies.destroy', company.id)}
+                                                        method="delete"
+                                                        as="button"
+                                                        className="cursor-pointer text-destructive focus:text-destructive"
+                                                    >
+                                                        <Trash2 className="w-4 h-4 mr-2" /> Eliminar
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </div>
+
+                                    {/* Footer */}
+                                    <Link href={route('companies.show', company.id)} className="mt-4 pt-4 border-t flex items-center justify-end text-xs text-primary font-medium hover:underline">
+                                        Gestionar Sucursales <ArrowRight className="w-3 h-3 ml-1" />
+                                    </Link>
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        // Empty State
-                        <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
-                            <div className="bg-gray-50 dark:bg-gray-900/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Building2 className="w-8 h-8 text-gray-400" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No hay empresas registradas</h3>
-                            <p className="text-gray-500 dark:text-gray-400 mt-1 max-w-sm mx-auto">
-                                Comienza registrando la primera empresa para gestionar sus sucursales y usuarios.
-                            </p>
-                            <div className="mt-6">
-                                <Link href={route('companies.create')}>
-                                    <Button>
-                                        <Plus className="w-4 h-4 mr-2" /> Crear Primera Empresa
-                                    </Button>
-                                </Link>
-                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    // Empty State
+                    <div className="text-center py-20 rounded-2xl border border-dashed">
+                        <div className="bg-muted/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Building2 className="w-8 h-8 text-muted-foreground" />
                         </div>
-                    )}
-                </div>
+                        <h3 className="text-lg font-medium text-foreground">No hay empresas registradas</h3>
+                        <p className="text-muted-foreground mt-1 max-w-sm mx-auto">
+                            Comienza registrando la primera empresa para gestionar sus sucursales y usuarios.
+                        </p>
+                        <div className="mt-6">
+                            <Link href={route('companies.create')}>
+                                <Button>
+                                    <Plus className="w-4 h-4 mr-2" /> Crear Primera Empresa
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                )}
             </div>
         </AuthenticatedLayout>
     );
-}
-
-function ArrowRightIcon(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="M5 12h14" />
-            <path d="m12 5 7 7-7 7" />
-        </svg>
-    )
 }

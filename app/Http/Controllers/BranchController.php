@@ -11,12 +11,18 @@ class BranchController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $branches = Branch::with('company')->latest()->get();
+        $user = $request->user();
+        $query = Branch::with('company')->latest();
+
+        // Si no es Super Admin (i.e. tiene company_id), filtrar
+        if ($user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
 
         return Inertia::render('branches/index', [
-            'branches' => $branches,
+            'branches' => $query->get(),
         ]);
     }
 

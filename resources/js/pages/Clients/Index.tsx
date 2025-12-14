@@ -1,34 +1,44 @@
-// resources/js/Pages/Products/Index.tsx
-import AuthenticatedLayout from '@/layouts/app-layout'; // Tu layout
-import { PageProps, Client } from '@/types'; // Importamos el tipo Product
+// resources/js/Pages/Clients/Index.tsx
+import AuthenticatedLayout from '@/layouts/app-layout';
+import { PageProps, Client } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { User, Plus, Search, Pencil, Trash2, Mail, Phone, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 
-// 1. Definimos las props que esta página espera recibir de Laravel
 type ClientIndexProps = PageProps & {
     clients: Client[];
 };
 
 export default function Index({ auth, clients }: ClientIndexProps) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [clientToDelete, setClientToDelete] = useState<Client | null>(
-        null,
-    );
+    const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
 
     const openDeleteModal = (client: Client) => {
         setClientToDelete(client);
         setShowDeleteModal(true);
     };
+
     const cancelDelete = () => {
         setShowDeleteModal(false);
         setClientToDelete(null);
     };
+
     const confirmDelete = () => {
         if (clientToDelete) {
             router.delete(route('clients.destroy', clientToDelete.id), {
-                onSuccess: () =>
-                    toast.success('Cliente eliminado correctamente.'),
+                onSuccess: () => toast.success('Cliente eliminado correctamente.'),
                 onError: () => toast.error('No se pudo eliminar el cliente.'),
                 onFinish: () => cancelDelete(),
             });
@@ -37,186 +47,143 @@ export default function Index({ auth, clients }: ClientIndexProps) {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Productos" />
+            <Head title="Clientes" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between gap-3">
-                        <h2 className="text-xl leading-tight font-semibold text-gray-900 dark:text-gray-100">
-                            Gestión de Clientes
-                        </h2>
-                        <Link
-                            href={route('clients.create')}
-                            className="rounded-lg bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:bg-indigo-600 dark:hover:bg-indigo-500"
-                        >
-                            Crear Nuevo Producto
+            <div className="flex flex-col gap-6 p-6">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                            Clientes
+                        </h1>
+                        <p className="text-muted-foreground mt-1">
+                            Gestiona tu base de datos de clientes.
+                        </p>
+                    </div>
+                    <div className="flex gap-3">
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Buscar cliente..."
+                                className="pl-9 w-full md:w-[250px]"
+                            />
+                        </div>
+                        <Link href={route('clients.create')}>
+                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Nuevo Cliente
+                            </Button>
                         </Link>
                     </div>
-                    <br />
-                    <div className="rounded-xl border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-800">
-                        {/* Contenido */}
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                            {/* Vista móvil: tarjetas */}
-                            <div className="grid gap-3 md:hidden">
-                                {clients.map((client) => (
-                                    <div
-                                        key={client.id}
-                                        className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
-                                    >
-                                        <div className="flex items-start justify-between">
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                                    Nombre
-                                                </p>
-                                                <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                                    {client.name}
-                                                </p>
+                </div>
+
+                {/* Content */}
+                <div className="bg-card text-card-foreground rounded-xl border shadow-sm overflow-hidden">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                <TableHead className="w-[300px]">Cliente</TableHead>
+                                <TableHead>Contacto</TableHead>
+                                <TableHead>Ubicación</TableHead>
+                                <TableHead className="text-right">Acciones</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {clients.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                                        No se encontraron clientes registrados.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                clients.map((client) => (
+                                    <TableRow key={client.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold">
+                                                    {client.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-foreground">{client.name}</div>
+                                                    {client.tax_id && (
+                                                        <div className="text-xs text-muted-foreground">
+                                                            RUT/DNI: {client.tax_id}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <span
-                                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${client.stock > 0
-                                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                                                        : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
-                                                    }`}
-                                            >
-                                                Stock: {client.stock}
-                                            </span>
-                                        </div>
-
-                                        <div className="mt-3">
-                                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                                Precio
-                                            </p>
-                                            <p className="font-semibold text-indigo-700 tabular-nums dark:text-indigo-300">
-                                                ${client.price}
-                                            </p>
-                                        </div>
-
-                                        <div className="mt-4 flex justify-end gap-3">
-                                            <a
-                                                href="#"
-                                                className="rounded-md px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
-                                            >
-                                                Editar
-                                            </a>
-                                            <a
-                                                href="#"
-                                                className="rounded-md px-3 py-1.5 text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-900/20"
-                                            >
-                                                Eliminar
-                                            </a>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Vista desktop: tabla */}
-                            <div className="hidden md:block">
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                        <thead className="sticky top-0 z-10 bg-gray-50/80 backdrop-blur dark:bg-gray-900/40">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-300">
-                                                    Nombre
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-300">
-                                                    Precio
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-300">
-                                                    Stock
-                                                </th>
-                                                <th className="px-6 py-3 text-right text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-300">
-                                                    Acciones
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                                            {clients.map((client, i) => (
-                                                <tr
-                                                    key={client.id}
-                                                    className={`transition hover:bg-indigo-50/70 dark:hover:bg-indigo-900/20 ${i % 2
-                                                            ? 'bg-gray-50/40 dark:bg-gray-800'
-                                                            : 'bg-white dark:bg-gray-800'
-                                                        }`}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col gap-1 text-sm">
+                                                {client.email && (
+                                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                                        <Mail className="w-3 h-3" /> {client.email}
+                                                    </div>
+                                                )}
+                                                {client.phone && (
+                                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                                        <Phone className="w-3 h-3" /> {client.phone}
+                                                    </div>
+                                                )}
+                                                {!client.email && !client.phone && <span className="text-muted-foreground italic">Sin contacto</span>}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            {client.address ? (
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    <MapPin className="w-3 h-3" /> {client.address}
+                                                </div>
+                                            ) : (
+                                                <span className="text-muted-foreground italic text-sm">--</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <Link href={route('clients.edit', client.id)}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
+                                                        <Pencil className="w-4 h-4" />
+                                                    </Button>
+                                                </Link>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                    onClick={() => openDeleteModal(client)}
                                                 >
-                                                    <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                                        {client.name}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm whitespace-nowrap text-indigo-700 tabular-nums dark:text-indigo-300">
-                                                        ${client.price}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span
-                                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${client.stock >
-                                                                    0
-                                                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                                                                    : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
-                                                                }`}
-                                                        >
-                                                            {client.stock}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right whitespace-nowrap">
-                                                        <Link
-                                                            href={route(
-                                                                'clients.edit',
-                                                                client.id,
-                                                            )}
-                                                            className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium text-indigo-600 ring-1 ring-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-300 dark:ring-indigo-400/40 dark:hover:bg-indigo-900/30"
-                                                        >
-                                                            Editar
-                                                        </Link>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                openDeleteModal(
-                                                                    client,
-                                                                )
-                                                            }
-                                                            className="ml-2 inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-300 dark:ring-rose-400/40 dark:hover:bg-rose-900/30"
-                                                        >
-                                                            Eliminar
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
                 </div>
             </div>
 
             {showDeleteModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-                    <div className="relative w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    <div className="relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-lg">
+                        <h3 className="text-lg font-semibold text-foreground">
                             Confirmar eliminación
                         </h3>
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                            ¿Seguro que deseas eliminar{' '}
-                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                        <p className="mt-2 text-sm text-muted-foreground">
+                            ¿Seguro que deseas eliminar a{' '}
+                            <span className="font-medium text-foreground">
                                 {clientToDelete?.name}
                             </span>
                             ? Esta acción no se puede deshacer.
                         </p>
                         <div className="mt-6 flex justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={cancelDelete}
-                                className="rounded-md px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-300 hover:bg-gray-50 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700/60"
-                            >
+                            <Button variant="outline" onClick={cancelDelete}>
                                 Cancelar
-                            </button>
-                            <button
-                                type="button"
-                                onClick={confirmDelete}
-                                className="rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:outline-none dark:bg-rose-600 dark:hover:bg-rose-500"
-                            >
+                            </Button>
+                            <Button variant="destructive" onClick={confirmDelete}>
                                 Eliminar
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

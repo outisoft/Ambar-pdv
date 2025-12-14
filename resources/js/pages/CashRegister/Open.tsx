@@ -1,6 +1,11 @@
 import AuthenticatedLayout from '@/layouts/app-layout';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DollarSign, LockOpen } from 'lucide-react';
 
 export default function Open({ auth }: any) {
     const { data, setData, post, processing, errors } = useForm({
@@ -13,86 +18,57 @@ export default function Open({ auth }: any) {
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <h2 className="text-xl leading-tight font-semibold text-gray-900">
-                    Apertura de Caja
-                </h2>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="Abrir Caja" />
 
-            <div className="py-12">
-                <div className="mx-auto w-full max-w-lg px-4 sm:px-6 lg:px-8">
-                    <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl">
-                        <div className="bg-neutral-900 px-6 py-4 text-white">
-                            <div className="flex items-center gap-3">
-                                <span className="text-4xl leading-none">
-                                    🔓
-                                </span>
-                                <div>
-                                    <p className="text-sm tracking-wide text-neutral-300 uppercase">
-                                        Iniciar turno
-                                    </p>
-                                    <h3 className="text-lg font-semibold">
-                                        Apertura de caja
-                                    </h3>
-                                </div>
-                            </div>
+            <div className="flex min-h-[80vh] items-center justify-center p-4">
+                <Card className="w-full max-w-md shadow-xl border-t-4 border-t-primary">
+                    <CardHeader className="text-center space-y-2">
+                        <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-2">
+                            <LockOpen className="w-8 h-8 text-primary" />
                         </div>
-
-                        <div className="px-6 py-8">
-                            <p className="mb-6 text-sm text-neutral-500">
-                                Ingresa el monto inicial en efectivo para
-                                registrar la apertura de la caja y comenzar el
-                                turno.
-                            </p>
-
-                            <form onSubmit={submit} className="space-y-5">
-                                <div>
-                                    <label
-                                        htmlFor="initial_amount"
-                                        className="mb-2 block text-sm font-medium text-neutral-700"
-                                    >
-                                        Monto inicial ($)
-                                    </label>
-                                    <input
+                        <CardTitle className="text-2xl font-bold">Apertura de Caja</CardTitle>
+                        <CardDescription>
+                            Ingresa el monto inicial para comenzar el turno.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={submit} className="space-y-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="initial_amount" className="text-base">
+                                    Monto inicial en efectivo
+                                </Label>
+                                <div className="relative">
+                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                    <Input
                                         id="initial_amount"
                                         type="number"
                                         step="0.01"
                                         min="0"
                                         value={data.initial_amount}
-                                        onChange={(e) =>
-                                            setData(
-                                                'initial_amount',
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="w-full rounded-lg border border-neutral-300 bg-white py-3 text-center text-xl text-neutral-900 shadow-sm transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/20 focus:outline-none"
+                                        onChange={(e) => setData('initial_amount', e.target.value)}
+                                        className="pl-10 text-lg h-12"
                                         placeholder="0.00"
                                         autoFocus
                                     />
-                                    {errors.initial_amount && (
-                                        <p className="mt-2 text-xs font-medium text-rose-600">
-                                            {errors.initial_amount}
-                                        </p>
-                                    )}
                                 </div>
+                                {errors.initial_amount && (
+                                    <p className="text-sm font-medium text-destructive">
+                                        {errors.initial_amount}
+                                    </p>
+                                )}
+                            </div>
 
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="w-full rounded-lg bg-neutral-900 px-4 py-3 text-sm font-semibold tracking-wide text-white uppercase transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
-                                >
-                                    {processing
-                                        ? 'Abriendo...'
-                                        : 'Abrir caja y comenzar'}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+                            <Button
+                                type="submit"
+                                disabled={processing}
+                                className="w-full h-12 text-lg font-medium"
+                            >
+                                {processing ? 'Abriendo...' : 'Abrir Caja y Comenzar'}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
             </div>
         </AuthenticatedLayout>
     );

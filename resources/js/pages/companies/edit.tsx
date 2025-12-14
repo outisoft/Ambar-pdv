@@ -4,6 +4,8 @@ import { FormEvent, useState } from 'react';
 import { Building2, Save, ArrowLeft, Upload, Image as ImageIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 interface Company {
     id: number;
@@ -48,117 +50,116 @@ export default function Edit({ company }: Props) {
         <AuthenticatedLayout>
             <Head title="Editar Empresa" />
 
-            <div className="py-12">
-                <div className="max-w-3xl mx-auto sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-6 p-6">
 
-                    {/* Header with Back Button */}
-                    <div className="mb-6 flex items-center justify-between">
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-                                Editar Empresa
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                Actualiza los datos de la empresa.
-                            </p>
-                        </div>
-                        <Link
-                            href={route('companies.index')}
-                            className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4" /> Volver
-                        </Link>
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                            Editar Empresa
+                        </h1>
+                        <p className="text-muted-foreground mt-1">
+                            Actualiza los detalles de la empresa #{company.id}.
+                        </p>
                     </div>
+                    <Link href={route('companies.index')}>
+                        <Button variant="outline" size="sm">
+                            <ArrowLeft className="w-4 h-4 mr-2" /> Volver
+                        </Button>
+                    </Link>
+                </div>
 
-                    <div className="bg-white dark:bg-gray-800 shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <form onSubmit={submit} className="divide-y divide-gray-100 dark:divide-gray-700">
+                <div className="max-w-2xl mx-auto w-full">
+                    <form onSubmit={submit} className="bg-card text-card-foreground rounded-xl border shadow-sm">
+                        <div className="p-6">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                    <Building2 className="w-5 h-5 text-primary" />
+                                </div>
+                                <div>
+                                    <h2 className="font-semibold text-lg">Datos de la Empresa</h2>
+                                    <p className="text-sm text-muted-foreground">Información legal e identidad.</p>
+                                </div>
+                            </div>
 
-                            {/* Section 1: Company Info */}
-                            <div className="p-8 space-y-6">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
-                                        <Building2 className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Datos de la Empresa</h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">Información básica e identidad visual.</p>
-                                    </div>
+                            <div className="space-y-6">
+                                {/* Name */}
+                                <div className="space-y-2">
+                                    <Label>Nombre de la Empresa</Label>
+                                    <Input
+                                        placeholder="Ej. Mi Empresa S.A."
+                                        value={data.name}
+                                        onChange={e => setData('name', e.target.value)}
+                                    />
+                                    {errors.name && <p className="text-destructive text-sm font-medium mt-1">{errors.name}</p>}
                                 </div>
 
-                                <div className="space-y-6">
-                                    <div className="space-y-2">
-                                        <Label>Nombre de la Empresa</Label>
-                                        <Input
-                                            type="text"
-                                            placeholder="Ej. Mi Empresa S.A."
-                                            value={data.name}
-                                            onChange={e => setData('name', e.target.value)}
-                                        />
-                                        {errors.name && <p className="text-red-500 text-xs font-medium flex items-center gap-1 mt-1">⚠️ {errors.name}</p>}
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label>Logotipo</Label>
-                                        <div className="flex items-center gap-6">
-                                            {/* Preview Circle */}
-                                            <div className="shrink-0">
-                                                <div className="h-24 w-24 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center bg-gray-50 dark:bg-gray-900 overflow-hidden relative">
-                                                    {preview ? (
-                                                        <img src={preview} alt="Logo preview" className="h-full w-full object-contain" />
-                                                    ) : (
-                                                        <ImageIcon className="h-8 w-8 text-gray-400" />
-                                                    )}
-                                                </div>
+                                {/* Logo Upload */}
+                                <div className="space-y-2">
+                                    <Label>Logotipo Corporativo</Label>
+                                    <div className="flex items-start gap-6 p-4 border rounded-lg bg-muted/20">
+                                        {/* Preview */}
+                                        <div className="shrink-0">
+                                            <div className="h-24 w-24 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-background overflow-hidden relative">
+                                                {preview ? (
+                                                    <img src={preview} alt="Logo preview" className="h-full w-full object-contain" />
+                                                ) : (
+                                                    <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                                                )}
                                             </div>
+                                        </div>
 
-                                            {/* Upload Button */}
-                                            <div className="flex-1">
+                                        {/* Input */}
+                                        <div className="flex-1 space-y-2">
+                                            <div className="flex items-center gap-3">
                                                 <label
                                                     htmlFor="logo-upload"
-                                                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                                    className="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-4 py-2"
                                                 >
-                                                    <Upload className="w-4 h-4" />
+                                                    <Upload className="w-4 h-4 mr-2" />
                                                     Cambiar Imagen
                                                 </label>
-                                                <input
-                                                    id="logo-upload"
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                    onChange={handleFileChange}
-                                                />
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                                    PNG, JPG o SVG. Máximo 2MB.
-                                                </p>
-                                                {errors.logo && <p className="text-red-500 text-xs font-medium flex items-center gap-1 mt-1">⚠️ {errors.logo}</p>}
+                                                {preview && (
+                                                    <Button variant="ghost" size="sm" type="button" onClick={() => {
+                                                        setData('logo', null);
+                                                        setPreview(null);
+                                                    }}>
+                                                        Quitar
+                                                    </Button>
+                                                )}
                                             </div>
+                                            <input
+                                                id="logo-upload"
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={handleFileChange}
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                Formato PNG, JPG o SVG. Máximo 2MB. Se recomienda fondo transparente.
+                                            </p>
+                                            {errors.logo && <p className="text-destructive text-sm font-medium mt-1">{errors.logo}</p>}
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Footer Actions */}
-                            <div className="px-8 py-6 bg-gray-50 dark:bg-gray-900/50 flex items-center justify-end gap-4">
-                                <Link
-                                    href={route('companies.index')}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                                >
-                                    Cancelar
-                                </Link>
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="inline-flex items-center gap-2 px-6 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {processing ? 'Guardando...' : (
-                                        <>
-                                            <Save className="w-4 h-4" /> Actualizar Empresa
-                                        </>
-                                    )}
-                                </button>
-                            </div>
+                        <Separator />
 
-                        </form>
-                    </div>
+                        <div className="p-6 bg-muted/20 flex justify-end gap-3">
+                            <Link href={route('companies.index')}>
+                                <Button variant="ghost">Cancelar</Button>
+                            </Link>
+                            <Button type="submit" disabled={processing} className="bg-primary hover:bg-primary/90">
+                                {processing ? 'Guardando...' : (
+                                    <>
+                                        <Save className="w-4 h-4 mr-2" /> Actualizar Empresa
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </AuthenticatedLayout>

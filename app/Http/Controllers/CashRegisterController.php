@@ -13,8 +13,16 @@ class CashRegisterController extends Controller
     // 1. Mostrar formulario de apertura (si no hay caja abierta)
     public function create()
     {
-        // Verificar si YA tiene una abierta para no dejarle abrir otra
-        $openRegister = CashRegister::where('user_id', Auth::id())
+        $user = Auth::user();
+
+        // VALIDACIÓN: El usuario debe tener sucursal asignada para abrir caja
+        if (!$user->branch_id) {
+            abort(403, 'No tienes una sucursal asignada para abrir caja.');
+        }
+
+        // VERIFICAR SI YA TIENE CAJA ABIERTA EN *ESTA* SUCURSAL
+        $openRegister = CashRegister::where('user_id', $user->id)
+            ->where('branch_id', $user->branch_id) // <-- FILTRO CLAVE
             ->where('status', 'open')
             ->first();
 
@@ -34,6 +42,7 @@ class CashRegisterController extends Controller
 
         CashRegister::create([
             'user_id' => Auth::id(),
+            'branch_id' => Auth::user()->branch_id,
             'initial_amount' => $request->initial_amount,
             'opened_at' => Carbon::now(),
             'status' => 'open',
@@ -45,10 +54,12 @@ class CashRegisterController extends Controller
     // 3. Cerrar Caja (Mostrar resumen y pedir conteo)
     public function close()
     {
-        $register = CashRegister::where('user_id', Auth::id())
+        $user = Auth::user();
+        $register = CashRegister::where('user_id', $user->id)
+            ->where('branch_id', $user->branch_id) // <-- FILTRO CLAVE
             ->where('status', 'open')
             ->firstOrFail();
-
+        
         // AHORA SEPARAMOS LOS TOTALES
         $systemSales = $register->sales()
             ->where('status', '!=', 'cancelled') // <-- FILTRO CLAVE

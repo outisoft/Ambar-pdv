@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/layouts/app-layout';
 import { Head, Link } from '@inertiajs/react';
 import { Store, Building2, ArrowLeft, Pencil, MapPin, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 interface Company {
     id: number;
@@ -26,91 +27,93 @@ export default function Show({ branch }: Props) {
         <AuthenticatedLayout>
             <Head title={`Sucursal: ${branch.name}`} />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+            <div className="flex flex-col gap-6 p-6">
 
-                    {/* Header / Branch Details */}
-                    <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-8 border border-gray-100 dark:border-gray-700">
-                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                            <div className="flex items-center gap-6">
-                                {/* Icon */}
-                                <div className="h-24 w-24 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 flex items-center justify-center shrink-0">
-                                    <Store className="h-10 w-10 text-blue-600 dark:text-blue-400" />
-                                </div>
+                {/* Header */}
+                <div className="flex items-center gap-4">
+                    <Link href={route('branches.index')}>
+                        <Button variant="ghost" size="icon">
+                            <ArrowLeft className="w-5 h-5" />
+                        </Button>
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                            {branch.name}
+                        </h1>
+                        <p className="text-muted-foreground flex items-center gap-2 mt-1">
+                            <Building2 className="w-4 h-4" />
+                            {branch.company.name}
+                        </p>
+                    </div>
+                    <div className="ml-auto">
+                        <Link href={route('branches.edit', branch.id)}>
+                            <Button className="bg-primary hover:bg-primary/90">
+                                <Pencil className="w-4 h-4 mr-2" /> Editar
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
 
-                                {/* Info */}
-                                <div>
-                                    <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-                                        {branch.name}
-                                    </h2>
-                                    <div className="mt-2 space-y-1">
-                                        <p className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                                            <span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                                ID: {branch.id}
-                                            </span>
-                                        </p>
-                                        {branch.address && (
-                                            <p className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                                                <MapPin className="w-4 h-4 text-gray-400" />
-                                                {branch.address}
-                                            </p>
-                                        )}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Main Info Card */}
+                    <div className="md:col-span-2 bg-card text-card-foreground rounded-xl border shadow-sm h-fit">
+                        <div className="p-6">
+                            <h3 className="text-lg font-semibold mb-4">Información Detallada</h3>
+
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="p-2 rounded-lg bg-primary/10">
+                                        <MapPin className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-foreground">Dirección</p>
+                                        <p className="text-sm text-muted-foreground">{branch.address || 'Sin dirección registrada'}</p>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Actions */}
-                            <div className="flex items-center gap-3 w-full md:w-auto">
-                                <Link href={route('branches.index')}>
-                                    <Button variant="outline" className="w-full md:w-auto">
-                                        <ArrowLeft className="w-4 h-4 mr-2" /> Volver
-                                    </Button>
-                                </Link>
-                                <Link href={route('branches.edit', branch.id)}>
-                                    <Button className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white">
-                                        <Pencil className="w-4 h-4 mr-2" /> Editar Sucursal
-                                    </Button>
-                                </Link>
+                                <Separator />
+
+                                <div className="flex items-start gap-3">
+                                    <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/20">
+                                        <Store className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-foreground">Identificador del Sistema</p>
+                                        <p className="text-sm text-muted-foreground">ID: #{branch.id}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Company Section */}
-                    <div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-6">
-                            <Building2 className="w-5 h-5 text-indigo-500" /> Empresa Asociada
-                        </h3>
-
-                        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow max-w-md">
-                            <div className="flex items-center gap-4">
-                                <div className="h-16 w-16 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex items-center justify-center overflow-hidden shrink-0">
+                    {/* Company Sidebar */}
+                    <div className="bg-card text-card-foreground rounded-xl border shadow-sm h-fit">
+                        <div className="p-6">
+                            <h3 className="text-lg font-semibold mb-4">Empresa Asociada</h3>
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden border">
                                     {branch.company.logo_path ? (
                                         <img
                                             src={`/storage/${branch.company.logo_path}`}
                                             alt={branch.company.name}
-                                            className="h-full w-full object-contain p-1"
+                                            className="h-full w-full object-contain"
                                         />
                                     ) : (
-                                        <Building2 className="h-8 w-8 text-gray-400" />
+                                        <Building2 className="h-6 w-6 text-muted-foreground" />
                                     )}
                                 </div>
-                                <div className="flex-1">
-                                    <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                                        {branch.company.name}
-                                    </h4>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        ID Empresa: {branch.company.id}
-                                    </p>
+                                <div className="flex-1 overflow-hidden">
+                                    <h4 className="font-semibold truncate text-foreground">{branch.company.name}</h4>
+                                    <p className="text-xs text-muted-foreground">ID: {branch.company.id}</p>
                                 </div>
-                                <Link href={route('companies.show', branch.company.id)}>
-                                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
-                                        <ExternalLink className="w-5 h-5" />
-                                    </Button>
-                                </Link>
                             </div>
+                            <Link href={route('companies.show', branch.company.id)} className="w-full">
+                                <Button variant="outline" className="w-full">
+                                    Ver Empresa <ExternalLink className="w-4 h-4 ml-2" />
+                                </Button>
+                            </Link>
                         </div>
                     </div>
-
                 </div>
             </div>
         </AuthenticatedLayout>

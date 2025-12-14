@@ -35,7 +35,13 @@ class POSController extends Controller
         if ($user->company_id) {
             $productsQuery->where('company_id', $user->company_id);
         }
-        // Si es Super Admin, ve todos (o podrías forzarle a elegir empresa)
+
+        // NUEVO: Mostrar ÚNICAMENTE productos vinculados a la sucursal actual (Stock local)
+        if ($targetBranchId) {
+            $productsQuery->whereHas('branches', function($q) use ($targetBranchId) {
+                $q->where('branches.id', $targetBranchId);
+            });
+        }
 
         $products = $productsQuery->with(['branches' => function($q) use ($targetBranchId) {
                 $q->where('branches.id', $targetBranchId);
@@ -48,6 +54,15 @@ class POSController extends Controller
                 return $product;
             });
 
-        return Inertia::render('POS', ['products' => $products]);
+        // 4. Obtener Clientes
+        $clients = [];
+        if ($user->company_id) {
+            $clients = Client::where('company_id', $user->company_id)->get();
+        }
+
+        return Inertia::render('POS', [
+            'products' => $products,
+            'clients' => $clients,
+        ]);
     }
 }
