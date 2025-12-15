@@ -100,7 +100,7 @@ export default function Welcome({
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative grid lg:grid-cols-2 gap-12 items-center">
                     <div className="space-y-8 text-center lg:text-left">
                         <div className="inline-flex items-center px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-orange-600 text-xs font-semibold uppercase tracking-wide dark:bg-[#1D0002] dark:border-[#3E3E3A] dark:text-[#FF750F]">
-                            <Zap className="w-3 h-3 mr-1" /> Nuevo: Dashboard Actualizado
+                            <Zap className="w-3 h-3 mr-1" /> By Outisoft
                         </div>
                         <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-tight">
                             Gestiona tu negocio <br />

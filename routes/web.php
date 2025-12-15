@@ -1,12 +1,13 @@
 <?php
 
+use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SaleController;
-use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -42,11 +43,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('clients', ClientController::class);
+    Route::get('/configuracion', [SettingController::class, 'edit'])->name('configuracion.edit');
+    Route::post('/configuracion', [SettingController::class, 'update'])->name('configuracion.update');
     Route::resource('companies', CompanyController::class);
     Route::resource('branches', \App\Http\Controllers\BranchController::class);
     Route::resource('products', ProductController::class);
-    Route::get('/configuracion', [SettingController::class, 'edit'])->name('configuracion.edit');
-    Route::post('/configuracion', [SettingController::class, 'update'])->name('configuracion.update');
+    Route::resource('roles', RoleController::class);
     Route::resource('users', UserController::class);
     
 });

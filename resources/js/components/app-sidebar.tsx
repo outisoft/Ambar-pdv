@@ -14,7 +14,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutDashboard, LayoutGrid, Settings, UsersRound, Building2, MapPinHouse, History, Box, CreditCard } from 'lucide-react';
+import { BookOpen, Folder, LayoutDashboard, LayoutGrid, Settings, UsersRound, Building2, MapPinHouse, History, Box, CreditCard, Shield } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -48,6 +48,11 @@ const footerNavItems: NavItem[] = [
         title: 'Users',
         href: '/users',
         icon: UsersRound,
+    },
+    {
+        title: 'Roles & Permissions',
+        href: '/roles',
+        icon: Shield,
     },
     {
         title: 'Companies',
