@@ -1,3 +1,4 @@
+
 import { AppShell } from '@/components/app-shell';
 import { ConfirmDeleteModal } from '@/components/confirm-delete-modal';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -21,43 +22,30 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-interface BreadcrumbItem {
-    title: string;
-    href: string;
-}
-
-interface Role {
+interface Permission {
     id: number;
     name: string;
     guard_name: string;
-    users_count: number;
+    roles_count: number;
     created_at: string;
     updated_at: string;
 }
 
-interface RolesIndexProps {
-    roles: Role[];
+interface PermissionsIndexProps {
+    permissions: Permission[];
 }
 
-export default function RolesIndex({ roles }: RolesIndexProps) {
-    // Corrected state initialization
-    const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
+export default function PermissionsIndex({ permissions }: PermissionsIndexProps) {
+    const [permissionToDelete, setPermissionToDelete] = useState<Permission | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const breadcrumbs: BreadcrumbItem[] = [
-        {
-            title: 'Roles & Permissions',
-            href: '/roles',
-        },
-    ];
-
     const handleDelete = () => {
-        if (roleToDelete) {
+        if (permissionToDelete) {
             setIsDeleting(true);
-            router.delete(route('roles.destroy', roleToDelete.id), {
+            router.delete(route('permissions.destroy', permissionToDelete.id), {
                 onFinish: () => {
                     setIsDeleting(false);
-                    setRoleToDelete(null);
+                    setPermissionToDelete(null);
                 },
             });
         }
@@ -66,7 +54,7 @@ export default function RolesIndex({ roles }: RolesIndexProps) {
     return (
         <AuthenticatedLayout>
             <AppShell>
-                <Head title="Roles & Permissions" />
+                <Head title="Permissions" />
 
                 <div className="flex h-full flex-col space-y-4 p-8">
                     <div className="flex items-center justify-between">
@@ -83,7 +71,7 @@ export default function RolesIndex({ roles }: RolesIndexProps) {
                             href={route('roles.index')}
                             className={cn(
                                 'flex items-center space-x-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all',
-                                'bg-white shadow-sm dark:bg-neutral-700 dark:text-white'
+                                'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
                             )}
                         >
                             <Shield className="h-4 w-4" />
@@ -93,7 +81,7 @@ export default function RolesIndex({ roles }: RolesIndexProps) {
                             href={route('permissions.index')}
                             className={cn(
                                 'flex items-center space-x-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all',
-                                'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
+                                'bg-white shadow-sm dark:bg-neutral-700 dark:text-white'
                             )}
                         >
                             <Users className="h-4 w-4" />
@@ -103,35 +91,35 @@ export default function RolesIndex({ roles }: RolesIndexProps) {
 
                     <div className="space-y-4">
                         <div className="flex justify-end">
-                            <Link href={route('roles.create')} className={buttonVariants()}>
+                            <Link href={route('permissions.create')} className={buttonVariants()}>
                                 <Plus className="mr-2 h-4 w-4" />
-                                Create Role
+                                Create Permission
                             </Link>
                         </div>
                         <div className="rounded-md border">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Role Name</TableHead>
+                                        <TableHead>Permission Name</TableHead>
                                         <TableHead>Guard</TableHead>
-                                        <TableHead>Users</TableHead>
+                                        <TableHead>Roles</TableHead>
                                         <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {roles.map((role) => (
-                                        <TableRow key={role.id}>
-                                            <TableCell className="font-medium">{role.name}</TableCell>
+                                    {permissions.map((permission) => (
+                                        <TableRow key={permission.id}>
+                                            <TableCell className="font-medium">{permission.name}</TableCell>
                                             <TableCell>
                                                 <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
-                                                    {role.guard_name}
+                                                    {permission.guard_name}
                                                 </span>
                                             </TableCell>
-                                            <TableCell>{role.users_count}</TableCell>
+                                            <TableCell>{permission.roles_count}</TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end space-x-2">
                                                     <Link
-                                                        href={route('roles.edit', role.id)}
+                                                        href={route('permissions.edit', permission.id)}
                                                         className={cn(
                                                             buttonVariants({ variant: 'ghost', size: 'icon' }),
                                                             "h-8 w-8 text-muted-foreground hover:text-primary"
@@ -143,7 +131,7 @@ export default function RolesIndex({ roles }: RolesIndexProps) {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                                        onClick={() => setRoleToDelete(role)}
+                                                        onClick={() => setPermissionToDelete(permission)}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -158,13 +146,13 @@ export default function RolesIndex({ roles }: RolesIndexProps) {
                 </div>
 
                 <ConfirmDeleteModal
-                    open={!!roleToDelete}
-                    onOpenChange={() => setRoleToDelete(null)}
+                    open={!!permissionToDelete}
+                    onOpenChange={() => setPermissionToDelete(null)}
                     onConfirm={handleDelete}
-                    title="Delete Role?"
+                    title="Delete Permission?"
                     description={
                         <span>
-                            Are you sure you want to delete the role <span className="font-medium text-foreground">{roleToDelete?.name}</span>? This action cannot be undone.
+                            Are you sure you want to delete the permission <span className="font-medium text-foreground">{permissionToDelete?.name}</span>? This action cannot be undone.
                         </span>
                     }
                     processing={isDeleting}

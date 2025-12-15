@@ -4,6 +4,7 @@ use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RoleController;
@@ -47,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/configuracion', [SettingController::class, 'update'])->name('configuracion.update');
     Route::resource('companies', CompanyController::class);
     Route::resource('branches', \App\Http\Controllers\BranchController::class);
+    Route::resource('permissions', PermissionController::class);
     Route::resource('products', ProductController::class);
     Route::resource('roles', RoleController::class);
     Route::resource('users', UserController::class);

@@ -17,7 +17,10 @@ class RoleController extends Controller
 
     public function create()
     {
-        return Inertia::render('roles/create');
+        $permissions = \App\Models\Permission::all();
+        return Inertia::render('roles/create', [
+            'permissions' => $permissions
+        ]);
     }
 
     public function store(Request $request)
@@ -25,20 +28,30 @@ class RoleController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:roles,name',
             'guard_name' => 'nullable|string|max:255',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
-        \App\Models\Role::create([
+        $role = \App\Models\Role::create([
             'name' => $request->name,
             'guard_name' => $request->guard_name ?? 'web',
         ]);
+
+        if ($request->has('permissions')) {
+            $role->syncPermissions($request->permissions);
+        }
 
         return redirect()->route('roles.index')->with('success', 'Role created successfully.');
     }
 
     public function edit(\App\Models\Role $role)
     {
+        $permissions = \App\Models\Permission::all();
+        $role->load('permissions');
+
         return Inertia::render('roles/edit', [
-            'role' => $role
+            'role' => $role,
+            'permissions' => $permissions
         ]);
     }
 
@@ -47,12 +60,18 @@ class RoleController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
             'guard_name' => 'nullable|string|max:255',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role->update([
             'name' => $request->name,
             'guard_name' => $request->guard_name ?? 'web',
         ]);
+
+        if ($request->has('permissions')) {
+            $role->syncPermissions($request->permissions);
+        }
 
         return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
     }
