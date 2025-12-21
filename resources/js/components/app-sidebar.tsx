@@ -42,6 +42,11 @@ const mainNavItems: NavItem[] = [
         icon: History,
     },
     {
+        title: 'History',
+        href: '/cash-registers/history',
+        icon: History,
+    },
+    {
         title: 'Inventory',
         href: '/inventory',
         icon: Folder,

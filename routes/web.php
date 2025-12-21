@@ -43,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/cash-register/close', [CashRegisterController::class, 'close'])->name('cash_register.close');
     Route::post('/cash-register/close/{id}', [CashRegisterController::class, 'update'])->name('cash_register.update');
+    Route::get('/cash-registers/history', [CashRegisterController::class, 'history'])->name('cash_registers.history');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('clients', ClientController::class);
