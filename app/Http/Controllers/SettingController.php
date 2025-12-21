@@ -2,59 +2,67 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
-    // Solo necesitamos edit (mostrar) y update (guardar)
-    
     public function edit()
     {
-        // Obtenemos la primera (y única) fila
-        $setting = Setting::firstOrFail();
+        // 1. OBTENEMOS LA EMPRESA DEL USUARIO LOGUEADO
+        $user = Auth::user();
+
+        // Validar que sea Gerente o Admin con empresa asignada
+        if (!$user->company_id) {
+            abort(403, 'No tienes una empresa asignada para configurar.');
+        }
+
+        $company = $user->company; // Gracias a la relación belongsTo
 
         return Inertia::render('settings/Edit', [
-            'setting' => $setting,
-            // Enviamos la URL pública del logo si existe
-            'logoUrl' => $setting->logo_path ? Storage::url($setting->logo_path) : null,
+            'company' => $company,
+            'logoUrl' => $company->logo_path ? Storage::url($company->logo_path) : null,
         ]);
     }
 
     public function update(Request $request)
     {
-        $setting = Setting::firstOrFail();
+        $user = Auth::user();
+
+        if (!$user->company_id) abort(403);
+
+        $company = $user->company;
 
         $validated = $request->validate([
-            'shop_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255', // Antes era shop_name
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
             'tax_id' => 'nullable|string',
-            'logo' => 'nullable|image|max:1024', // Validamos que sea imagen max 1MB
+            'ticket_footer_message' => 'nullable|string',
+            'logo' => 'nullable|image|max:2048',
         ]);
 
-        // Manejo de subida de imagen
+        // Subida de Logo
         if ($request->hasFile('logo')) {
-            // 1. Borrar logo anterior si existe
-            if ($setting->logo_path) {
-                Storage::disk('public')->delete($setting->logo_path);
+            if ($company->logo_path) {
+                Storage::disk('public')->delete($company->logo_path);
             }
-            // 2. Guardar nuevo logo en carpeta 'logos' del disco público
-            $path = $request->file('logo')->store('logos', 'public');
-            $setting->logo_path = $path;
+            // Guardamos en carpeta por ID de empresa para orden
+            $path = $request->file('logo')->store('companies/' . $company->id, 'public');
+            $company->logo_path = $path;
         }
 
-        // Actualizamos el resto de campos
-        $setting->update([
-            'shop_name' => $validated['shop_name'],
+        $company->update([
+            'name' => $validated['name'],
             'address' => $validated['address'],
             'phone' => $validated['phone'],
             'tax_id' => $validated['tax_id'],
-            // El logo ya lo asignamos arriba si hubo cambio
+            'ticket_footer_message' => $validated['ticket_footer_message'],
+            // logo_path se actualizó arriba
         ]);
 
-        return redirect()->route('configuracion.edit')->with('success', 'Configuración actualizada.');
+        return back()->with('success', 'Datos de la empresa actualizados.');
     }
 }

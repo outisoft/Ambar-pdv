@@ -21,19 +21,20 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Edit({ auth, setting, logoUrl }: any) {
+export default function Edit({ auth, company, logoUrl }: any) {
     const { data, setData, post, processing, errors, recentlySuccessful } = useForm({
-        shop_name: setting.shop_name,
-        address: setting.address || '',
-        phone: setting.phone || '',
-        tax_id: setting.tax_id || '',
+        name: company.name || '',
+        address: company.address || '',
+        phone: company.phone || '',
+        tax_id: company.tax_id || '',
+        ticket_footer_message: company.ticket_footer_message || '',
         logo: null as File | null,
     });
 
     const [preview, setPreview] = useState(logoUrl);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const submit = (e: FormEvent) => {
+    const submit = (e: any) => {
         e.preventDefault();
         post(route('configuracion.update'), {
             preserveScroll: true,
@@ -109,13 +110,13 @@ export default function Edit({ auth, setting, logoUrl }: any) {
                             <div className="grid gap-2">
                                 <Label htmlFor="shop_name">Nombre del Negocio</Label>
                                 <Input
-                                    id="shop_name"
+                                    id="name"
                                     className="mt-1 block w-full"
-                                    value={data.shop_name}
-                                    onChange={(e) => setData('shop_name', e.target.value)}
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
                                     placeholder="Ej. Mi Tienda"
                                 />
-                                <InputError message={errors.shop_name} />
+                                <InputError message={errors.name} />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
