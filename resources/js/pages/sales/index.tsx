@@ -43,6 +43,10 @@ interface SalesProps extends PageProps {
 }
 
 export default function Index({ auth, sales }: SalesProps) {
+
+    const isSuperAdmin = auth.user.roles.includes('super-admin');
+    const isGerente = auth.user.roles.includes('gerente');
+
     const handleCancel = (saleId: number) => {
         if (confirm('¿Estás SEGURO de anular esta venta? El stock será devuelto.')) {
             router.delete(route('sales.destroy', saleId));
@@ -73,6 +77,11 @@ export default function Index({ auth, sales }: SalesProps) {
                             <TableRow className="bg-muted/50 hover:bg-muted/50">
                                 <TableHead className="w-[100px]">ID Venta</TableHead>
                                 <TableHead>Fecha</TableHead>
+                                {(isGerente || isSuperAdmin) && (
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                                        Origen
+                                    </th>
+                                )}
                                 <TableHead>Productos</TableHead>
                                 <TableHead className="text-right">Total</TableHead>
                                 <TableHead className="text-right">Acciones</TableHead>
@@ -106,6 +115,24 @@ export default function Index({ auth, sales }: SalesProps) {
                                                     </span>
                                                 </div>
                                             </TableCell>
+                                            {(isGerente || isSuperAdmin) && (
+                                                <td className="px-6 py-4 text-sm text-gray-600">
+                                                    {/* Si es Super Admin mostramos la Empresa */}
+                                                    {isSuperAdmin && (
+                                                        <div className="font-bold text-gray-800">
+                                                            {sale.cash_register?.user?.company?.name || 'Empresa ???'}
+                                                        </div>
+                                                    )}
+                                                    {/* Mostramos la Sucursal */}
+                                                    <div className="text-xs text-gray-500">
+                                                        🏪 {sale.cash_register?.branch?.name || 'Sucursal ???'}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400">
+                                                        👤 {sale.cash_register?.user?.name}
+                                                    </div>
+                                                </td>
+                                            )}
+
                                             <TableCell>
                                                 <div className="text-sm max-w-[300px] truncate" title={sale.items.map(i => `${i.quantity} x ${i.product?.name}`).join(', ')}>
                                                     {sale.items.slice(0, 2).map((item, idx) => (

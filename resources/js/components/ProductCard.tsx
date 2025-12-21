@@ -37,7 +37,7 @@ export default function ProductCard({ product, onAddToCart }: Props) {
                         </Badge>
                     ) : (
                         <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> Disponible
+                            <CheckCircle2 className="w-3 h-3" /> Disponible <span>({product.stock})</span>
                         </div>
                     )}
                 </div>

@@ -4,6 +4,7 @@ use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
@@ -22,7 +23,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified', 'check_register'])->group(function () {
-    
+
     // --- RUTAS PÚBLICAS PARA EMPLEADOS (Cajero y Admin) ---
     // No necesitan middleware de rol específico, o podrías poner 'role:cajero|admin'
     Route::get('/pos', [POSController::class, 'index'])->name('pos');
@@ -31,14 +32,14 @@ Route::middleware(['auth', 'verified', 'check_register'])->group(function () {
     Route::get('/sales/{sale}/ticket', [SaleController::class, 'ticket'])->name('sales.ticket');
     Route::delete('/sales/{sale}', [SaleController::class, 'destroy'])->name('sales.destroy');
     Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
-    
+
     // ... (Perfil, etc.)
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cash-register/open', [CashRegisterController::class, 'create'])->name('cash_register.create');
     Route::post('/cash-register/open', [CashRegisterController::class, 'store'])->name('cash_register.store');
-    
+
     Route::get('/cash-register/close', [CashRegisterController::class, 'close'])->name('cash_register.close');
     Route::post('/cash-register/close/{id}', [CashRegisterController::class, 'update'])->name('cash_register.update');
 
@@ -48,11 +49,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/configuracion', [SettingController::class, 'update'])->name('configuracion.update');
     Route::resource('companies', CompanyController::class);
     Route::resource('branches', \App\Http\Controllers\BranchController::class);
+    Route::get('/inventory', [App\Http\Controllers\InventoryController::class, 'index'])->name('inventory.index');
+    Route::post('/inventory/{product}/update', [App\Http\Controllers\InventoryController::class, 'update'])->name('inventory.update');
     Route::resource('permissions', PermissionController::class);
     Route::resource('products', ProductController::class);
     Route::resource('roles', RoleController::class);
     Route::resource('users', UserController::class);
-    
 });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';

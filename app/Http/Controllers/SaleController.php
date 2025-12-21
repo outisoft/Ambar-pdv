@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Inertia\Inertia;
@@ -14,10 +15,31 @@ class SaleController extends Controller
 {
     public function index()
     {
-        // Traemos las ventas + los items vendidos + el nombre del producto original
-        $sales = Sale::with(['items.product']) 
-            ->latest() // Ordenamos por la más reciente
-            ->paginate(10); // Paginamos de 10 en 10
+        $user = Auth::user();
+
+        // Iniciamos la consulta cargando relaciones para evitar lentitud (N+1)
+        // Cargamos 'cashRegister.branch' y 'cashRegister.user.company' para saber de dónde vino la venta
+        $query = Sale::with(['cashRegister.branch', 'cashRegister.user.company', 'client', 'items']);
+
+        // --- LÓGICA DE JERARQUÍA ---
+
+        if ($user->hasRole('super-admin')) {
+            // NIVEL 1: Ve todo. No aplicamos filtros.
+        } elseif ($user->hasRole('gerente')) {
+            // NIVEL 2: Ve solo ventas donde la caja pertenece a SU empresa
+            $query->whereHas('cashRegister.user', function ($q) use ($user) {
+                $q->where('company_id', $user->company_id);
+            });
+        } elseif ($user->hasRole('cajero')) {
+            // NIVEL 3: Ve solo ventas de SU sucursal actual
+            // (Usamos la sucursal de la caja registradora para filtrar)
+            $query->whereHas('cashRegister', function ($q) use ($user) {
+                $q->where('branch_id', $user->branch_id);
+            });
+        }
+
+        // Ordenamos por fecha descendente
+        $sales = $query->latest()->paginate(10);
 
         return Inertia::render('sales/index', [
             'sales' => $sales
@@ -47,52 +69,67 @@ class SaleController extends Controller
             return redirect()->back()->withErrors(['general' => 'No tienes una caja abierta. Por favor, abre caja antes de realizar ventas.']);
         }
 
-        // ¡¡CLAVE!! Usamos una transacción de BD.
-        // Si algo falla (ej. no hay stock), se revierte TODO.
-        // No se creará la venta, ni se descontará stock parcial.
+        $user = Auth::user();
+
+        // Validar que el usuario tenga sucursal (vital para saber de dónde restar)
+        if (!$user->branch_id) {
+            return back()->with('error', 'Error: No tienes una sucursal asignada para descontar inventario.');
+        }
+
         try {
-            return DB::transaction(function () use ($cartItems, $register, $request) {
-                
-                $serverTotal = 0;
-                $itemsToCreate = [];
+            DB::transaction(function () use ($request, $user) {
 
-                foreach ($cartItems as $item) {
-                    $product = Product::find($item['id']);
+                // 1. Obtener/Crear Venta (Esto sigue igual, pero asegurando la caja correcta)
+                $register = \App\Models\CashRegister::where('user_id', $user->id)
+                    ->where('branch_id', $user->branch_id)
+                    ->where('status', 'open')
+                    ->firstOrFail();
 
-                    // 2. Comprobar el stock
-                    if ($product->stock < $item['quantity']) {
-                        // Si no hay stock, lanzamos una excepción para revertir la transacción
-                        throw ValidationException::withMessages([
-                            'stock' => 'No hay suficiente stock para: ' . $product->name,
-                        ]);
-                    }
+                // Calculamos total (simplificado para el ejemplo)
+                $total = collect($request->items)->sum(fn($i) => $i['price'] * $i['quantity']);
 
-                    // 3. Calcular el total (del lado del servidor, NUNCA confiar en el cliente)
-                    $itemTotal = $product->price * $item['quantity'];
-                    $serverTotal += $itemTotal;
-
-                    // 4. Preparar el 'SaleItem'
-                    $itemsToCreate[] = [
-                        'product_id' => $product->id,
-                        'quantity' => $item['quantity'],
-                        'price' => $product->price, // Precio del producto en ESE momento
-                    ];
-
-                    // 5. Descontar el stock
-                    $product->stock -= $item['quantity'];
-                    $product->save();
-                }
-
-                // 6. Crear la Venta
-                $sale = Sale::create([
+                $sale = \App\Models\Sale::create([
+                    'user_id' => $user->id,
+                    'branch_id' => $user->branch_id, // Si añadiste esta columna a sales (recomendado)
                     'cash_register_id' => $register->id,
-                    'total' => $serverTotal,
-                    'payment_method' => $request->payment_method,
                     'client_id' => $request->client_id,
+                    'total' => $total,
+                    'payment_method' => $request->payment_method,
                 ]);
 
-                // 7. Insertar los SaleItems en la BD
-                $sale->items()->createMany($itemsToCreate);
+                // 2. PROCESAR ITEMS Y STOCK (AQUÍ ESTÁ EL CAMBIO IMPORTANTE)
+                foreach ($request->items as $item) {
+
+                    // A. Buscamos el registro de inventario en la SUCURSAL ACTUAL
+                    // Usamos lockForUpdate para evitar que dos cajeros vendan el mismo último producto a la vez
+                    $inventory = DB::table('branch_product')
+                        ->where('branch_id', $user->branch_id)
+                        ->where('product_id', $item['id'])
+                        ->lockForUpdate()
+                        ->first();
+
+                    // B. Verificamos si existe el producto en esta sucursal
+                    if (!$inventory) {
+                        throw new \Exception("El producto '{$item['name']}' no está registrado en esta sucursal.");
+                    }
+
+                    // C. Verificamos cantidad suficiente
+                    if ($inventory->stock < $item['quantity']) {
+                        throw new \Exception("Stock insuficiente para '{$item['name']}'. Disponibles: {$inventory->stock}");
+                    }
+
+                    // D. RESTAMOS EL STOCK (En la tabla pivote)
+                    DB::table('branch_product')
+                        ->where('id', $inventory->id) // Usamos el ID de la fila pivote para ser exactos
+                        ->decrement('stock', $item['quantity']);
+
+                    // E. Guardamos el detalle de la venta
+                    $sale->items()->create([
+                        'product_id' => $item['id'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                    ]);
+                }
 
                 // 8. Si todo salió bien, Inertia redirige (o podemos devolver OK)
                 // Redirigimos de vuelta al TPV con un mensaje de éxito.
@@ -100,7 +137,6 @@ class SaleController extends Controller
                     ->with('success', 'Venta procesada.')
                     ->with('last_sale_id', $sale->id);
             });
-
         } catch (ValidationException $e) {
             // Si atrapamos el error de stock, devolvemos el error a React
             return redirect()->back()->withErrors($e->errors());
@@ -123,45 +159,67 @@ class SaleController extends Controller
         // 80mm de ancho (aprox 226pt). El alto 'auto' es difícil en PDF,
         // así que ponemos uno muy alto o usamos formato estándar.
         // Para simplicidad, usaremos un formato custom estrecho.
-        $pdf->setPaper([0, 0, 226, 600], 'portrait'); 
+        $pdf->setPaper([0, 0, 226, 600], 'portrait');
 
         // 'stream' abre el PDF en el navegador en lugar de descargarlo ('download')
-        return $pdf->stream('ticket-'.$sale->id.'.pdf');
+        return $pdf->stream('ticket-' . $sale->id . '.pdf');
     }
 
     public function destroy(Sale $sale)
     {
-        // 1. Validaciones de seguridad
+        $user = Auth::user();
+
+        // 1. VALIDACIÓN DE SEGURIDAD POR JERARQUÍA
+
+        // Si es CAJERO: Solo puede anular si la venta es de su sucursal
+        if ($user->hasRole('cajero')) {
+            // Accedemos a la sucursal a través de la caja registradora
+            if ($sale->cashRegister->branch_id !== $user->branch_id) {
+                abort(403, 'No tienes permiso para anular ventas de otra sucursal.');
+            }
+        }
+
+        // Si es GERENTE: Solo puede anular si la venta es de su empresa
+        if ($user->hasRole('gerente')) {
+            if ($sale->cashRegister->user->company_id !== $user->company_id) {
+                abort(403, 'No tienes permiso para anular ventas de otra empresa.');
+            }
+        }
+
+        // 2. VALIDAR ESTADO
         if ($sale->status === 'cancelled') {
             return redirect()->back()->with('error', 'Esta venta ya fue anulada.');
         }
 
-        // Opcional: Impedir anular ventas de cajas cerradas
-        // if ($sale->cashRegister->status === 'closed') { ... }
-
         try {
             DB::transaction(function () use ($sale) {
-                
-                // 2. Devolver Stock
-                // Recorremos los items de la venta
+                // A. Devolver Stock (A LA SUCURSAL CORRECTA)
+                // Necesitamos saber a qué sucursal devolver el stock.
+                // Lo tomamos de la caja registradora donde se hizo la venta.
+                $branchId = $sale->cashRegister->branch_id;
+
                 foreach ($sale->items as $item) {
-                    $product = $item->product;
-                    if ($product) {
-                        $product->stock += $item->quantity; // Sumamos lo que se vendió
-                        $product->save();
+                    // Buscamos el inventario en esa sucursal específica
+                    $inventory = DB::table('branch_product')
+                        ->where('branch_id', $branchId)
+                        ->where('product_id', $item->product_id)
+                        ->first();
+
+                    if ($inventory) {
+                        // Devolvemos el stock
+                        DB::table('branch_product')
+                            ->where('id', $inventory->id)
+                            ->increment('stock', $item->quantity);
                     }
                 }
 
-                // 3. Marcar venta como anulada
+                // B. Marcar como anulada
                 $sale->update(['status' => 'cancelled']);
-
-                // Opcional: Si quieres guardar QUIÉN la anuló, podrías tener una columna 'cancelled_by'
             });
 
-            return redirect()->back()->with('success', 'Venta anulada y stock restaurado.');
-
+            return redirect()->back()->with('success', 'Venta anulada y stock restaurado a la sucursal de origen.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al anular la venta: ' + $e->getMessage());
+            return redirect()->back()->with('error', 'Error al anular: ' . $e->getMessage());
         }
     }
 }
