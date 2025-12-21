@@ -64,7 +64,7 @@ export default function Index({ auth, users }: Props) {
 
 
     return (
-        <AuthenticatedLayout>
+        <AuthenticatedLayout breadcrumbs={[{ title: 'Users', href: '/users' }]}>
             <Head title="Usuarios" />
 
             <div className="flex flex-col gap-6 p-6">

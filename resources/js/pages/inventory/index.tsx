@@ -78,7 +78,7 @@ export default function InventoryIndex({ auth, branches, selectedBranchId, produ
     const isCajero = auth.user.roles.includes('cajero');
 
     return (
-        <AuthenticatedLayout user={auth.user}>
+        <AuthenticatedLayout user={auth.user} breadcrumbs={[{ title: 'Inventario', href: '/inventory' }]}>
             <Head title="Inventario" />
 
             <div className="flex flex-col gap-6 p-6">

@@ -111,7 +111,7 @@ export default function POS({ auth, products, clients }: PosProps) {
     }, []);
 
     return (
-        <AuthenticatedLayout>
+        <AuthenticatedLayout breadcrumbs={[{ title: 'Punto de Venta', href: '/pos' }]}>
             <Head title="Punto de Venta" />
             <div className="h-[calc(100vh-65px)] flex flex-col p-4 gap-4 overflow-hidden">
                 {/* Top Bar */}

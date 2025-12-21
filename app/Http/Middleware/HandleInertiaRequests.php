@@ -38,26 +38,34 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $user = $request->user()?->loadMissing(['company:id,name', 'branch:id,name']);
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user() ? [
-                    // Enviamos los datos normales del usuario
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    // ↓↓↓ AÑADIMOS ESTO: Sus roles y permisos ↓↓↓
-                    'roles' => $request->user()->getRoleNames(), // Retorna array ['admin']
-                    'permissions' => $request->user()->getAllPermissions()->pluck('name'), // Retorna array ['ver dashboard', ...]
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'roles' => $user->getRoleNames(),
+                    'permissions' => $user->getAllPermissions()->pluck('name'),
+                    'company' => $user->company ? [
+                        'id' => $user->company->id,
+                        'name' => $user->company->name,
+                    ] : null,
+                    'branch' => $user->branch ? [
+                        'id' => $user->branch->id,
+                        'name' => $user->branch->name,
+                    ] : null,
                 ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
-                'success' => fn () => $request->session()->get('success'),
-                'error' => fn () => $request->session()->get('error'),
-                'last_sale_id' => fn () => $request->session()->get('last_sale_id'), // <--- ESTA LÍNEA ES VITAL
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
+                'last_sale_id' => fn() => $request->session()->get('last_sale_id'), // <--- ESTA LÍNEA ES VITAL
             ],
         ];
     }

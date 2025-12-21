@@ -1,7 +1,7 @@
 // resources/js/Pages/Dashboard.tsx
 import AuthenticatedLayout from '@/layouts/app-layout';
 import { PageProps } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import {
     BarElement,
     CategoryScale,
@@ -22,6 +22,8 @@ import {
     ShoppingCart
 } from 'lucide-react';
 import { Bar } from 'react-chartjs-2';
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 // 2. Registro de componentes de Chart.js
 ChartJS.register(
@@ -38,6 +40,13 @@ interface DashboardProps extends PageProps {
     todayTransactions: number;
     chartLabels: string[];
     chartData: number[];
+    recentSales: {
+        id: number;
+        client_name: string;
+        created_at: string;
+        total: number;
+        status: string;
+    }[];
 }
 
 export default function Dashboard({
@@ -46,6 +55,7 @@ export default function Dashboard({
     todayTransactions,
     chartLabels,
     chartData,
+    recentSales,
 }: DashboardProps) {
     const data = {
         labels: chartLabels,
@@ -121,10 +131,13 @@ export default function Dashboard({
                         </p>
                     </div>
                     <div className="flex gap-3">
-                        <button className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20">
+                        <Link
+                            href={route('pos')}
+                            className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20"
+                        >
                             <CreditCard className="w-4 h-4 mr-2" />
                             Nueva Venta
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
@@ -229,27 +242,53 @@ export default function Dashboard({
                     <div className="rounded-xl border bg-card p-6 shadow-sm flex flex-col h-full">
                         <h3 className="text-lg font-semibold text-foreground mb-4">Transacciones Recientes</h3>
                         <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-                            {[1, 2, 3, 4, 5].map((i) => (
-                                <div key={i} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors border border-transparent hover:border-border">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                                            <Users className="w-5 h-5" />
+                            {recentSales.length > 0 ? (
+                                recentSales.map((sale) => (
+                                    <div
+                                        key={sale.id}
+                                        className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors border border-transparent hover:border-border"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                                                <Users className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-foreground">
+                                                    {sale.client_name}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {formatDistanceToNow(new Date(sale.created_at), {
+                                                        addSuffix: true,
+                                                        locale: es,
+                                                    })}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-foreground">Cliente #{100 + i}</p>
-                                            <p className="text-xs text-muted-foreground">Hace {i * 10} min</p>
+                                        <div className="text-right">
+                                            <p className="text-sm font-bold text-foreground">
+                                                +$ {Number(sale.total).toFixed(2)}
+                                            </p>
+                                            <span
+                                                className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${sale.status === 'cancelled'
+                                                        ? 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/20 dark:text-red-400'
+                                                        : 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/20 dark:text-green-400'
+                                                    }`}
+                                            >
+                                                {sale.status === 'cancelled' ? 'Anulada' : 'Completada'}
+                                            </span>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-sm font-bold text-foreground">+$120.00</p>
-                                        <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/20 dark:text-green-400">Completado</span>
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <p className="text-sm text-muted-foreground">No hay transacciones recientes.</p>
+                            )}
                         </div>
-                        <button className="mt-4 w-full py-2 text-sm text-center text-muted-foreground hover:text-primary transition-colors font-medium">
+                        <Link
+                            href={route('sales.index')}
+                            className="mt-4 w-full py-2 text-sm text-center text-muted-foreground hover:text-primary transition-colors font-medium"
+                        >
                             Ver todas las transacciones
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>

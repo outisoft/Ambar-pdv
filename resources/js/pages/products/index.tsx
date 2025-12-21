@@ -56,7 +56,7 @@ export default function Index({ auth, products }: ProductIndexProps) {
     };
 
     return (
-        <AuthenticatedLayout>
+        <AuthenticatedLayout breadcrumbs={[{ title: 'Productos', href: '/products' }]}>
             <Head title="Productos" />
 
             <div className="flex flex-col gap-6 p-6">

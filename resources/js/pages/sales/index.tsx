@@ -54,7 +54,7 @@ export default function Index({ auth, sales }: SalesProps) {
     };
 
     return (
-        <AuthenticatedLayout>
+        <AuthenticatedLayout breadcrumbs={[{ title: 'Ventas', href: '/sales' }]}>
             <Head title="Historial de Ventas" />
             <div className="flex flex-col gap-6 p-6">
                 {/* Header */}
