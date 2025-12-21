@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Inertia\Inertia;
-use App\Models\Product;
+use App\Models\User;
+use App\Notifications\LowStockAlert; // <-- IMPORTANTE
+use Illuminate\Support\Facades\Notification;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -122,6 +124,25 @@ class SaleController extends Controller
                     DB::table('branch_product')
                         ->where('id', $inventory->id) // Usamos el ID de la fila pivote para ser exactos
                         ->decrement('stock', $item['quantity']);
+
+                    $newStock = $inventory->stock - $item['quantity'];
+
+                    if ($newStock <= $inventory->min_stock) {
+
+                        // 1. Buscamos el Producto y Sucursal completos para la notificación
+                        $productModel = \App\Models\Product::find($item['id']);
+                        $branchModel = \App\Models\Branch::find($user->branch_id);
+
+                        // 2. ¿A quién notificamos? 
+                        // Al Gerente de ESTA empresa.
+                        $gerentes = User::role('gerente')
+                            ->where('company_id', $user->company_id)
+                            ->get();
+
+                        // Enviamos la notificación (Laravel se encarga de no duplicar si usas delay, 
+                        // pero por ahora será directo)
+                        Notification::send($gerentes, new LowStockAlert($productModel, $branchModel, $newStock));
+                    }
 
                     // E. Guardamos el detalle de la venta
                     $sale->items()->create([

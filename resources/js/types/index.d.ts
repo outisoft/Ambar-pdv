@@ -1,8 +1,31 @@
 import { InertiaLinkProps } from '@inertiajs/react';
 import { LucideIcon } from 'lucide-react';
 
+export interface AppNotificationData {
+    title?: string;
+    message?: string;
+    stock?: number;
+    product_id?: number;
+    branch_id?: number;
+    action_url?: string;
+    icon?: string;
+    color?: string;
+    [key: string]: unknown;
+}
+
+export interface AppNotification {
+    id: string;
+    type: string;
+    data: AppNotificationData;
+    created_at: string;
+    read_at: string | null;
+    [key: string]: unknown;
+}
+
 export interface Auth {
     user: User;
+    notifications?: AppNotification[];
+    unreadCount?: number;
 }
 
 export interface BreadcrumbItem {
