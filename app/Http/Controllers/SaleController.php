@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\User;
 use App\Notifications\LowStockAlert; // <-- IMPORTANTE
+use App\Notifications\SaleCancelledAlert;
 use Illuminate\Support\Facades\Notification;
 use App\Models\Sale;
 use Illuminate\Http\Request;
@@ -213,7 +214,7 @@ class SaleController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($sale) {
+            DB::transaction(function () use ($sale, $user) {
                 // A. Devolver Stock (A LA SUCURSAL CORRECTA)
                 // Necesitamos saber a qué sucursal devolver el stock.
                 // Lo tomamos de la caja registradora donde se hizo la venta.
@@ -236,11 +237,94 @@ class SaleController extends Controller
 
                 // B. Marcar como anulada
                 $sale->update(['status' => 'cancelled']);
+
+                $gerentes = User::role('gerente')
+                    ->where('company_id', $user->company_id)
+                    // Opcional: No notificarme a mí mismo si soy el gerente anulando mi propia venta
+                    ->where('id', '!=', $user->id)
+                    ->get();
+
+                if ($gerentes->count() > 0) {
+                    // Obtenemos nombre de sucursal de la relación
+                    $branchName = $sale->cashRegister->branch->name;
+
+                    Notification::send($gerentes, new SaleCancelledAlert(
+                        $sale->id,
+                        $sale->total,
+                        $user->name,
+                        $branchName
+                    ));
+                }
             });
 
             return redirect()->back()->with('success', 'Venta anulada y stock restaurado a la sucursal de origen.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al anular: ' . $e->getMessage());
+        }
+    }
+
+    public function cancel(Request $request, \App\Models\Sale $sale)
+    {
+        $user = Auth::user();
+
+        // 1. VALIDAR MOTIVO
+        $request->validate([
+            'reason' => 'required|string|min:5|max:255', // Obligatorio escribir algo coherente
+        ]);
+
+        // 2. VALIDACIONES DE PERMISOS (Igual que antes)
+        if ($user->hasRole('cajero') && $sale->cashRegister->branch_id !== $user->branch_id) {
+            abort(403, 'No puedes anular ventas de otra sucursal.');
+        }
+        if ($sale->status === 'cancelled') {
+            return back()->with('error', 'La venta ya estaba anulada.');
+        }
+
+        try {
+            DB::transaction(function () use ($sale, $user, $request) {
+
+                // A. Devolver Stock (Misma lógica de antes)
+                $branchId = $sale->cashRegister->branch_id;
+                foreach ($sale->items as $item) {
+                    $inventory = DB::table('branch_product')
+                        ->where('branch_id', $branchId)
+                        ->where('product_id', $item->product_id)
+                        ->first();
+
+                    if ($inventory) {
+                        DB::table('branch_product')
+                            ->where('id', $inventory->id)
+                            ->increment('stock', $item->quantity);
+                    }
+                }
+
+                // B. Actualizar Venta CON MOTIVO
+                $sale->update([
+                    'status' => 'cancelled',
+                    'cancellation_reason' => $request->reason, // <-- AQUÍ GUARDAMOS
+                ]);
+
+                // C. Notificación (Actualizada para incluir motivo)
+                $gerentes = User::role('gerente')
+                    ->where('company_id', $user->company_id)
+                    ->where('id', '!=', $user->id)
+                    ->get();
+
+                if ($gerentes->count() > 0) {
+                    // Pasamos el motivo a la notificación (tendremos que actualizar la clase de notificación en el siguiente paso)
+                    Notification::send($gerentes, new SaleCancelledAlert(
+                        $sale->id,
+                        $sale->total,
+                        $user->name,
+                        $sale->cashRegister->branch->name,
+                        $request->reason // Nuevo argumento
+                    ));
+                }
+            });
+
+            return back()->with('success', 'Venta anulada correctamente.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 }

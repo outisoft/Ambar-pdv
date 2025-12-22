@@ -32,6 +32,7 @@ Route::middleware(['auth', 'verified', 'check_register'])->group(function () {
     Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
     Route::get('/sales/{sale}/ticket', [SaleController::class, 'ticket'])->name('sales.ticket');
     Route::delete('/sales/{sale}', [SaleController::class, 'destroy'])->name('sales.destroy');
+    Route::post('/sales/{sale}/cancel', [SaleController::class, 'cancel'])->name('sales.cancel');
     Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
 
     // ... (Perfil, etc.)

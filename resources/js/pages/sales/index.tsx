@@ -1,7 +1,7 @@
 // resources/js/Pages/Sales/Index.tsx
 import AuthenticatedLayout from '@/layouts/app-layout';
 import { PageProps } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +15,18 @@ import {
 } from "@/components/ui/table";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ShoppingCart, Printer, Ban, Receipt } from 'lucide-react';
+import { ShoppingCart, Printer, Ban, Receipt, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 // Definimos tipos rápidos para esta vista (puedes moverlos a types/index.d.ts si prefieres)
 interface SaleItem {
@@ -46,6 +57,42 @@ export default function Index({ auth, sales }: SalesProps) {
 
     const isSuperAdmin = auth.user.roles.includes('super-admin');
     const isGerente = auth.user.roles.includes('gerente');
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [saleToCancel, setSaleToCancel] = useState<number | null>(null);
+
+    const { data, setData, post, processing, reset, errors } = useForm({
+        reason: '',
+    });
+
+    const openCancelModal = (saleId: number) => {
+        setSaleToCancel(saleId);
+        setData('reason', ''); // Limpiar campo
+        setIsModalOpen(true);
+    };
+
+    // Cerrar Modal (solo visual)
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
+    // Cerrar y limpiar datos (para cancelar manualmente)
+    const cancelAndReset = () => {
+        setIsModalOpen(false);
+        setSaleToCancel(null);
+        reset();
+    };
+
+    // Enviar Cancelación
+    const submitCancel = (e: any) => {
+        e.preventDefault();
+        if (!saleToCancel) return;
+
+        post(route('sales.cancel', saleToCancel), {
+            onSuccess: () => closeModal(),
+            preserveScroll: true,
+        });
+    };
 
     const handleCancel = (saleId: number) => {
         if (confirm('¿Estás SEGURO de anular esta venta? El stock será devuelto.')) {
@@ -160,16 +207,13 @@ export default function Index({ auth, sales }: SalesProps) {
                                                         </Button>
                                                     </a>
 
-                                                    {!isCancelled && auth.user.roles.includes('admin') && (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                            onClick={() => handleCancel(sale.id)}
-                                                            title="Anular Venta"
+                                                    {!isCancelled && (
+                                                        <button
+                                                            onClick={() => openCancelModal(sale.id)}
+                                                            className="text-red-600 hover:text-red-900 border border-red-200 px-2 py-1 rounded bg-red-50 text-xs"
                                                         >
-                                                            <Ban className="w-4 h-4" />
-                                                        </Button>
+                                                            🚫 Anular
+                                                        </button>
                                                     )}
                                                 </div>
                                             </TableCell>
@@ -198,6 +242,59 @@ export default function Index({ auth, sales }: SalesProps) {
                     </div>
                 </div>
             </div>
+            <AlertDialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
+                <AlertDialogContent>
+                    <AlertDialogHeader className="items-start gap-2">
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                                <AlertTriangle className="h-4 w-4" />
+                            </div>
+                            <div>
+                                <AlertDialogTitle>
+                                    Anular venta #{saleToCancel}
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Esta acción revertirá el stock de los productos y dejará la venta marcada como anulada. Por favor indica el motivo.
+                                </AlertDialogDescription>
+                            </div>
+                        </div>
+                    </AlertDialogHeader>
+                    <form
+                        onSubmit={submitCancel}
+                        className="space-y-4 mt-2"
+                    >
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-foreground">
+                                Motivo de la anulación <span className="text-destructive">*</span>
+                            </label>
+                            <textarea
+                                className="w-full min-h-[90px] rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                rows={3}
+                                placeholder="Ej: Cliente no traía efectivo, error en cobro..."
+                                value={data.reason}
+                                onChange={(e) => setData('reason', e.target.value)}
+                                autoFocus
+                            />
+                            {errors.reason && (
+                                <p className="text-xs font-medium text-destructive mt-1">{errors.reason}</p>
+                            )}
+                        </div>
+
+                        <AlertDialogFooter>
+                            <AlertDialogCancel type="button" onClick={cancelAndReset}>
+                                Cancelar
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                                type="submit"
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-white"
+                                disabled={processing}
+                            >
+                                {processing ? 'Procesando...' : 'Confirmar anulación'}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </form>
+                </AlertDialogContent>
+            </AlertDialog>
         </AuthenticatedLayout>
     );
 }
