@@ -9,6 +9,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingController;
@@ -58,6 +59,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
     Route::resource('permissions', PermissionController::class);
     Route::resource('products', ProductController::class);
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/shifts-pdf', [ReportController::class, 'shiftsPdf'])->name('reports.shifts_pdf');
+    Route::get('/reports/z-cut-pdf', [ReportController::class, 'zCutPdf'])->name('reports.z_cut_pdf');
     Route::resource('roles', RoleController::class);
     Route::resource('users', UserController::class);
 });

@@ -54,6 +54,7 @@ export default function History({ auth, registers }: any) {
                                         <TableHead className="text-right min-w-[140px]">Fondo inicial</TableHead>
                                         <TableHead className="text-right min-w-[160px]">Dinero entregado</TableHead>
                                         <TableHead className="text-center min-w-[160px]">Diferencia</TableHead>
+                                        <TableHead className="text-center min-w-[120px]">Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -88,15 +89,15 @@ export default function History({ auth, registers }: any) {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+                                                        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                                                             <span>
-                                                                Apertura:{' '}
+                                                                Apertura{' '}
                                                                 {format(new Date(reg.opened_at), 'd MMM yyyy HH:mm', {
                                                                     locale: es,
                                                                 })}
                                                             </span>
                                                             <span className="font-medium text-foreground">
-                                                                Cierre:{' '}
+                                                                Cierre{' '}
                                                                 {format(new Date(reg.closed_at), 'd MMM yyyy HH:mm', {
                                                                     locale: es,
                                                                 })}
@@ -127,6 +128,16 @@ export default function History({ auth, registers }: any) {
                                                                 {diffLabel}
                                                             </Badge>
                                                         </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <a
+                                                            href={route('reports.z_cut_pdf', { register_id: reg.id })}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center justify-center rounded-md bg-neutral-900 text-white px-2 py-1 text-[11px] font-medium hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+                                                        >
+                                                            📄 Corte Z
+                                                        </a>
                                                     </TableCell>
                                                 </TableRow>
                                             );

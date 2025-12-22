@@ -14,7 +14,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutDashboard, LayoutGrid, Settings, UsersRound, Building2, MapPinHouse, History, Box, CreditCard, Shield } from 'lucide-react';
+import { BookOpen, Folder, LayoutDashboard, LayoutGrid, Settings, UsersRound, Building2, MapPinHouse, History, Box, CreditCard, Shield, Banknote } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -39,7 +39,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Sales',
         href: '/sales',
-        icon: History,
+        icon: Banknote,
     },
     {
         title: 'History',
@@ -50,6 +50,11 @@ const mainNavItems: NavItem[] = [
         title: 'Inventory',
         href: '/inventory',
         icon: Folder,
+    },
+    {
+        title: 'Reports',
+        href: '/reports',
+        icon: BookOpen,
     },
 ];
 
