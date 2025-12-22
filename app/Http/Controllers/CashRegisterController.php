@@ -78,10 +78,15 @@ class CashRegisterController extends Controller
             ->sum('total');
 
         $totalSystemSales = $cashSales + $nonCashSales;
+        $cashSales = $register->sales()->where('payment_method', 'cash')->where('status', '!=', 'cancelled')->sum('total');
 
-        // Efectivo esperado en caja = fondo inicial + ventas en efectivo
-        $expectedCash = $register->initial_amount + $cashSales;
+        // --- NUEVO: Sumar Entradas y Restar Salidas ---
+        $cashIn = $register->movements()->where('type', 'in')->sum('amount');
+        $cashOut = $register->movements()->where('type', 'out')->sum('amount');
 
+        // 4. ARQUEO DE CAJA CORREGIDO
+        // Esperado = (Inicio + Ventas Efectivo + Entradas) - Salidas
+        $expectedCash = ($register->initial_amount + $cashSales + $cashIn) - $cashOut;
         return Inertia::render('CashRegister/Close', [
             'auth' => [
                 'user' => $user,

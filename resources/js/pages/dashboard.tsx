@@ -24,6 +24,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useCashMovement } from '@/Contexts/CashMovementContext';
 
 // 2. Registro de componentes de Chart.js
 ChartJS.register(
@@ -57,6 +58,7 @@ export default function Dashboard({
     chartData,
     recentSales,
 }: DashboardProps) {
+    const { openEntry, openExpense } = useCashMovement();
     const data = {
         labels: chartLabels,
         datasets: [
@@ -130,7 +132,23 @@ export default function Dashboard({
                             {currentDate.charAt(0).toUpperCase() + currentDate.slice(1)}
                         </p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={openEntry}
+                                className="inline-flex items-center justify-center px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border border-emerald-500/60 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors"
+                            >
+                                💰 Entrada
+                            </button>
+                            <button
+                                type="button"
+                                onClick={openExpense}
+                                className="inline-flex items-center justify-center px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border border-red-500/60 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors"
+                            >
+                                💸 Gasto
+                            </button>
+                        </div>
                         <Link
                             href={route('pos')}
                             className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20"

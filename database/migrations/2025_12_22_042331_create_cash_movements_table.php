@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('cash_movements', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('cash_register_id')->constrained()->onDelete('cascade');
+            $table->enum('type', ['in', 'out']); // 'in' = Entrada, 'out' = Salida
+            $table->decimal('amount', 10, 2);
+            $table->string('description'); // Ej: "Pago proveedor Sabritas"
             $table->timestamps();
         });
     }

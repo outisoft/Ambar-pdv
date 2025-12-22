@@ -122,6 +122,23 @@
         </tr>
     </table>
 
+    @if ($register->movements->count() > 0)
+        <div class="line"></div>
+        <div class="section-title">MOVIMIENTOS DE CAJA</div>
+        <table>
+            @foreach ($register->movements as $mov)
+                <tr>
+                    <td class="text-left" style="font-size: 10px;">
+                        {{ $mov->description }}
+                    </td>
+                    <td class="text-right" style="color: {{ $mov->type == 'in' ? 'green' : 'red' }}">
+                        {{ $mov->type == 'in' ? '+' : '-' }}${{ number_format($mov->amount, 2) }}
+                    </td>
+                </tr>
+            @endforeach
+        </table>
+    @endif
+
     <div class="line"></div>
     <div class="section-title">ARQUEO DE EFECTIVO</div>
 

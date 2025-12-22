@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CashMovementController;
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
@@ -48,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cash-registers/history', [CashRegisterController::class, 'history'])->name('cash_registers.history');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/cash-movements', [CashMovementController::class, 'store'])->name('cash_movements.store');
     Route::resource('clients', ClientController::class);
     Route::get('/configuracion', [SettingController::class, 'edit'])->name('configuracion.edit');
     Route::post('/configuracion', [SettingController::class, 'update'])->name('configuracion.update');

@@ -10,8 +10,14 @@ class CashRegister extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'branch_id', 'initial_amount', 'final_amount', 'total_sales', 
-        'status', 'opened_at', 'closed_at'
+        'user_id',
+        'branch_id',
+        'initial_amount',
+        'final_amount',
+        'total_sales',
+        'status',
+        'opened_at',
+        'closed_at'
     ];
 
     // Relación: Una caja tiene muchas ventas
@@ -30,5 +36,10 @@ class CashRegister extends Model
     public function branch()
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function movements()
+    {
+        return $this->hasMany(CashMovement::class);
     }
 }

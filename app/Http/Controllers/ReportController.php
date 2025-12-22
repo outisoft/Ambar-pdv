@@ -92,7 +92,7 @@ class ReportController extends Controller
         ]);
 
         // Buscar la caja con todas sus relaciones
-        $register = CashRegister::with(['user', 'branch.company', 'sales' => function ($q) {
+        $register = CashRegister::with(['user', 'branch.company', 'sales', 'movements' => function ($q) {
             // Traemos ventas normales y canceladas para contarlas
             $q->orderBy('created_at', 'desc');
         }])->findOrFail($request->register_id);
@@ -123,7 +123,15 @@ class ReportController extends Controller
 
         // 3. Dinero esperado en caja (Efectivo)
         $cashInSystem = $paymentMethods->get('cash', 0);
-        $expectedCash = $register->initial_amount + $cashInSystem;
+
+        // B. Obtener Entradas y Salidas de la relación 'movements'
+        $totalInputs = $register->movements->where('type', 'in')->sum('amount');
+        $totalOutputs = $register->movements->where('type', 'out')->sum('amount');
+
+        // C. FÓRMULA FINAL: (Inicial + VentasEfectivo + Entradas) - Salidas
+        $expectedCash = ($register->initial_amount + $cashInSystem + $totalInputs) - $totalOutputs;
+
+        // D. Recalcular diferencia
         $difference = $register->final_amount - $expectedCash;
 
         $pdf = Pdf::loadView('reports.z_cut_pdf', [

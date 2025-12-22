@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useCashMovement } from '@/Contexts/CashMovementContext';
 
 type PosProps = PageProps & {
     products: Product[];
@@ -18,6 +19,7 @@ type PosProps = PageProps & {
 
 export default function POS({ auth, products, clients }: PosProps) {
     const { props } = usePage();
+    const { openEntry, openExpense } = useCashMovement();
     const flash = props.flash as any;
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
@@ -128,16 +130,38 @@ export default function POS({ auth, products, clients }: PosProps) {
                             autoFocus
                         />
                     </div>
-                    <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-                        <Badge variant="secondary" className="text-sm h-9 px-3">
-                            {filteredProducts.length} productos
-                        </Badge>
-                        <a href={route('cash_register.close')}>
-                            <Button variant="destructive" className="gap-2">
-                                <Lock className="w-4 h-4" />
-                                <span className="hidden sm:inline">Cerrar Caja</span>
+                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+                        <div className="flex gap-2 order-2 md:order-1">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="border-emerald-500/70 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 gap-1 px-3"
+                                onClick={openEntry}
+                            >
+                                💰
+                                <span className="hidden sm:inline">Entrada</span>
                             </Button>
-                        </a>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="border-red-500/70 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 gap-1 px-3"
+                                onClick={openExpense}
+                            >
+                                💸
+                                <span className="hidden sm:inline">Gasto</span>
+                            </Button>
+                        </div>
+                        <div className="flex items-center gap-3 order-1 md:order-2 justify-between md:justify-end">
+                            <Badge variant="secondary" className="text-sm h-9 px-3">
+                                {filteredProducts.length} productos
+                            </Badge>
+                            <a href={route('cash_register.close')}>
+                                <Button variant="destructive" className="gap-2">
+                                    <Lock className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Cerrar Caja</span>
+                                </Button>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
