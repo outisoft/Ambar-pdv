@@ -36,7 +36,7 @@ interface Props extends PageProps {
     };
 }
 
-export default function Index({ auth, users }: Props) {
+export default function Index({ auth, users, canCreateUser, planName }: Props & { canCreateUser: boolean; planName?: string | null }) {
 
     const handleDelete = (id: number) => {
         if (confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) {
@@ -88,12 +88,24 @@ export default function Index({ auth, users }: Props) {
                                 className="pl-9 w-full md:w-[250px]"
                             />
                         </div>
-                        <Link href={route('users.create')}>
-                            <button className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20">
+                        {canCreateUser ? (
+                            <Link href={route('users.create')}>
+                                <button className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Nuevo Usuario
+                                </button>
+                            </Link>
+                        ) : (
+                            <button
+                                type="button"
+                                disabled
+                                title={`Tu plan ${planName ?? ''} no permite crear más usuarios. Mejora tu plan para continuar.`}
+                                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-muted text-muted-foreground cursor-not-allowed border border-dashed border-amber-400/70 shadow-none"
+                            >
                                 <Plus className="w-4 h-4 mr-2" />
                                 Nuevo Usuario
                             </button>
-                        </Link>
+                        )}
                     </div>
                 </div>
 

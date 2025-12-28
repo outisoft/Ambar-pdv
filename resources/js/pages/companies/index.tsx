@@ -14,6 +14,9 @@ interface Company {
     id: number;
     name: string;
     logo_path: string | null;
+    plan?: {
+        name: string;
+    } | null;
 }
 
 interface Props {
@@ -92,6 +95,11 @@ export default function Index({ companies }: Props) {
                                             <p className="text-xs text-muted-foreground mt-1 font-mono">
                                                 REF: {company.id.toString().padStart(4, '0')}
                                             </p>
+                                            <div className="mt-2">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                                                    Plan: {company.plan?.name ?? 'Sin plan'}
+                                                </span>
+                                            </div>
                                         </div>
 
                                         {/* Actions Dropdown */}

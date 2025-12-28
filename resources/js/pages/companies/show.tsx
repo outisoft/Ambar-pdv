@@ -14,6 +14,12 @@ interface Company {
     id: number;
     name: string;
     logo_path: string | null;
+    plan?: {
+        id: number;
+        name: string;
+        price: number;
+        duration_in_days: number;
+    } | null;
     branches: Branch[];
 }
 
@@ -42,6 +48,11 @@ export default function Show({ company }: Props) {
                         <p className="text-muted-foreground flex items-center gap-2 mt-1">
                             Ref: #{company.id}
                         </p>
+                        <div className="mt-1">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                                Plan actual: {company.plan?.name ?? 'Sin plan'}
+                            </span>
+                        </div>
                     </div>
                     <div className="ml-auto">
                         <Link href={route('companies.edit', company.id)}>

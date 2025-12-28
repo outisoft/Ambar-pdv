@@ -13,15 +13,24 @@ interface Company {
     logo_path: string | null;
 }
 
-interface Props {
-    company: Company;
+interface Plan {
+    id: number;
+    name: string;
+    price: number;
+    duration_in_days: number;
 }
 
-export default function Edit({ company }: Props) {
+interface Props {
+    company: Company & { plan_id?: number | null };
+    plans: Plan[];
+}
+
+export default function Edit({ company, plans }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         _method: 'put', // Required for file uploads with PUT in Laravel/Inertia
         name: company.name,
         logo: null as File | null,
+        plan_id: company.plan_id ? String(company.plan_id) : '',
     });
 
     const [preview, setPreview] = useState<string | null>(
@@ -92,6 +101,46 @@ export default function Edit({ company }: Props) {
                                         onChange={e => setData('name', e.target.value)}
                                     />
                                     {errors.name && <p className="text-destructive text-sm font-medium mt-1">{errors.name}</p>}
+                                </div>
+
+                                {/* Plan de suscripción */}
+                                <div className="space-y-2">
+                                    <Label>Plan de Suscripción</Label>
+                                    <p className="text-xs text-muted-foreground mb-1">
+                                        Cambia el plan asignado a esta empresa.
+                                    </p>
+                                    <div className="grid sm:grid-cols-2 gap-4">
+                                        {plans.map((plan) => (
+                                            <label
+                                                key={plan.id}
+                                                className={`border rounded-lg p-4 cursor-pointer transition-colors text-sm bg-background hover:bg-muted/60 ${
+                                                    String(data.plan_id) === String(plan.id)
+                                                        ? 'border-primary bg-primary/5'
+                                                        : 'border-border'
+                                                }`}
+                                            >
+                                                <div className="flex items-start gap-2">
+                                                    <input
+                                                        type="radio"
+                                                        name="plan_id"
+                                                        value={plan.id}
+                                                        checked={String(data.plan_id) === String(plan.id)}
+                                                        onChange={(e) => setData('plan_id', e.target.value)}
+                                                        className="mt-1"
+                                                    />
+                                                    <div>
+                                                        <div className="font-semibold text-foreground">{plan.name}</div>
+                                                        <div className="text-xs text-muted-foreground mt-1">
+                                                            ${plan.price} / {plan.duration_in_days} días
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    {errors.plan_id && (
+                                        <p className="text-destructive text-sm font-medium mt-1">{errors.plan_id}</p>
+                                    )}
                                 </div>
 
                                 {/* Logo Upload */}

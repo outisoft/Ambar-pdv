@@ -17,7 +17,7 @@ class CompanyController extends Controller
 {
     public function index()
     {
-        $companies = Company::latest()->get();
+        $companies = Company::with('plan')->latest()->get();
 
         return Inertia::render('companies/index', [
             'companies' => $companies,
@@ -88,7 +88,7 @@ class CompanyController extends Controller
     public function show(Company $company)
     {
         return Inertia::render('companies/show', [
-            'company' => $company->load('branches'),
+            'company' => $company->load('branches', 'plan'),
         ]);
     }
 
@@ -96,6 +96,7 @@ class CompanyController extends Controller
     {
         return Inertia::render('companies/edit', [
             'company' => $company,
+            'plans' => Plan::all(),
         ]);
     }
 
@@ -105,6 +106,7 @@ class CompanyController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'logo' => 'nullable|image|max:2048',
+            'plan_id' => 'required|exists:plans,id',
         ]);
 
         // Handle Logo Upload
@@ -117,6 +119,15 @@ class CompanyController extends Controller
         }
 
         $company->name = $request->name;
+
+        // Actualizar plan y fecha de suscripción si cambió el plan
+        if ($request->filled('plan_id') && (int) $request->plan_id !== (int) $company->plan_id) {
+            $plan = Plan::findOrFail($request->plan_id);
+            $company->plan_id = $plan->id;
+            $company->subscription_status = 'active';
+            $company->subscription_ends_at = Carbon::now()->addDays($plan->duration_in_days);
+        }
+
         $company->save();
 
         return redirect()->route('companies.index')->with('success', 'Empresa actualizada correctamente.');

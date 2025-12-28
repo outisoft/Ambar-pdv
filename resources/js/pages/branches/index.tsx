@@ -27,7 +27,7 @@ interface Props {
     branches: Branch[];
 }
 
-export default function Index({ branches }: Props) {
+export default function Index({ branches, canCreateBranch, planName }: Props & { canCreateBranch: boolean; planName?: string | null }) {
     return (
         <AuthenticatedLayout>
             <Head title="Sucursales" />
@@ -44,7 +44,7 @@ export default function Index({ branches }: Props) {
                             Administra las sedes físicas de tu negocio.
                         </p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex flex-col md:flex-row md:items-center gap-3">
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
@@ -53,12 +53,24 @@ export default function Index({ branches }: Props) {
                                 className="pl-9 w-full md:w-[250px]"
                             />
                         </div>
-                        <Link href={route('branches.create')}>
-                            <button className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20">
+                        {canCreateBranch ? (
+                            <Link href={route('branches.create')}>
+                                <button className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Nueva Sucursal
+                                </button>
+                            </Link>
+                        ) : (
+                            <button
+                                type="button"
+                                disabled
+                                title={`Tu plan ${planName ?? ''} no permite crear más sucursales. Mejora tu plan para continuar.`}
+                                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-muted text-muted-foreground cursor-not-allowed border border-dashed border-amber-400/70 shadow-none"
+                            >
                                 <Plus className="w-4 h-4 mr-2" />
                                 Nueva Sucursal
                             </button>
-                        </Link>
+                        )}
                     </div>
                 </div>
 
@@ -158,12 +170,23 @@ export default function Index({ branches }: Props) {
                         <p className="text-muted-foreground mt-1 max-w-sm mx-auto">
                             Comienza registrando la primera sucursal para una de tus empresas.
                         </p>
-                        <div className="mt-6">
-                            <Link href={route('branches.create')}>
-                                <Button>
+                        <div className="mt-6 flex justify-center">
+                            {canCreateBranch ? (
+                                <Link href={route('branches.create')}>
+                                    <Button>
+                                        <Plus className="w-4 h-4 mr-2" /> Crear Primera Sucursal
+                                    </Button>
+                                </Link>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    disabled
+                                    title={`Tu plan ${planName ?? ''} no permite crear más sucursales. Mejora tu plan para continuar.`}
+                                    className="cursor-not-allowed bg-muted text-muted-foreground border border-dashed border-amber-400/70 hover:bg-muted"
+                                >
                                     <Plus className="w-4 h-4 mr-2" /> Crear Primera Sucursal
                                 </Button>
-                            </Link>
+                            )}
                         </div>
                     </div>
                 )}

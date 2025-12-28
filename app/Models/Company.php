@@ -17,16 +17,24 @@ class Company extends Model
         'subscription_status',
         'subscription_ends_at',
     ];
+
     public function branches()
     {
         return $this->hasMany(Branch::class);
     }
+
     public function users()
     {
         return $this->hasMany(User::class);
     }
+
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function plan()
+    {
+        return $this->belongsTo(Plan::class);
     }
 }

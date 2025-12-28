@@ -35,8 +35,29 @@ class UserController extends Controller
 
         $users = $query->latest()->paginate(10);
 
+        // Validación de límite de usuarios según el plan de la empresa del usuario (si aplica)
+        $canCreateUser = true;
+        $planName = null;
+
+        if ($currentUser->company_id) {
+            $company = Company::with('plan')->find($currentUser->company_id);
+
+            if ($company && $company->plan) {
+                $plan = $company->plan;
+                $planName = $plan->name;
+
+                $currentUsersCount = User::where('company_id', $company->id)->count();
+
+                if ($plan->max_users !== null && $currentUsersCount >= $plan->max_users) {
+                    $canCreateUser = false;
+                }
+            }
+        }
+
         return Inertia::render('users/index', [
-            'users' => $users
+            'users' => $users,
+            'canCreateUser' => $canCreateUser,
+            'planName' => $planName,
         ]);
     }
 
@@ -48,7 +69,7 @@ class UserController extends Controller
         $currentUser = Auth::user();
 
         // LOGICA PARA DROPDOWNS (Sucursales y Roles)
-        
+
         if ($currentUser->hasRole('gerente')) {
             // Gerente: Solo ve sus sucursales y solo puede crear 'cajeros'
             $branches = Branch::where('company_id', $currentUser->company_id)->get();
@@ -77,6 +98,27 @@ class UserController extends Controller
     {
         $currentUser = Auth::user();
 
+        // Determinar la empresa para validar contra el plan
+        $companyIdForPlan = $currentUser->hasRole('super-admin')
+            ? $request->company_id
+            : $currentUser->company_id;
+
+        $companyForPlan = $companyIdForPlan
+            ? Company::with('plan')->find($companyIdForPlan)
+            : null;
+
+        if ($companyForPlan && $companyForPlan->plan) {
+            $plan = $companyForPlan->plan;
+
+            // 1. Contamos usuarios actuales de la empresa
+            $currentUsersCount = User::where('company_id', $companyForPlan->id)->count();
+
+            // 2. Verificamos límite (null = ilimitado)
+            if ($plan->max_users !== null && $currentUsersCount >= $plan->max_users) {
+                return back()->with('error', "🚫 Límite de usuarios alcanzado ({$plan->max_users}). El plan '{$plan->name}' de esta empresa no permite agregar más personal.");
+            }
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -88,8 +130,8 @@ class UserController extends Controller
         ]);
 
         // Determinar la empresa
-        $companyId = $currentUser->hasRole('super-admin') 
-            ? $request->company_id 
+        $companyId = $currentUser->hasRole('super-admin')
+            ? $request->company_id
             : $currentUser->company_id; // Si es gerente, forzamos su ID
 
         $user = User::create([
@@ -145,7 +187,7 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $currentUser = Auth::user();
-        
+
         if ($currentUser->hasRole('gerente') && $user->company_id !== $currentUser->company_id) {
             abort(403);
         }
@@ -176,7 +218,7 @@ class UserController extends Controller
         if ($currentUser->hasRole('gerente') && $user->company_id !== $currentUser->company_id) {
             abort(403);
         }
-        
+
         $user->delete();
         return redirect()->route('users.index')->with('success', 'Usuario eliminado.');
     }
