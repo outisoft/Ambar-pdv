@@ -241,7 +241,7 @@ export default function Welcome({
                                     Planes pensados para <span className="text-[#FF750F]">cada etapa</span>
                                 </h2>
                                 <p className="text-lg text-gray-600 dark:text-gray-400">
-                                    Elige el plan que mejor se adapta al tamaño y ritmo de tu negocio.
+                                    Elige el plan que mejor se adapta al tamaño y ritmo de tu negocio. Y obten un mes gratis al pagar anual.
                                 </p>
                             </div>
 
@@ -284,32 +284,26 @@ export default function Welcome({
                                     maximumFractionDigits: 0,
                                 });
 
-                                let price = formatter.format(plan.price);
+                                let priceValue = plan.price;
                                 let originalAnnualFormatted: string | null = null;
                                 let discountLabel: string | null = null;
 
                                 if (billingPeriod === 'yearly') {
-                                    // Encontrar el plan mensual correspondiente por tipo (básico/pro/empresarial)
-                                    const monthlyMatch = monthlyPlans.find((p) => {
-                                        const name = p.name.toLowerCase();
-                                        if (isEnterprise) return name.includes('empresarial');
-                                        if (isPopular) return name.includes('pro');
-                                        if (isBasic) return name.includes('emprendedor');
-                                        return false;
-                                    });
+                                    // Tomamos el precio anual de la BD como "precio base" y aplicamos descuento en Pro/Empresarial
+                                    originalAnnualFormatted = formatter.format(plan.price);
 
-                                    if (monthlyMatch) {
-                                        const annualBasePrice = monthlyMatch.price * 12;
-                                        originalAnnualFormatted = formatter.format(annualBasePrice);
-                                        price = formatter.format(plan.price); // el precio anual almacenado (ya con descuento)
-
-                                        if (isPopular) {
-                                            discountLabel = '5% OFF anual';
-                                        } else if (isEnterprise) {
-                                            discountLabel = '10% OFF anual';
-                                        }
+                                    if (isPopular) {
+                                        priceValue = plan.price * 0.95; // 5% OFF
+                                        discountLabel = '5% OFF anual';
+                                    } else if (isEnterprise) {
+                                        priceValue = plan.price * 0.9; // 10% OFF
+                                        discountLabel = '10% OFF anual';
+                                    } else {
+                                        priceValue = plan.price; // Básico sin descuento
                                     }
                                 }
+
+                                const price = formatter.format(priceValue);
 
                                 const cardBaseClasses = 'relative p-8 rounded-2xl flex flex-col';
                                 let cardStyleClasses = 'bg-gray-50 dark:bg-[#161615] shadow-sm border border-gray-200 dark:border-[#3E3E3A]';
