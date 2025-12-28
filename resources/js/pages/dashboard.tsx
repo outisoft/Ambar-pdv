@@ -25,6 +25,7 @@ import { Bar } from 'react-chartjs-2';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useCashMovement } from '@/Contexts/CashMovementContext';
+import { Button } from '@/components/ui/button';
 
 // 2. Registro de componentes de Chart.js
 ChartJS.register(
@@ -134,20 +135,22 @@ export default function Dashboard({
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
                         <div className="flex gap-2">
-                            <button
+                            <Button
                                 type="button"
+                                variant="outline" className="gap-2"
                                 onClick={openEntry}
-                                className="inline-flex items-center justify-center px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border border-emerald-500/60 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors"
                             >
-                                💰 Entrada
-                            </button>
-                            <button
+                                💰
+                                <span className="hidden sm:inline">Entrada</span>
+                            </Button>
+                            <Button
                                 type="button"
+                                variant="outline" className="gap-2"
                                 onClick={openExpense}
-                                className="inline-flex items-center justify-center px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border border-red-500/60 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors"
                             >
-                                💸 Gasto
-                            </button>
+                                💸
+                                <span className="hidden sm:inline">Gasto</span>
+                            </Button>
                         </div>
                         <Link
                             href={route('pos')}

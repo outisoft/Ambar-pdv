@@ -1,38 +1,27 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\SuperAdmin;
 
-use Illuminate\Http\Request;
-use App\Models\Company;
-use Inertia\Inertia;
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use App\Models\User;
 use App\Models\Plan;
-use App\Models\Branch;
+use App\Models\Branch; // Asumiendo que tienes modelo Branch
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class CompanyController extends Controller
 {
-    public function index()
-    {
-        $companies = Company::latest()->get();
-
-        return Inertia::render('companies/index', [
-            'companies' => $companies,
-        ]);
-    }
-
+    // Mostrar formulario de alta
     public function create()
     {
         $plans = Plan::all();
-
-        return Inertia::render('companies/create', [
-            'plans' => $plans,
-        ]);
+        return inertia('SuperAdmin/Companies/Create', ['plans' => $plans]);
     }
 
+    // Guardar la nueva empresa
     public function store(Request $request)
     {
         $request->validate([
@@ -83,51 +72,5 @@ class CompanyController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Error al crear empresa: ' . $e->getMessage());
         }
-    }
-
-    public function show(Company $company)
-    {
-        return Inertia::render('companies/show', [
-            'company' => $company->load('branches'),
-        ]);
-    }
-
-    public function edit(Company $company)
-    {
-        return Inertia::render('companies/edit', [
-            'company' => $company,
-        ]);
-    }
-
-    public function update(Request $request, Company $company)
-    {
-        // Validation
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'logo' => 'nullable|image|max:2048',
-        ]);
-
-        // Handle Logo Upload
-        if ($request->hasFile('logo')) {
-            // Delete old logo
-            if ($company->logo_path) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($company->logo_path);
-            }
-            $company->logo_path = $request->file('logo')->store('companies', 'public');
-        }
-
-        $company->name = $request->name;
-        $company->save();
-
-        return redirect()->route('companies.index')->with('success', 'Empresa actualizada correctamente.');
-    }
-
-    public function destroy(Company $company)
-    {
-        if ($company->logo_path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($company->logo_path);
-        }
-        $company->delete();
-        return redirect()->route('companies.index')->with('success', 'Empresa eliminada correctamente.');
     }
 }

@@ -132,10 +132,10 @@ export default function POS({ auth, products, clients }: PosProps) {
                     </div>
                     <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto justify-between md:justify-end">
                         <div className="flex gap-2 order-2 md:order-1">
+                            
                             <Button
                                 type="button"
-                                variant="outline"
-                                className="border-emerald-500/70 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 gap-1 px-3"
+                                variant="outline" className="gap-2"
                                 onClick={openEntry}
                             >
                                 💰
@@ -143,8 +143,7 @@ export default function POS({ auth, products, clients }: PosProps) {
                             </Button>
                             <Button
                                 type="button"
-                                variant="outline"
-                                className="border-red-500/70 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 gap-1 px-3"
+                                variant="outline" className="gap-2"
                                 onClick={openExpense}
                             >
                                 💸

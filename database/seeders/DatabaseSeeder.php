@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             //UserSeeder::class,
             RoleSeeder::class,
             SaaSSeeder::class,
+            PlanSeeder::class,
             //ProductSeeder::class,
         ]);
 

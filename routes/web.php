@@ -16,12 +16,16 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Models\Plan;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
+    $plans = Plan::all();
+
     return Inertia::render('welcome', [
         'canRegister' => Features::enabled(Features::registration()),
+        'plans' => $plans,
     ]);
 })->name('home');
 

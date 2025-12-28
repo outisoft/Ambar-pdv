@@ -12,7 +12,10 @@ class Company extends Model
         'tax_id',
         'address',
         'phone',
-        'ticket_footer_message'
+        'ticket_footer_message',
+        'plan_id',
+        'subscription_status',
+        'subscription_ends_at',
     ];
     public function branches()
     {
