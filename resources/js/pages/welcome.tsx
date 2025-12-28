@@ -37,8 +37,14 @@ export default function Welcome({
 }: WelcomeProps) {
     const { auth } = usePage<SharedData>().props;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+    // Separar planes mensuales y anuales en base a la duración
+    const monthlyPlans = plans.filter((plan) => plan.duration_in_days <= 31);
+    const yearlyPlans = plans.filter((plan) => plan.duration_in_days > 31);
+    const visiblePlans = billingPeriod === 'monthly' ? monthlyPlans : yearlyPlans;
 
     return (
         <div className="bg-white text-[#1b1b18] dark:bg-[#0a0a0a] dark:text-[#ededec] font-sans selection:bg-[#FF750F] selection:text-white">
@@ -229,26 +235,81 @@ export default function Welcome({
             {plans.length > 0 && (
                 <section id="planes" className="py-24 bg-white dark:bg-[#0a0a0a] border-t border-gray-100 dark:border-[#3E3E3A]">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="text-center max-w-3xl mx-auto mb-16">
-                            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl mb-4">
-                                Planes pensados para <span className="text-[#FF750F]">cada etapa</span>
-                            </h2>
-                            <p className="text-lg text-gray-600 dark:text-gray-400">
-                                Elige el plan que mejor se adapta al tamaño y ritmo de tu negocio.
-                            </p>
+                        <div className="flex flex-col items-center gap-4 mb-16">
+                            <div className="text-center max-w-3xl mx-auto">
+                                <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl mb-4">
+                                    Planes pensados para <span className="text-[#FF750F]">cada etapa</span>
+                                </h2>
+                                <p className="text-lg text-gray-600 dark:text-gray-400">
+                                    Elige el plan que mejor se adapta al tamaño y ritmo de tu negocio.
+                                </p>
+                            </div>
+
+                            {/* Switch Mensual / Anual */}
+                            <div className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 p-1 text-xs font-medium text-gray-600 dark:border-[#3E3E3A] dark:bg-[#161615] dark:text-gray-300">
+                                <button
+                                    type="button"
+                                    onClick={() => setBillingPeriod('monthly')}
+                                    className={`px-4 py-1 rounded-full transition-all ${
+                                        billingPeriod === 'monthly'
+                                            ? 'bg-white text-gray-900 shadow-sm dark:bg-[#0a0a0a] dark:text-white'
+                                            : 'bg-transparent text-gray-500 dark:text-gray-400'
+                                    }`}
+                                >
+                                    Mensual
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setBillingPeriod('yearly')}
+                                    className={`px-4 py-1 rounded-full transition-all ${
+                                        billingPeriod === 'yearly'
+                                            ? 'bg-white text-gray-900 shadow-sm dark:bg-[#0a0a0a] dark:text-white'
+                                            : 'bg-transparent text-gray-500 dark:text-gray-400'
+                                    }`}
+                                >
+                                    Anual
+                                </button>
+                            </div>
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-8">
-                            {plans.map((plan) => {
+                            {visiblePlans.map((plan) => {
                                 const isBasic = plan.name.toLowerCase().includes('emprendedor');
                                 const isPopular = plan.name.toLowerCase().includes('pro');
                                 const isEnterprise = plan.name.toLowerCase().includes('empresarial');
                                 const currency = plan.currency || 'MXN';
-                                const price = new Intl.NumberFormat('es-MX', {
+                                const formatter = new Intl.NumberFormat('es-MX', {
                                     style: 'currency',
                                     currency,
                                     maximumFractionDigits: 0,
-                                }).format(plan.price);
+                                });
+
+                                let price = formatter.format(plan.price);
+                                let originalAnnualFormatted: string | null = null;
+                                let discountLabel: string | null = null;
+
+                                if (billingPeriod === 'yearly') {
+                                    // Encontrar el plan mensual correspondiente por tipo (básico/pro/empresarial)
+                                    const monthlyMatch = monthlyPlans.find((p) => {
+                                        const name = p.name.toLowerCase();
+                                        if (isEnterprise) return name.includes('empresarial');
+                                        if (isPopular) return name.includes('pro');
+                                        if (isBasic) return name.includes('emprendedor');
+                                        return false;
+                                    });
+
+                                    if (monthlyMatch) {
+                                        const annualBasePrice = monthlyMatch.price * 12;
+                                        originalAnnualFormatted = formatter.format(annualBasePrice);
+                                        price = formatter.format(plan.price); // el precio anual almacenado (ya con descuento)
+
+                                        if (isPopular) {
+                                            discountLabel = '5% OFF anual';
+                                        } else if (isEnterprise) {
+                                            discountLabel = '10% OFF anual';
+                                        }
+                                    }
+                                }
 
                                 const cardBaseClasses = 'relative p-8 rounded-2xl flex flex-col';
                                 let cardStyleClasses = 'bg-gray-50 dark:bg-[#161615] shadow-sm border border-gray-200 dark:border-[#3E3E3A]';
@@ -285,10 +346,28 @@ export default function Welcome({
                                                     ? 'Para negocios en crecimiento con más puntos de venta.'
                                                     : 'Ideal para pequeños negocios que están comenzando.'}
                                         </p>
-                                        <div className="mb-4 flex items-baseline gap-2">
-                                            <span className="text-3xl font-extrabold text-gray-900 dark:text-white">{price}</span>
-                                            <span className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{currency}</span>
-                                            <span className="text-sm text-gray-500 dark:text-gray-400">/ {plan.duration_in_days} días</span>
+                                        <div className="mb-4 flex flex-col gap-1">
+                                            {billingPeriod === 'yearly' && originalAnnualFormatted && (
+                                                <div className="flex items-baseline gap-2 text-xs">
+                                                    <span className="line-through text-gray-400 dark:text-gray-500">
+                                                        {originalAnnualFormatted}
+                                                    </span>
+                                                    {discountLabel && (
+                                                        <span className="uppercase font-semibold text-emerald-600 dark:text-emerald-400">
+                                                            {discountLabel}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-3xl font-extrabold text-gray-900 dark:text-white">{price}</span>
+                                                <span className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{currency}</span>
+                                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                                    {billingPeriod === 'monthly'
+                                                        ? `/ ${plan.duration_in_days} días`
+                                                        : '/ 12 meses'}
+                                                </span>
+                                            </div>
                                         </div>
                                         <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400 flex-1">
                                             <li className="flex items-center">
