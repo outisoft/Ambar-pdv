@@ -1,4 +1,5 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import AppearanceToggleDropdown from '@/components/appearance-dropdown';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType, type SharedData } from '@/types';
 import { router, usePage } from '@inertiajs/react';
@@ -32,6 +33,7 @@ export function AppSidebarHeader({
             </div>
             {user && (
                 <div className="ml-auto flex items-center gap-3 text-sm font-medium text-muted-foreground">
+                    <AppearanceToggleDropdown />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button

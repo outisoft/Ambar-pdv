@@ -2,6 +2,7 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { ThemeSwitch } from '@/components/theme-switch';
+import { usePermission } from '@/hooks/use-permission';
 import {
     Sidebar,
     SidebarContent,
@@ -18,43 +19,46 @@ import { BookOpen, Folder, LayoutDashboard, LayoutGrid, Settings, UsersRound, Bu
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
-    //validacion si su rol tiene acceso a cada item
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutDashboard,
-        roles: ['admin'],
     },
     {
         title: 'POS',
         href: '/pos',
         icon: CreditCard,
+        permissions: ['view_pos'],
     },
     {
         title: 'Products',
         href: '/products',
         icon: Box,
-        roles: ['admin'],
+        permissions: ['view_products'],
     },
     {
         title: 'Sales',
         href: '/sales',
         icon: Banknote,
+        permissions: ['view_sales'],
     },
     {
         title: 'History',
         href: '/cash-registers/history',
         icon: History,
+        permissions: ['view_cash_registers'],
     },
     {
         title: 'Inventory',
         href: '/inventory',
         icon: Folder,
+        permissions: ['view_inventory'],
     },
     {
         title: 'Reports',
         href: '/reports',
         icon: BookOpen,
+        permissions: ['view_reports'],
     },
 ];
 
@@ -63,30 +67,64 @@ const footerNavItems: NavItem[] = [
         title: 'Users',
         href: '/users',
         icon: UsersRound,
+        permissions: ['view_users'],
     },
     {
         title: 'Roles & Permissions',
         href: '/roles',
         icon: Shield,
+        permissions: ['view_roles'],
     },
     {
         title: 'Companies',
         href: '/companies',
-        icon: Building2, //companies
+        icon: Building2,
+        permissions: ['view_companies'],
     },
     {
         title: 'Branches',
         href: '/branches',
-        icon: MapPinHouse, //branches
+        icon: MapPinHouse,
+        permissions: ['view_branches'],
     },
     {
         title: 'Settings',
         href: '/configuracion',
         icon: Settings,
+        permissions: ['view_settings'],
     },
 ];
 
 export function AppSidebar() {
+    const { hasPermission, hasRole } = usePermission();
+
+    // Filter items based on permissions/roles
+    const filterNavItems = (items: NavItem[]) => {
+        return items.filter((item) => {
+            // If explicit roles defined
+            if (item.roles && item.roles.length > 0) {
+                // If user doesn't have any of the required roles, hide
+                // (Unless you want ALL roles, but usually it's OR)
+                // For safety, let's assume if roles are present, must match one
+                // But wait, the hook supports checking roles.
+                // Let's implement OR logic: match ANY role
+                const matchesRole = item.roles.some(r => hasRole(r));
+                if (!matchesRole) return false;
+            }
+
+            // If explicit permissions defined
+            if (item.permissions && item.permissions.length > 0) {
+                const matchesPermission = item.permissions.some(p => hasPermission(p));
+                if (!matchesPermission) return false;
+            }
+
+            return true;
+        });
+    };
+
+    const filteredMainNav = filterNavItems(mainNavItems);
+    const filteredFooterNav = filterNavItems(footerNavItems);
+
     return (
         <Sidebar collapsible="icon" variant="sidebar">
             <SidebarHeader>
@@ -108,11 +146,11 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={filteredMainNav} />
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} />
+                <NavFooter items={filteredFooterNav} />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

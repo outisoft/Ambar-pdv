@@ -12,8 +12,20 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Spatie\Permission\Models\Role;
 
-class UserController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class UserController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:view_users', only: ['index']),
+            new Middleware('permission:create_users', only: ['create', 'store']),
+            new Middleware('permission:edit_users', only: ['edit', 'update']),
+            new Middleware('permission:delete_users', only: ['destroy']),
+        ];
+    }
 
     /**
      * Muestra la lista de usuarios según el rol del que consulta.

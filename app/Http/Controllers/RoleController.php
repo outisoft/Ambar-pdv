@@ -5,8 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class RoleController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class RoleController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:view_roles', only: ['index']),
+            new Middleware('permission:create_roles', only: ['create', 'store']),
+            new Middleware('permission:edit_roles', only: ['edit', 'update']),
+            new Middleware('permission:delete_roles', only: ['destroy']),
+        ];
+    }
     public function index()
     {
         $roles = \App\Models\Role::withCount('users')->get();

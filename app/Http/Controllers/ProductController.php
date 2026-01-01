@@ -8,8 +8,20 @@ use Inertia\Inertia;
 use App\Exports\ProductsExport;
 use Maatwebsite\Excel\Facades\Excel;
 
-class ProductController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class ProductController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:view_products', only: ['index', 'show', 'export']),
+            new Middleware('permission:create_products', only: ['create', 'store']),
+            new Middleware('permission:edit_products', only: ['edit', 'update']),
+            new Middleware('permission:delete_products', only: ['destroy']),
+        ];
+    }
     /**
      * Display a listing of the resource.
      */

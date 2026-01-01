@@ -13,8 +13,20 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class CompanyController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class CompanyController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:view_companies', only: ['index', 'show']),
+            new Middleware('permission:create_companies', only: ['create', 'store']),
+            new Middleware('permission:edit_companies', only: ['edit', 'update']),
+            new Middleware('permission:delete_companies', only: ['destroy']),
+        ];
+    }
     public function index()
     {
         $companies = Company::with('plan')->latest()->get();

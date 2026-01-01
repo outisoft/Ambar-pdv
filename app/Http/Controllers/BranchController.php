@@ -8,8 +8,20 @@ use Inertia\Inertia;
 use App\Models\Company;
 use Illuminate\Support\Facades\Auth;
 
-class BranchController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class BranchController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:view_branches', only: ['index', 'show']),
+            new Middleware('permission:create_branches', only: ['create', 'store']),
+            new Middleware('permission:edit_branches', only: ['edit', 'update']),
+            new Middleware('permission:delete_branches', only: ['destroy']),
+        ];
+    }
     /**
      * Display a listing of the resource.
      */

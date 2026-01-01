@@ -14,8 +14,20 @@ use Illuminate\Validation\ValidationException; // Para errores de stock
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 
-class SaleController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class SaleController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:view_sales', only: ['index', 'ticket']),
+            new Middleware('permission:create_sales', only: ['store']),
+            new Middleware('permission:delete_sales', only: ['destroy']),
+            new Middleware('permission:cancel_sales', only: ['cancel']),
+        ];
+    }
     public function index()
     {
         $user = Auth::user();

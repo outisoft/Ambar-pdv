@@ -1,5 +1,6 @@
 // resources/js/Pages/Products/Index.tsx
 import AuthenticatedLayout from '@/layouts/app-layout'; // Tu layout
+import Can from '@/components/can';
 import { PageProps, Product } from '@/types'; // Importamos el tipo Product
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
@@ -86,12 +87,14 @@ export default function Index({ auth, products }: ProductIndexProps) {
                                 <span className="hidden sm:inline">Exportar</span>
                             </Button>
                         </a>
-                        <Link href={route('products.create')}>
-                            <button className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Nuevo Producto
-                            </button>
-                        </Link>
+                        <Can permission="create_products">
+                            <Link href={route('products.create')}>
+                                <button className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-foreground transition-colors bg-primary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Nuevo Producto
+                                </button>
+                            </Link>
+                        </Can>
                     </div>
                 </div>
 
@@ -141,19 +144,23 @@ export default function Index({ auth, products }: ProductIndexProps) {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Link href={route('products.edit', product.id)}>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
-                                                        <Pencil className="w-4 h-4" />
+                                                <Can permission="edit_products">
+                                                    <Link href={route('products.edit', product.id)}>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
+                                                            <Pencil className="w-4 h-4" />
+                                                        </Button>
+                                                    </Link>
+                                                </Can>
+                                                <Can permission="delete_products">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                        onClick={() => openDeleteModal(product)}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
                                                     </Button>
-                                                </Link>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                                    onClick={() => openDeleteModal(product)}
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
+                                                </Can>
                                             </div>
                                         </TableCell>
                                     </TableRow>
