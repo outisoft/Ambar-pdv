@@ -8,6 +8,9 @@ use App\Notifications\LowStockAlert; // <-- IMPORTANTE
 use App\Notifications\SaleCancelledAlert;
 use Illuminate\Support\Facades\Notification;
 use App\Models\Sale;
+use App\Models\CashRegister;
+use App\Models\Client;
+use App\Models\ClientTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException; // Para errores de stock
@@ -94,8 +97,41 @@ class SaleController extends Controller implements HasMiddleware
         try {
             DB::transaction(function () use ($request, $user) {
 
+                // 1. Lógica de Crédito
+                if ($request->payment_method === 'credit') {
+
+                    // Validar que haya cliente seleccionado
+                    if (!$request->client_id) {
+                        throw new \Exception("Para ventas a crédito necesitas seleccionar un cliente.");
+                    }
+
+                    $client = Client::lockForUpdate()->find($request->client_id); // Bloqueo para evitar concurrencia
+
+                    // Validar Límite
+                    $newBalance = $client->current_balance + $request->total;
+                    if ($newBalance > $client->credit_limit) {
+                        throw new \Exception("Crédito insuficiente. Disponible: $" . number_format($client->credit_limit - $client->current_balance, 2));
+                    }
+
+                    // Registrar Movimiento (Deuda)
+                    ClientTransaction::create([
+                        'client_id' => $client->id,
+                        'user_id' => Auth::id(),
+                        // 'sale_id' => $sale->id, // (Esto lo harías después de crear la $sale)
+                        'type' => 'charge',
+                        'amount' => $request->total,
+                        'previous_balance' => $client->current_balance,
+                        'new_balance' => $newBalance,
+                        'description' => 'Venta a Crédito'
+                    ]);
+
+                    // Actualizar Saldo Cliente
+                    $client->current_balance = $newBalance;
+                    $client->save();
+                }
+
                 // 1. Obtener/Crear Venta (Esto sigue igual, pero asegurando la caja correcta)
-                $register = \App\Models\CashRegister::where('user_id', $user->id)
+                $register = CashRegister::where('user_id', $user->id)
                     ->where('branch_id', $user->branch_id)
                     ->where('status', 'open')
                     ->firstOrFail();
@@ -103,7 +139,7 @@ class SaleController extends Controller implements HasMiddleware
                 // Calculamos total (simplificado para el ejemplo)
                 $total = collect($request->items)->sum(fn($i) => $i['price'] * $i['quantity']);
 
-                $sale = \App\Models\Sale::create([
+                $sale = Sale::create([
                     'user_id' => $user->id,
                     'branch_id' => $user->branch_id, // Si añadiste esta columna a sales (recomendado)
                     'cash_register_id' => $register->id,

@@ -37,12 +37,44 @@ export default function Cart({
         client_id: '' as string | number,
     });
 
+    const selectedClient = clients.find(
+        (client) => String(client.id) === String(data.client_id),
+    );
+    const hasCreditOption = (selectedClient?.credit_limit ?? 0) > 0;
+
     useEffect(() => {
         setData('items', cartItems);
     }, [cartItems]);
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
+
+        if (data.payment_method === 'credit') {
+            if (!selectedClient) {
+                toast.error('Selecciona un cliente para usar crédito.');
+                return;
+            }
+
+            const creditLimit = selectedClient.credit_limit ?? 0;
+            const currentBalance = selectedClient.current_balance ?? 0;
+
+            if (creditLimit <= 0) {
+                toast.error('Este cliente no tiene crédito disponible.');
+                return;
+            }
+
+            const available = creditLimit - currentBalance;
+
+            if (total > available) {
+                toast.error(
+                    `Crédito insuficiente. Disponible: $${available.toFixed(
+                        2,
+                    )} | Total: $${total.toFixed(2)}`,
+                );
+                return;
+            }
+        }
+
         post(route('sales.store'), {
             onError: (formErrors) => {
                 if (formErrors.stock) toast.error(formErrors.stock);
@@ -79,8 +111,17 @@ export default function Cart({
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                             value={data.client_id}
                             onChange={(e) => {
-                                setData('client_id', e.target.value);
-                                onClientChange?.(e.target.value);
+                                const value = e.target.value;
+                                setData('client_id', value);
+                                onClientChange?.(value);
+
+                                const client = clients.find(
+                                    (c) => String(c.id) === String(value),
+                                );
+
+                                if (!client || (client.credit_limit ?? 0) <= 0) {
+                                    setData('payment_method', 'cash');
+                                }
                             }}
                         >
                             <option value="">-- Público General --</option>
@@ -170,7 +211,14 @@ export default function Cart({
                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         Método de Pago
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div
+                        className={cn(
+                            'grid gap-2',
+                            hasCreditOption
+                                ? 'grid-cols-3 md:grid-cols-4'
+                                : 'grid-cols-3',
+                        )}
+                    >
                         <Button
                             type="button"
                             variant={data.payment_method === 'cash' ? "default" : "outline"}
@@ -204,9 +252,50 @@ export default function Cart({
                         >
                             <Smartphone className="w-3.5 h-3.5" /> Transf.
                         </Button>
+                        {hasCreditOption && (
+                            <Button
+                                type="button"
+                                variant={
+                                    data.payment_method === 'credit'
+                                        ? 'default'
+                                        : 'outline'
+                                }
+                                onClick={() => handlePaymentChange('credit')}
+                                className={cn(
+                                    'flex items-center justify-center gap-2 h-auto py-2 text-xs',
+                                    data.payment_method === 'credit' &&
+                                        'bg-amber-600 hover:bg-amber-700',
+                                )}
+                            >
+                                <CreditCard className="w-3.5 h-3.5" /> Crédito
+                            </Button>
+                        )}
                     </div>
                     {errors.payment_method && (
                         <p className="text-xs text-destructive font-medium">{errors.payment_method}</p>
+                    )}
+                    {data.payment_method === 'credit' && selectedClient && (
+                        <div className="bg-blue-50 border border-blue-200 p-2 rounded text-xs mt-2 space-y-1">
+                            <p>
+                                Límite: <b>${selectedClient.credit_limit ?? 0}</b>
+                            </p>
+                            <p>
+                                Deuda actual:{' '}
+                                <b className="text-red-600">
+                                    ${selectedClient.current_balance ?? 0}
+                                </b>
+                            </p>
+                            <p>
+                                Disponible:{' '}
+                                <b className="text-green-600">
+                                    $
+                                    {(
+                                        (selectedClient.credit_limit ?? 0) -
+                                        (selectedClient.current_balance ?? 0)
+                                    ).toFixed(2)}
+                                </b>
+                            </p>
+                        </div>
                     )}
                 </div>
 

@@ -60,6 +60,12 @@ const mainNavItems: NavItem[] = [
         icon: BookOpen,
         permissions: ['view_reports'],
     },
+    {
+        title: 'Clients',
+        href: '/clients',
+        icon: LayoutGrid,
+        permissions: ['view_clients'],
+    }
 ];
 
 const footerNavItems: NavItem[] = [

@@ -94,6 +94,9 @@ export interface Client {
     phone?: string;
     tax_id?: string;
     address?: string;
+    credit_limit?: number;
+    current_balance?: number;
+    company_id?: number;
 }
 
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {

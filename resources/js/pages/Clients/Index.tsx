@@ -1,5 +1,6 @@
 // resources/js/Pages/Clients/Index.tsx
 import AuthenticatedLayout from '@/layouts/app-layout';
+import Can from '@/components/can';
 import { PageProps, Client } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
@@ -69,12 +70,14 @@ export default function Index({ auth, clients }: ClientIndexProps) {
                                 className="pl-9 w-full md:w-[250px]"
                             />
                         </div>
-                        <Link href={route('clients.create')}>
-                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Nuevo Cliente
-                            </Button>
-                        </Link>
+                        <Can permission="create_clients">
+                            <Link href={route('clients.create')}>
+                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Nuevo Cliente
+                                </Button>
+                            </Link>
+                        </Can>
                     </div>
                 </div>
 
@@ -86,6 +89,8 @@ export default function Index({ auth, clients }: ClientIndexProps) {
                                 <TableHead className="w-[300px]">Cliente</TableHead>
                                 <TableHead>Contacto</TableHead>
                                 <TableHead>Ubicación</TableHead>
+                                <TableHead>Limit Credit</TableHead>
+                                <TableHead>Current Balance</TableHead>
                                 <TableHead className="text-right">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -138,21 +143,49 @@ export default function Index({ auth, clients }: ClientIndexProps) {
                                                 <span className="text-muted-foreground italic text-sm">--</span>
                                             )}
                                         </TableCell>
+                                        <TableCell>
+                                            {client.credit_limit != null ? (
+                                                <Badge variant="secondary">
+                                                    ${Number(client.credit_limit || 0).toFixed(2)}
+                                                </Badge>
+                                            ) : (
+                                                <span className="text-muted-foreground italic text-sm">--</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            {client.current_balance != null ? (
+                                                <Badge
+                                                    variant={
+                                                        (client.current_balance || 0) > 0
+                                                            ? 'destructive'
+                                                            : 'default'
+                                                    }
+                                                >
+                                                    ${Number(client.current_balance || 0).toFixed(2)}
+                                                </Badge>
+                                            ) : (
+                                                <span className="text-muted-foreground italic text-sm">--</span>
+                                            )}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Link href={route('clients.edit', client.id)}>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
-                                                        <Pencil className="w-4 h-4" />
+                                                <Can permission="edit_clients">
+                                                    <Link href={route('clients.edit', client.id)}>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
+                                                            <Pencil className="w-4 h-4" />
+                                                        </Button>
+                                                    </Link>
+                                                </Can>
+                                                <Can permission="delete_clients">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                        onClick={() => openDeleteModal(client)}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
                                                     </Button>
-                                                </Link>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                                    onClick={() => openDeleteModal(client)}
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
+                                                </Can>
                                             </div>
                                         </TableCell>
                                     </TableRow>
