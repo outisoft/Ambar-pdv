@@ -15,6 +15,7 @@ interface Props {
     onRemoveFromCart: (id: number) => void;
     onUpdateQuantity: (productId: number, newQuantity: number) => void;
     onClearCart: () => void;
+    onClientChange?: (clientId: string | number | '') => void;
 }
 
 export default function Cart({
@@ -23,6 +24,7 @@ export default function Cart({
     onRemoveFromCart,
     onUpdateQuantity,
     onClearCart,
+    onClientChange,
 }: Props) {
     const total = cartItems.reduce(
         (acc, item) => acc + item.price * item.quantity,
@@ -76,7 +78,10 @@ export default function Cart({
                         <select
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                             value={data.client_id}
-                            onChange={(e) => setData('client_id', e.target.value)}
+                            onChange={(e) => {
+                                setData('client_id', e.target.value);
+                                onClientChange?.(e.target.value);
+                            }}
                         >
                             <option value="">-- Público General --</option>
                             {clients.map((client) => (

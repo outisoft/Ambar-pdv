@@ -11,17 +11,26 @@ import { Button } from '@/components/ui/button';
 import { Search, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useCashMovement } from '@/Contexts/CashMovementContext';
+import useBarcodeScanner from '@/hooks/use-barcode-scanner';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 type PosProps = PageProps & {
     products: Product[];
     clients: Client[];
+    suspended_sales: any[];
 };
 
-export default function POS({ auth, products, clients }: PosProps) {
+export default function POS({ auth, products, clients, suspended_sales }: PosProps) {
     const { props } = usePage();
     const { openEntry, openExpense } = useCashMovement();
     const flash = props.flash as any;
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [selectedClientId, setSelectedClientId] = useState<string | number | ''>('');
 
     const handleAddToCart = (productToAdd: Product) => {
         const existingItem = cartItems.find((item) => item.id === productToAdd.id);
@@ -77,6 +86,21 @@ export default function POS({ auth, products, clients }: PosProps) {
         setCartItems([]);
     };
 
+    // --- ESCÁNER DE CÓDIGO DE BARRAS ---
+    useBarcodeScanner({
+        onScan: (code) => {
+            const product = products.find((p) => p.barcode === code);
+
+            if (product) {
+                handleAddToCart(product);
+                new Audio('/sounds/beep.mp3').play().catch(() => {});
+                toast.success(`Producto detectado: ${product.name}`);
+            } else {
+                toast.error(`Producto no encontrado: ${code}`);
+            }
+        },
+    });
+
     const [searchTerm, setSearchTerm] = useState('');
     const filteredProducts = products.filter(
         (product) =>
@@ -95,10 +119,50 @@ export default function POS({ auth, products, clients }: PosProps) {
         }
     };
 
+    // --- SUSPENDER VENTA ---
+    const [showSuspendModal, setShowSuspendModal] = useState(false);
+    const [suspendNote, setSuspendNote] = useState('');
+    const [showRecoverDialog, setShowRecoverDialog] = useState(false);
+
+    const handleSuspend = () => {
+        if (cartItems.length === 0) return;
+
+        const total = cartItems.reduce(
+            (acc, item) => acc + item.price * item.quantity,
+            0,
+        );
+
+        router.post(route('suspended_sales.store'), {
+            items: cartItems,
+            client_id: selectedClientId || null,
+            total,
+            note: suspendNote,
+        }, {
+            onSuccess: () => {
+                handleClearCart();
+                setSelectedClientId('');
+                setShowSuspendModal(false);
+                setSuspendNote('');
+                toast.success('Venta suspendida');
+            },
+        });
+    };
+
     useEffect(() => {
         if (flash?.last_sale_id) {
             const url = route('sales.ticket', flash.last_sale_id);
             window.open(url, '_blank', 'width=400,height=600');
+        }
+    }, [flash]);
+
+    // Restaurar venta suspendida si viene del backend
+    useEffect(() => {
+        if (flash?.restoredSale) {
+            setCartItems(flash.restoredSale.items || []);
+            if (flash.restoredSale.client_id) {
+                setSelectedClientId(flash.restoredSale.client_id);
+            }
+            toast.success('Venta suspendida restaurada');
         }
     }, [flash]);
 
@@ -186,15 +250,134 @@ export default function POS({ auth, products, clients }: PosProps) {
 
                     {/* Cart Sidebar */}
                     <div className="md:col-span-4 lg:col-span-3 h-full min-h-0 flex flex-col">
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="gap-2 flex-1"
+                                disabled={cartItems.length === 0}
+                                onClick={() => setShowSuspendModal(true)}
+                            >
+                                ⏸️
+                                <span className="hidden sm:inline">Suspender</span>
+                            </Button>
+
+                            {suspended_sales && suspended_sales.length > 0 && (
+                                <div className="relative flex-1 flex justify-end">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="gap-2 pr-5"
+                                        onClick={() => setShowRecoverDialog(true)}
+                                    >
+                                        📂
+                                        <span className="hidden sm:inline">Recuperar</span>
+                                    </Button>
+                                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                        {suspended_sales.length}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
                         <Cart
                             cartItems={cartItems}
                             clients={clients}
                             onRemoveFromCart={handleRemoveFromCart}
                             onUpdateQuantity={handleUpdateQuantity}
                             onClearCart={handleClearCart}
+                            onClientChange={setSelectedClientId}
                         />
                     </div>
                 </div>
+
+                {/* Modal suspender venta */}
+                <Dialog open={showSuspendModal} onOpenChange={setShowSuspendModal}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Suspender venta actual</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 mt-2">
+                            <Input
+                                type="text"
+                                placeholder="Referencia (Ej: Señora blusa verde)"
+                                value={suspendNote}
+                                onChange={(e) => setSuspendNote(e.target.value)}
+                                autoFocus
+                            />
+                            <div className="flex justify-end gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setShowSuspendModal(false)}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button type="button" onClick={handleSuspend}>
+                                    Confirmar
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Modal recuperar ventas suspendidas */}
+                <Dialog open={showRecoverDialog} onOpenChange={setShowRecoverDialog}>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle>Ventas en espera</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-2 mt-2 max-h-[60vh] overflow-y-auto">
+                            {suspended_sales && suspended_sales.length > 0 ? (
+                                suspended_sales.map((sale: any) => (
+                                    <div
+                                        key={sale.id}
+                                        className="flex justify-between items-center bg-muted p-3 rounded border"
+                                    >
+                                        <div>
+                                            <div className="font-bold">{sale.note || 'Sin nota'}</div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {new Date(sale.created_at).toLocaleTimeString()} - ${sale.total}
+                                                {sale.items && (
+                                                    <span>
+                                                        {' '}
+                                                        ({sale.items.length} productos)
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {sale.user && (
+                                                <div className="text-xs text-muted-foreground">
+                                                    Cajero: {sale.user.name}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                type="button"
+                                                className="bg-green-600 hover:bg-green-700 text-white"
+                                                onClick={() => {
+                                                    router.delete(
+                                                        route('suspended_sales.destroy', sale.id),
+                                                        {
+                                                            onSuccess: () => {
+                                                                setShowRecoverDialog(false);
+                                                            },
+                                                        },
+                                                    );
+                                                }}
+                                            >
+                                                Retomar ➤
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    No hay ventas suspendidas.
+                                </p>
+                            )}
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AuthenticatedLayout>
     );

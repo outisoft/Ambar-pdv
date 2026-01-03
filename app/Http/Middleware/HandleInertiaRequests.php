@@ -73,7 +73,8 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn() => $request->session()->get('success'),
                 'error' => fn() => $request->session()->get('error'),
-                'last_sale_id' => fn() => $request->session()->get('last_sale_id'), // <--- ESTA LÍNEA ES VITAL
+                'last_sale_id' => fn() => $request->session()->get('last_sale_id'), // <--- Ticket última venta
+                'restoredSale' => fn() => $request->session()->get('restoredSale'), // Venta suspendida restaurada
             ],
         ];
     }

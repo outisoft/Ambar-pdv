@@ -14,6 +14,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SuspendedSaleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Models\Plan;
@@ -39,6 +40,8 @@ Route::middleware(['auth', 'verified', 'check_register'])->group(function () {
     Route::get('/sales/{sale}/ticket', [SaleController::class, 'ticket'])->name('sales.ticket');
     Route::delete('/sales/{sale}', [SaleController::class, 'destroy'])->name('sales.destroy');
     Route::post('/sales/{sale}/cancel', [SaleController::class, 'cancel'])->name('sales.cancel');
+    Route::post('/suspended-sales', [SuspendedSaleController::class, 'store'])->name('suspended_sales.store');
+    Route::delete('/suspended-sales/{suspendedSale}', [SuspendedSaleController::class, 'destroy'])->name('suspended_sales.destroy');
     Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
 
     // ... (Perfil, etc.)

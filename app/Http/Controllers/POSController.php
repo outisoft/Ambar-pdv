@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Product; // Importa el modelo
 use App\Models\Client;
+use App\Models\SuspendedSale;
 use Illuminate\Http\Request;
 use Inertia\Inertia; // Importa Inertia
 
@@ -18,9 +20,10 @@ class POSController extends Controller implements HasMiddleware
         ];
     }
     // Un método 'index' para mostrar la página
-    public function index() {
+    public function index()
+    {
         $user = auth()->user();
-        
+
         // 1. Validar acceso básico
         if (!$user->branch_id && !$user->hasRole(['gerente', 'super-admin'])) {
             abort(403, 'Usuario sin sucursal asignada.');
@@ -47,16 +50,16 @@ class POSController extends Controller implements HasMiddleware
 
         // NUEVO: Mostrar ÚNICAMENTE productos vinculados a la sucursal actual (Stock local)
         if ($targetBranchId) {
-            $productsQuery->whereHas('branches', function($q) use ($targetBranchId) {
+            $productsQuery->whereHas('branches', function ($q) use ($targetBranchId) {
                 $q->where('branches.id', $targetBranchId);
             });
         }
 
-        $products = $productsQuery->with(['branches' => function($q) use ($targetBranchId) {
-                $q->where('branches.id', $targetBranchId);
-            }])
+        $products = $productsQuery->with(['branches' => function ($q) use ($targetBranchId) {
+            $q->where('branches.id', $targetBranchId);
+        }])
             ->get()
-            ->map(function($product) {
+            ->map(function ($product) {
                 // Extraer el stock de la sucursal específica
                 $branchPivot = $product->branches->first();
                 $product->stock = $branchPivot ? $branchPivot->pivot->stock : 0;
@@ -64,14 +67,26 @@ class POSController extends Controller implements HasMiddleware
             });
 
         // 4. Obtener Clientes
-        $clients = [];
         if ($user->company_id) {
             $clients = Client::where('company_id', $user->company_id)->get();
+        } else {
+            // Fallback: si el usuario no tiene company_id, mostrar todos
+            $clients = Client::all();
+        }
+
+        // 5. Obtener ventas suspendidas de la sucursal actual
+        $suspendedSales = collect();
+        if ($targetBranchId) {
+            $suspendedSales = SuspendedSale::where('branch_id', $targetBranchId)
+                ->with('user')
+                ->orderByDesc('created_at')
+                ->get();
         }
 
         return Inertia::render('POS', [
             'products' => $products,
             'clients' => $clients,
+            'suspended_sales' => $suspendedSales,
         ]);
     }
 }
