@@ -163,6 +163,10 @@
                 @case('transfer')
                     TRANSF.
                 @break
+
+                @case('credit')
+                    CRÉDITO
+                @break
             @endswitch
 
             @if ($sale->client)

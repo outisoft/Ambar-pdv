@@ -48,6 +48,15 @@ Route::middleware(['auth', 'verified', 'check_register'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/accounts-receivable', [App\Http\Controllers\AccountsReceivableController::class, 'index'])
+        ->name('accounts_receivable.index');
+
+    Route::get('/accounts-receivable/{client}', [App\Http\Controllers\AccountsReceivableController::class, 'show'])
+        ->name('accounts_receivable.show');
+
+    Route::post('/accounts-receivable/{client}/pay', [App\Http\Controllers\AccountsReceivableController::class, 'storePayment'])
+        ->name('accounts_receivable.store_payment');
+
     Route::get('/cash-register/open', [CashRegisterController::class, 'create'])->name('cash_register.create');
     Route::post('/cash-register/open', [CashRegisterController::class, 'store'])->name('cash_register.store');
 

@@ -65,7 +65,13 @@ const mainNavItems: NavItem[] = [
         href: '/clients',
         icon: LayoutGrid,
         permissions: ['view_clients'],
-    }
+    },
+    {
+        title: 'Accounts Receivable',
+        href: '/accounts-receivable',
+        icon: CreditCard,
+        permissions: ['view_clients'],
+    },
 ];
 
 const footerNavItems: NavItem[] = [

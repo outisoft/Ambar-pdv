@@ -71,7 +71,7 @@ class SaleController extends Controller implements HasMiddleware
             'items' => ['required', 'array'],
             'items.*.id' => ['required', 'exists:products,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
-            'payment_method' => ['required', 'string', 'in:cash,card,transfer'],
+            'payment_method' => ['required', 'string', 'in:cash,card,transfer,credit'],
             'client_id' => ['nullable', 'exists:clients,id'],
         ]);
 
@@ -97,6 +97,9 @@ class SaleController extends Controller implements HasMiddleware
         try {
             DB::transaction(function () use ($request, $user) {
 
+                // Calculamos total una sola vez a partir de los ítems
+                $total = collect($request->items)->sum(fn($i) => $i['price'] * $i['quantity']);
+
                 // 1. Lógica de Crédito
                 if ($request->payment_method === 'credit') {
 
@@ -107,8 +110,8 @@ class SaleController extends Controller implements HasMiddleware
 
                     $client = Client::lockForUpdate()->find($request->client_id); // Bloqueo para evitar concurrencia
 
-                    // Validar Límite
-                    $newBalance = $client->current_balance + $request->total;
+                    // Validar Límite usando el total calculado
+                    $newBalance = $client->current_balance + $total;
                     if ($newBalance > $client->credit_limit) {
                         throw new \Exception("Crédito insuficiente. Disponible: $" . number_format($client->credit_limit - $client->current_balance, 2));
                     }
@@ -119,7 +122,7 @@ class SaleController extends Controller implements HasMiddleware
                         'user_id' => Auth::id(),
                         // 'sale_id' => $sale->id, // (Esto lo harías después de crear la $sale)
                         'type' => 'charge',
-                        'amount' => $request->total,
+                        'amount' => $total,
                         'previous_balance' => $client->current_balance,
                         'new_balance' => $newBalance,
                         'description' => 'Venta a Crédito'
@@ -135,9 +138,6 @@ class SaleController extends Controller implements HasMiddleware
                     ->where('branch_id', $user->branch_id)
                     ->where('status', 'open')
                     ->firstOrFail();
-
-                // Calculamos total (simplificado para el ejemplo)
-                $total = collect($request->items)->sum(fn($i) => $i['price'] * $i['quantity']);
 
                 $sale = Sale::create([
                     'user_id' => $user->id,
