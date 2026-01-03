@@ -77,12 +77,25 @@ class CashRegisterController extends Controller
             ->where('status', '!=', 'cancelled')
             ->sum('total');
 
-        $totalSystemSales = $cashSales + $nonCashSales;
-        $cashSales = $register->sales()->where('payment_method', 'cash')->where('status', '!=', 'cancelled')->sum('total');
+        // Ventas a crédito (no afectan efectivo esperado, pero se muestran para informar)
+        $creditSales = $register->sales()
+            ->where('payment_method', 'credit')
+            ->where('status', '!=', 'cancelled')
+            ->sum('total');
+
+        $totalSystemSales = $cashSales + $nonCashSales + $creditSales;
 
         // --- NUEVO: Sumar Entradas y Restar Salidas ---
         $cashIn = $register->movements()->where('type', 'in')->sum('amount');
         $cashOut = $register->movements()->where('type', 'out')->sum('amount');
+
+        // Detalle de entradas: distinguir abonos de crédito de otras entradas
+        $creditPaymentsIn = $register->movements()
+            ->where('type', 'in')
+            ->where('description', 'like', 'Abono cliente:%')
+            ->sum('amount');
+
+        $otherInputs = $cashIn - $creditPaymentsIn;
 
         // 4. ARQUEO DE CAJA CORREGIDO
         // Esperado = (Inicio + Ventas Efectivo + Entradas) - Salidas
@@ -95,6 +108,11 @@ class CashRegisterController extends Controller
             'systemSales' => $totalSystemSales,
             'cashSales' => $cashSales,
             'nonCashSales' => $nonCashSales,
+            'creditSales' => $creditSales,
+            'cashIn' => $cashIn,
+            'cashOut' => $cashOut,
+            'creditPayments' => $creditPaymentsIn,
+            'otherInputs' => $otherInputs,
             'expectedTotal' => $expectedCash,
         ]);
     }
@@ -125,7 +143,12 @@ class CashRegisterController extends Controller
 
         $totalSystemSales = $cashSales + $nonCashSales;
 
-        $expectedCash = $register->initial_amount + $cashSales;
+        // Incluir también movimientos de caja (entradas / salidas) igual que en close()
+        $cashIn = $register->movements()->where('type', 'in')->sum('amount');
+        $cashOut = $register->movements()->where('type', 'out')->sum('amount');
+
+        // Esperado = (Inicio + Ventas Efectivo + Entradas) - Salidas
+        $expectedCash = ($register->initial_amount + $cashSales + $cashIn) - $cashOut;
         $actualCash = $request->final_amount;
         $difference = $actualCash - $expectedCash;
 
@@ -188,21 +211,23 @@ class CashRegisterController extends Controller
         // 3. Paginación y Transformación
         $registers = $query->paginate(15)
             ->through(function ($reg) {
-                // Calculamos la diferencia al vuelo si no guardaste la columna 'discrepancy'
-                // Diferencia = Lo que entregó - (Inicial + Ventas Totales)
-
-                // OJO: Asegúrate de que 'total_sales' incluya lo que esperabas que hubiera en caja.
-                // Si total_sales es todo (tarjeta+efectivo), el cálculo es:
-                // Diferencia = final_amount - (initial + ventas_efectivo)
-                // Como guardar ventas_efectivo histórico es complejo si no tienes la columna,
-                // usaremos la lógica simple asumiendo que guardaste 'discrepancy' o calculamos aproximado.
-
-                // Si seguiste mi consejo de agregar la columna 'discrepancy' en la migración pasada:
+                // Usamos la discrepancia guardada cuando exista.
                 $diff = $reg->discrepancy;
 
-                // SI NO TIENES LA COLUMNA, usaremos esto (menos preciso si aceptas tarjeta):
+                // Para registros antiguos sin discrepancia calculada,
+                // recalculamos usando la misma fórmula que en close()/update():
+                // Esperado = (Inicio + Ventas Efectivo + Entradas) - Salidas
                 if ($diff === null) {
-                    $diff = $reg->final_amount - ($reg->initial_amount + $reg->total_sales);
+                    $cashSales = $reg->sales()
+                        ->where('payment_method', 'cash')
+                        ->where('status', '!=', 'cancelled')
+                        ->sum('total');
+
+                    $cashIn = $reg->movements()->where('type', 'in')->sum('amount');
+                    $cashOut = $reg->movements()->where('type', 'out')->sum('amount');
+
+                    $expectedCash = ($reg->initial_amount + $cashSales + $cashIn) - $cashOut;
+                    $diff = $reg->final_amount - $expectedCash;
                 }
 
                 return [

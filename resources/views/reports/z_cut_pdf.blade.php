@@ -88,7 +88,7 @@
         @forelse($payment_methods as $method => $amount)
             <tr>
                 <td class="text-left">{{ ucfirst($method) }}</td>
-                <td class="text-right bold">${{ number_format($amount, 2) }}</td>
+                <td class="text-right bold" style="color: green;">+${{ number_format($amount, 2) }}</td>
             </tr>
         @empty
             <tr>
@@ -118,7 +118,7 @@
         </tr>
         <tr>
             <td class="text-left">Monto Anulado:</td>
-            <td class="text-right">-${{ number_format($cancelled_sales, 2) }}</td>
+            <td class="text-right" style="color: red;">-${{ number_format($cancelled_sales, 2) }}</td>
         </tr>
     </table>
 
@@ -130,6 +130,18 @@
                 <tr>
                     <td class="text-left" style="font-size: 10px;">
                         {{ $mov->description }}
+                        @php
+                            $movementLabel = $mov->type === 'in' ? 'Entrada' : 'Salida';
+
+                            if (
+                                $mov->type === 'in' &&
+                                \Illuminate\Support\Str::startsWith($mov->description, 'Abono cliente')
+                            ) {
+                                $movementLabel = 'Abono crédito';
+                            }
+                        @endphp
+                        <br>
+                        <span style="font-size: 9px; font-weight: bold;">[{{ $movementLabel }}]</span>
                     </td>
                     <td class="text-right" style="color: {{ $mov->type == 'in' ? 'green' : 'red' }}">
                         {{ $mov->type == 'in' ? '+' : '-' }}${{ number_format($mov->amount, 2) }}
@@ -145,12 +157,27 @@
     <table>
         <tr>
             <td class="text-left">Fondo Inicial:</td>
-            <td class="text-right">${{ number_format($register->initial_amount, 2) }}</td>
+            <td class="text-right" style="color: green;">+${{ number_format($register->initial_amount, 2) }}</td>
         </tr>
         <tr>
             <td class="text-left">(+) Ventas Efec.:</td>
-            <td class="text-right">${{ number_format($payment_methods->get('cash', 0), 2) }}</td>
+            <td class="text-right" style="color: green;">+${{ number_format($payment_methods->get('cash', 0), 2) }}
+            </td>
         </tr>
+        @if ($register->movements->count() > 0)
+            @php
+                $totalIn = $register->movements->where('type', 'in')->sum('amount');
+                $totalOut = $register->movements->where('type', 'out')->sum('amount');
+            @endphp
+            <tr>
+                <td class="text-left">(+) Entradas Caja:</td>
+                <td class="text-right" style="color: green;">+${{ number_format($totalIn, 2) }}</td>
+            </tr>
+            <tr>
+                <td class="text-left">(-) Salidas Caja:</td>
+                <td class="text-right" style="color: red;">-${{ number_format($totalOut, 2) }}</td>
+            </tr>
+        @endif
         <tr>
             <td colspan="2" style="border-bottom: 1px solid #000; height: 1px;"></td>
         </tr>

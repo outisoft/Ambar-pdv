@@ -23,6 +23,11 @@ interface CloseProps {
     cashSales: number;
     nonCashSales: number;
     expectedTotal: number;
+    creditSales: number;
+    cashIn: number;
+    cashOut: number;
+    creditPayments: number;
+    otherInputs: number;
 }
 
 export default function Close({
@@ -31,6 +36,11 @@ export default function Close({
     systemSales,
     cashSales,
     nonCashSales,
+    creditSales,
+    cashIn,
+    cashOut,
+    creditPayments,
+    otherInputs,
     expectedTotal,
 }: CloseProps) {
     const { data, setData, post, processing, errors } = useForm({
@@ -87,17 +97,54 @@ export default function Close({
                             </div>
                             <Separator />
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground text-emerald-600 dark:text-emerald-400 font-medium">+ Ventas en Efectivo</span>
-                                <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">${Number(cashSales).toFixed(2)}</span>
+                                <span className="text-muted-foreground text-emerald-600 dark:text-emerald-400 font-medium">
+                                    + Ventas en Efectivo
+                                </span>
+                                <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                                    ${Number(cashSales).toFixed(2)}
+                                </span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground text-blue-600 dark:text-blue-400 font-medium">i Ventas Tarjeta/Otros</span>
-                                <span className="font-mono font-medium text-blue-600 dark:text-blue-400">${Number(nonCashSales).toFixed(2)}</span>
+                                <span className="text-muted-foreground text-blue-600 dark:text-blue-400 font-medium">
+                                    i Ventas Tarjeta/Otros
+                                </span>
+                                <span className="font-mono font-medium text-blue-600 dark:text-blue-400">
+                                    ${Number(nonCashSales).toFixed(2)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground text-purple-600 dark:text-purple-400 font-medium">
+                                    ↳ Ventas a Crédito
+                                </span>
+                                <span className="font-mono font-medium text-purple-600 dark:text-purple-400">
+                                    ${Number(creditSales || 0).toFixed(2)}
+                                </span>
                             </div>
                             <Separator />
                             <div className="flex justify-between items-center font-bold text-lg">
                                 <span>Total Ventas Turno</span>
                                 <span>${Number(systemSales).toFixed(2)}</span>
+                            </div>
+
+                            <div className="mt-4 space-y-2 text-sm">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">(+) Abonos a crédito</span>
+                                    <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                                        ${Number(creditPayments || 0).toFixed(2)}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">(+) Otras entradas de caja</span>
+                                    <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                                        ${Number(otherInputs || 0).toFixed(2)}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">(-) Salidas de caja / gastos</span>
+                                    <span className="font-mono font-medium text-red-600 dark:text-red-400">
+                                        ${Number(cashOut || 0).toFixed(2)}
+                                    </span>
+                                </div>
                             </div>
 
                             <div className="mt-6 rounded-lg bg-muted p-4 border border-primary/20">
@@ -107,7 +154,7 @@ export default function Close({
                                     {Number(expectedTotal).toFixed(2)}
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1 gap-1 flex items-center">
-                                    (Fondo Inicial + Ventas Efectivo)
+                                    (Fondo Inicial + Ventas Efectivo + Entradas - Salidas)
                                 </p>
                             </div>
                         </CardContent>
