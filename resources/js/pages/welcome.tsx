@@ -1,6 +1,6 @@
 import { dashboard, login} from '@/routes';
 import { type SharedData } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     Activity,
     BarChart3,
@@ -38,6 +38,37 @@ export default function Welcome({
     const { auth } = usePage<SharedData>().props;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+
+    const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+
+    const {
+        data: trialData,
+        setData: setTrialData,
+        post: postTrial,
+        processing: trialProcessing,
+        errors: trialErrors,
+        reset: resetTrial,
+    } = useForm({
+        name: '',
+        email: '',
+        phone: '',
+        business_name: '',
+        notes: '',
+        plan_id: '',
+    });
+
+    const openTrialModal = (plan?: Plan | null) => {
+        setSelectedPlan(plan ?? null);
+        setTrialData('plan_id', plan ? String(plan.id) : '');
+        setIsTrialModalOpen(true);
+    };
+
+    const closeTrialModal = () => {
+        setIsTrialModalOpen(false);
+        setSelectedPlan(null);
+        resetTrial();
+    };
 
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -126,6 +157,10 @@ export default function Welcome({
                             
                                 <Link
                                     href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        openTrialModal(null);
+                                    }}
                                     className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-white transition-all bg-[#FF750F] rounded-lg hover:bg-[#e0660d] hover:shadow-lg hover:-translate-y-1 focus:ring-4 focus:ring-orange-300 dark:focus:ring-orange-900"
                                 >
                                     Comenzar Gratis
@@ -388,6 +423,7 @@ export default function Welcome({
                                         <div className="mt-6 flex flex-col gap-3">
                                             <button
                                                 type="button"
+                                                onClick={() => openTrialModal(plan)}
                                                 className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-[#FF750F] text-white hover:bg-[#e0660d] transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
                                             >
                                                 Solicitar prueba gratis
@@ -432,6 +468,10 @@ export default function Welcome({
                     </p>
                         <Link
                             href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                openTrialModal(null);
+                            }}
                             className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-[#1b1b18] bg-white rounded-lg hover:bg-gray-100 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]"
                         >
                             Solicita una Cuenta Gratis
@@ -458,6 +498,135 @@ export default function Welcome({
                     </div>
                 </div>
             </footer>
+
+            {isTrialModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 relative">
+                        <button
+                            type="button"
+                            onClick={closeTrialModal}
+                            className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            aria-label="Cerrar"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
+                            Solicitar prueba gratis
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                            Déjanos tus datos y nos pondremos en contacto contigo para activar tu periodo de prueba.
+                        </p>
+
+                        {selectedPlan && (
+                            <div className="mb-4 text-sm text-gray-700 dark:text-gray-300">
+                                Plan seleccionado: <span className="font-semibold">{selectedPlan.name}</span>
+                            </div>
+                        )}
+
+                        <form
+                            className="space-y-4"
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                postTrial(route('trial-requests.store'), {
+                                    onSuccess: () => {
+                                        closeTrialModal();
+                                    },
+                                });
+                            }}
+                        >
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Nombre completo
+                                </label>
+                                <input
+                                    type="text"
+                                    value={trialData.name}
+                                    onChange={(e) => setTrialData('name', e.target.value)}
+                                    className="w-full rounded-lg border border-gray-300 dark:border-[#3E3E3A] bg-white dark:bg-[#161615] px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF750F] focus:border-transparent"
+                                    placeholder="Ej. Juan Pérez"
+                                />
+                                {trialErrors.name && (
+                                    <p className="mt-1 text-xs text-red-500">{trialErrors.name}</p>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Correo electrónico
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={trialData.email}
+                                        onChange={(e) => setTrialData('email', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 dark:border-[#3E3E3A] bg-white dark:bg-[#161615] px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF750F] focus:border-transparent"
+                                        placeholder="tucorreo@ejemplo.com"
+                                    />
+                                    {trialErrors.email && (
+                                        <p className="mt-1 text-xs text-red-500">{trialErrors.email}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Teléfono
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        value={trialData.phone}
+                                        onChange={(e) => setTrialData('phone', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 dark:border-[#3E3E3A] bg-white dark:bg-[#161615] px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF750F] focus:border-transparent"
+                                        placeholder="Ej. +52 55 1234 5678"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Nombre del negocio
+                                </label>
+                                <input
+                                    type="text"
+                                    value={trialData.business_name}
+                                    onChange={(e) => setTrialData('business_name', e.target.value)}
+                                    className="w-full rounded-lg border border-gray-300 dark:border-[#3E3E3A] bg-white dark:bg-[#161615] px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF750F] focus:border-transparent"
+                                    placeholder="Ej. Tienda La Esquina"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Comentarios adicionales (opcional)
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    value={trialData.notes}
+                                    onChange={(e) => setTrialData('notes', e.target.value)}
+                                    className="w-full rounded-lg border border-gray-300 dark:border-[#3E3E3A] bg-white dark:bg-[#161615] px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF750F] focus:border-transparent resize-none"
+                                    placeholder="Cuéntanos brevemente sobre tu negocio o dudas que tengas."
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={closeTrialModal}
+                                    className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-[#3E3E3A] dark:text-gray-200 dark:hover:bg-[#161615]"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={trialProcessing}
+                                    className="px-4 py-2 text-sm font-medium rounded-lg bg-[#FF750F] text-white hover:bg-[#e0660d] shadow-sm hover:shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                    {trialProcessing ? 'Enviando...' : 'Enviar solicitud'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -16,6 +16,7 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SuspendedSaleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TrialRequestController;
 use Illuminate\Support\Facades\Route;
 use App\Models\Plan;
 use Inertia\Inertia;
@@ -29,6 +30,9 @@ Route::get('/', function () {
         'plans' => $plans,
     ]);
 })->name('home');
+
+Route::post('/trial-requests', [TrialRequestController::class, 'store'])
+    ->name('trial-requests.store');
 
 Route::middleware(['auth', 'verified', 'check_register'])->group(function () {
 
