@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sale;
+use App\Models\Branch;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,6 +36,7 @@ class DashboardController extends Controller
         // 2. EJECUCIÓN DE CONSULTAS (Usando clone para no ensuciar la query base)
         // ---------------------------------------------------
         $today = Carbon::today();
+        $yesterday = Carbon::yesterday();
 
         // Totales de Hoy
         $todaySales = (clone $query)
@@ -46,6 +48,51 @@ class DashboardController extends Controller
             ->whereDate('created_at', $today)
             ->where('status', '!=', 'cancelled')
             ->count();
+
+        // Totales de Ayer (para variaciones %)
+        $yesterdaySales = (clone $query)
+            ->whereDate('created_at', $yesterday)
+            ->where('status', '!=', 'cancelled')
+            ->sum('total');
+
+        $yesterdayTransactions = (clone $query)
+            ->whereDate('created_at', $yesterday)
+            ->where('status', '!=', 'cancelled')
+            ->count();
+
+        $salesChangePercent = $yesterdaySales > 0
+            ? round((($todaySales - $yesterdaySales) / $yesterdaySales) * 100, 1)
+            : null;
+
+        $transactionsChangePercent = $yesterdayTransactions > 0
+            ? round((($todayTransactions - $yesterdayTransactions) / $yesterdayTransactions) * 100, 1)
+            : null;
+
+        // 2.bis ACTIVIDAD: % de sucursales activas (con ventas hoy)
+        // ---------------------------------------------------
+        $branchesWithSalesToday = (clone $query)
+            ->whereDate('created_at', $today)
+            ->where('status', '!=', 'cancelled')
+            ->with('cashRegister')
+            ->get()
+            ->pluck('cashRegister.branch_id')
+            ->filter()
+            ->unique()
+            ->count();
+
+        if ($user->hasRole('gerente')) {
+            $totalBranches = Branch::where('company_id', $user->company_id)->count();
+        } elseif ($user->hasRole('cajero')) {
+            // Para cajero solo importa su sucursal
+            $totalBranches = 1;
+        } else {
+            // super-admin u otros ven todas las sucursales
+            $totalBranches = Branch::count();
+        }
+
+        $activityPercent = $totalBranches > 0
+            ? (int) round(min(100, ($branchesWithSalesToday / $totalBranches) * 100))
+            : 0;
 
         // 3. DATOS DEL GRÁFICO (Esta es la parte que faltaba)
         // ---------------------------------------------------
@@ -91,14 +138,43 @@ class DashboardController extends Controller
                 ];
             });
 
+        // 5.bis. Productos con stock bajo (para alertas en el dashboard)
+        // ---------------------------------------------------
+        $lowStockQuery = DB::table('branch_product as bp')
+            ->join('products as p', 'p.id', '=', 'bp.product_id')
+            ->join('branches as b', 'b.id', '=', 'bp.branch_id')
+            ->select(
+                'p.id as product_id',
+                'p.name as product_name',
+                'b.name as branch_name',
+                'bp.stock as quantity',
+                'bp.min_stock'
+            )
+            ->whereColumn('bp.stock', '<=', 'bp.min_stock');
+
+        if ($user->hasRole('gerente')) {
+            $lowStockQuery->where('b.company_id', $user->company_id);
+        } elseif ($user->hasRole('cajero')) {
+            $lowStockQuery->where('b.id', $user->branch_id);
+        }
+
+        $lowStockList = $lowStockQuery
+            ->orderByRaw('(bp.stock - bp.min_stock) asc')
+            ->limit(5)
+            ->get();
+
         // 6. RETORNO A LA VISTA
         // ---------------------------------------------------
         return Inertia::render('dashboard', [
             'todaySales' => $todaySales,
             'todayTransactions' => $todayTransactions,
+            'salesChangePercent' => $salesChangePercent,
+            'transactionsChangePercent' => $transactionsChangePercent,
+            'activityPercent' => $activityPercent,
             'chartLabels' => $chartLabels,
             'chartData' => $chartData,
             'recentSales' => $recentSales,
+            'lowStockList' => $lowStockList,
             'userRole' => $user->getRoleNames()->first(),
         ]);
     }

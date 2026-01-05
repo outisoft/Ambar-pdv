@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>404 | Página no encontrada</title>
+    <title>500 | Error interno del servidor</title>
     @vite(['resources/css/app.css', 'resources/js/app.tsx'])
 </head>
 
@@ -30,16 +30,16 @@
         <div class="max-w-xl w-full text-center">
             <div
                 class="inline-flex items-center justify-center rounded-2xl bg-slate-900/70 border border-slate-700/60 px-4 py-2 mb-6 shadow-sm backdrop-blur">
-                <span class="text-xs font-semibold tracking-wide text-slate-200 uppercase">Error 404</span>
+                <span class="text-xs font-semibold tracking-wide text-slate-200 uppercase">Error 500</span>
             </div>
 
             <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-slate-50 mb-3">
-                Página no encontrada
+                Algo salió mal
             </h1>
 
             <p class="text-base sm:text-lg text-slate-300 mb-8">
-                La página que estás buscando no existe, ha sido movida o el enlace ha expirado.
-                Verifica la URL o vuelve a un lugar seguro dentro del sistema.
+                Ocurrió un error interno en el servidor mientras procesábamos tu solicitud.
+                Esto no debería haber pasado.
             </p>
 
             <div class="relative mb-10">
@@ -51,20 +51,20 @@
                     <div class="relative flex flex-col items-center gap-3">
                         <div
                             class="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/40">
-                            <span class="text-2xl font-bold">404</span>
+                            <span class="text-2xl font-bold">500</span>
                         </div>
                         <p class="text-sm text-slate-300 max-w-xs">
-                            No pudimos encontrar el recurso que estabas buscando.
+                            Puedes intentar recargar la página o volver al panel principal.
                         </p>
                     </div>
                 </div>
             </div>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a href="{{ url()->previous() }}"
+                <button type="button" onclick="location.reload()"
                     class="inline-flex items-center justify-center rounded-lg border border-slate-600 bg-slate-900/80 px-4 py-2.5 text-sm font-medium text-slate-100 hover:bg-slate-800 transition-colors w-full sm:w-auto backdrop-blur">
-                    Volver atrás
-                </a>
+                    Reintentar
+                </button>
 
                 @auth
                     <a href="{{ route('dashboard') }}"
@@ -80,8 +80,7 @@
             </div>
 
             <p class="mt-8 text-xs text-slate-400">
-                Si crees que este enlace debería funcionar, contacta al equipo responsable de tu sistema de punto de
-                venta.
+                Si el problema continúa, contacta al equipo técnico e indica el momento en que ocurrió el error.
             </p>
         </div>
     </div>

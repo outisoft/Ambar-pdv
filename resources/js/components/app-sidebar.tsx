@@ -55,19 +55,7 @@ const mainNavItems: NavItem[] = [
         permissions: ['view_inventory'],
     },
     {
-        title: 'Reports',
-        href: '/reports',
-        icon: BookOpen,
-        permissions: ['view_reports'],
-    },
-    {
-        title: 'Clients',
-        href: '/clients',
-        icon: LayoutGrid,
-        permissions: ['view_clients'],
-    },
-    {
-        title: 'Accounts Receivable',
+        title: 'CXC',
         href: '/accounts-receivable',
         icon: CreditCard,
         permissions: ['view_clients'],
@@ -98,6 +86,18 @@ const footerNavItems: NavItem[] = [
         href: '/branches',
         icon: MapPinHouse,
         permissions: ['view_branches'],
+    },
+    {
+        title: 'Clients',
+        href: '/clients',
+        icon: LayoutGrid,
+        permissions: ['view_clients'],
+    },
+    {
+        title: 'Reports',
+        href: '/reports',
+        icon: BookOpen,
+        permissions: ['view_reports'],
     },
     {
         title: 'Settings',

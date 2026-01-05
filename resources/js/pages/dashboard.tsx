@@ -3,13 +3,15 @@ import AuthenticatedLayout from '@/layouts/app-layout';
 import { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import {
-    BarElement,
     CategoryScale,
     Chart as ChartJS,
     Legend,
     LinearScale,
+    PointElement,
+    LineElement,
     Title,
     Tooltip,
+    Filler,
 } from 'chart.js';
 import {
     ArrowUpRight,
@@ -19,9 +21,10 @@ import {
     TrendingUp,
     Users,
     Activity,
-    ShoppingCart
+    ShoppingCart,
+    AlertTriangle
 } from 'lucide-react';
-import { Bar } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useCashMovement } from '@/Contexts/CashMovementContext';
@@ -31,15 +34,20 @@ import { Button } from '@/components/ui/button';
 ChartJS.register(
     CategoryScale,
     LinearScale,
-    BarElement,
     Title,
     Tooltip,
     Legend,
+    PointElement,
+    LineElement,
+    Filler,
 );
 
 interface DashboardProps extends PageProps {
     todaySales: number;
     todayTransactions: number;
+    salesChangePercent: number | null;
+    transactionsChangePercent: number | null;
+    activityPercent: number;
     chartLabels: string[];
     chartData: number[];
     recentSales: {
@@ -49,28 +57,43 @@ interface DashboardProps extends PageProps {
         total: number;
         status: string;
     }[];
+    lowStockList: {
+        product_name: string;
+        branch_name: string;
+        quantity: number;
+        min_stock: number;
+    }[];
+    userRole?: string;
 }
 
 export default function Dashboard({
     auth,
     todaySales,
     todayTransactions,
+    salesChangePercent,
+    transactionsChangePercent,
+    activityPercent,
     chartLabels,
     chartData,
     recentSales,
+    lowStockList,
 }: DashboardProps) {
     const { openEntry, openExpense } = useCashMovement();
+    const formatCurrency = (amount: number) =>
+        new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount || 0);
+
     const data = {
         labels: chartLabels,
         datasets: [
             {
                 label: 'Ventas ($)',
                 data: chartData,
-                backgroundColor: 'rgba(255, 117, 15, 0.8)', // Primary Orange
-                borderColor: '#FF750F',
-                borderWidth: 0,
-                borderRadius: 4,
-                hoverBackgroundColor: '#FF750F',
+                borderColor: 'rgb(255, 117, 15)',
+                backgroundColor: 'rgba(255, 117, 15, 0.15)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 5,
             },
         ],
     };
@@ -88,6 +111,12 @@ export default function Dashboard({
                 padding: 12,
                 cornerRadius: 8,
                 displayColors: false,
+                callbacks: {
+                    label: (context: any) => {
+                        const value = context.parsed?.y ?? context.parsed ?? 0;
+                        return formatCurrency(Number(value));
+                    },
+                },
             }
         },
         scales: {
@@ -102,7 +131,7 @@ export default function Dashboard({
                 },
                 ticks: {
                     color: 'oklch(0.556 0 0)',
-                    callback: function (value: any) { return '$' + value; }
+                    callback: function (value: any) { return value; }
                 },
                 border: { display: false }
             }
@@ -169,18 +198,27 @@ export default function Dashboard({
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">Ventas Hoy</p>
-                                <h3 className="text-2xl font-bold mt-1 text-foreground">${Number(todaySales).toFixed(2)}</h3>
+                                <h3 className="text-2xl font-bold mt-1 text-foreground">{formatCurrency(todaySales)}</h3>
                             </div>
                             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
                                 <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
                             </div>
                         </div>
                         <div className="mt-4 flex items-center text-sm">
-                            <span className="text-green-600 dark:text-green-400 flex items-center font-medium">
-                                <ArrowUpRight className="w-4 h-4 mr-1" />
-                                +12.5%
-                            </span>
-                            <span className="ml-2 text-muted-foreground">vs ayer</span>
+                            {salesChangePercent !== null ? (
+                                <>
+                                    <span className={`flex items-center font-medium ${salesChangePercent >= 0
+                                        ? 'text-green-600 dark:text-green-400'
+                                        : 'text-red-500 dark:text-red-400'
+                                        }`}>
+                                        <ArrowUpRight className={`w-4 h-4 mr-1 ${salesChangePercent < 0 ? 'rotate-180' : ''}`} />
+                                        {salesChangePercent > 0 ? '+' : ''}{salesChangePercent}%
+                                    </span>
+                                    <span className="ml-2 text-muted-foreground">vs ayer</span>
+                                </>
+                            ) : (
+                                <span className="text-muted-foreground">Sin datos de comparación</span>
+                            )}
                         </div>
                     </div>
 
@@ -196,31 +234,44 @@ export default function Dashboard({
                             </div>
                         </div>
                         <div className="mt-4 flex items-center text-sm">
-                            <span className="text-green-600 dark:text-green-400 flex items-center font-medium">
-                                <ArrowUpRight className="w-4 h-4 mr-1" />
-                                +5.2%
-                            </span>
-                            <span className="ml-2 text-muted-foreground">vs ayer</span>
+                            {transactionsChangePercent !== null ? (
+                                <>
+                                    <span className={`flex items-center font-medium ${transactionsChangePercent >= 0
+                                        ? 'text-green-600 dark:text-green-400'
+                                        : 'text-red-500 dark:text-red-400'
+                                        }`}>
+                                        <ArrowUpRight className={`w-4 h-4 mr-1 ${transactionsChangePercent < 0 ? 'rotate-180' : ''}`} />
+                                        {transactionsChangePercent > 0 ? '+' : ''}{transactionsChangePercent}%
+                                    </span>
+                                    <span className="ml-2 text-muted-foreground">vs ayer</span>
+                                </>
+                            ) : (
+                                <span className="text-muted-foreground">Sin datos de comparación</span>
+                            )}
                         </div>
                     </div>
 
-                    {/* Card 3: Clientes Nuevos */}
+                    {/* Card 3: Alertas de Stock */}
                     <div className="flex flex-col justify-between rounded-xl border bg-card p-6 shadow-sm">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">Clientes Nuevos</p>
-                                <h3 className="text-2xl font-bold mt-1 text-foreground">+24</h3>
+                                <p className="text-sm font-medium text-muted-foreground">Alertas de Stock</p>
+                                <h3 className="text-2xl font-bold mt-1 text-foreground">{lowStockList.length}</h3>
                             </div>
-                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-full">
-                                <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
+                                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                             </div>
                         </div>
                         <div className="mt-4 flex items-center text-sm">
-                            <span className="text-red-500 dark:text-red-400 flex items-center font-medium">
-                                <TrendingUp className="w-4 h-4 mr-1 rotate-180" />
-                                -2.1%
-                            </span>
-                            <span className="ml-2 text-muted-foreground">vs semana pasada</span>
+                            {lowStockList.length > 0 ? (
+                                <span className="text-red-500 dark:text-red-400 font-medium">
+                                    Productos por agotarse, revisa tu inventario.
+                                </span>
+                            ) : (
+                                <span className="text-green-600 dark:text-green-400 font-medium">
+                                    Inventario saludable en todas las sucursales.
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -229,7 +280,7 @@ export default function Dashboard({
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">Actividad</p>
-                                <h3 className="text-2xl font-bold mt-1 text-foreground">98%</h3>
+                                <h3 className="text-2xl font-bold mt-1 text-foreground">{activityPercent}%</h3>
                             </div>
                             <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-full">
                                 <Activity className="w-5 h-5 text-orange-600 dark:text-orange-400" />
@@ -237,30 +288,33 @@ export default function Dashboard({
                         </div>
                         <div className="mt-4 flex items-center text-sm w-full">
                             <div className="w-full bg-secondary rounded-full h-1.5 mt-2">
-                                <div className="bg-primary h-1.5 rounded-full" style={{ width: '98%' }}></div>
+                                <div className="bg-primary h-1.5 rounded-full" style={{ width: `${activityPercent}%` }}></div>
                             </div>
+                            <p className="ml-2 text-xs text-muted-foreground whitespace-nowrap">
+                                Sucursales con ventas hoy
+                            </p>
                         </div>
                     </div>
                 </div>
 
                 {/* 3. Charts & Main Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
                     {/* Main Chart */}
-                    <div className="lg:col-span-2 rounded-xl border bg-card p-6 shadow-sm">
+                    <div className="lg:col-span-2 rounded-xl border bg-card p-6 shadow-sm h-[360px] flex flex-col">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-semibold text-foreground">Resumen de Ingesos</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Rendimiento Semanal</h3>
                             <select className="text-sm border-input rounded-lg bg-background text-foreground focus:ring-primary focus:border-primary">
                                 <option>Últimos 7 días</option>
                                 <option>Este mes</option>
                             </select>
                         </div>
-                        <div className="h-[300px] w-full">
-                            <Bar options={options} data={data} redraw />
+                        <div className="flex-1 w-full">
+                            <Line options={options} data={data} redraw />
                         </div>
                     </div>
 
                     {/* Recent Transactions List */}
-                    <div className="rounded-xl border bg-card p-6 shadow-sm flex flex-col h-full">
+                    <div className="rounded-xl border bg-card p-6 shadow-sm h-[360px] flex flex-col">
                         <h3 className="text-lg font-semibold text-foreground mb-4">Transacciones Recientes</h3>
                         <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                             {recentSales.length > 0 ? (
@@ -287,7 +341,7 @@ export default function Dashboard({
                                         </div>
                                         <div className="text-right">
                                             <p className="text-sm font-bold text-foreground">
-                                                +$ {Number(sale.total).toFixed(2)}
+                                                +{formatCurrency(sale.total)}
                                             </p>
                                             <span
                                                 className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${sale.status === 'cancelled'
@@ -311,6 +365,51 @@ export default function Dashboard({
                             Ver todas las transacciones
                         </Link>
                     </div>
+                </div>
+
+                {/* 4. Low Stock List */}
+                <div className="rounded-xl border bg-card p-6 shadow-sm">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-foreground">⚠️ Reponer Stock</h3>
+                        <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full dark:bg-red-900/40 dark:text-red-200">
+                            {lowStockList.length > 0 ? 'Urgente' : 'OK'}
+                        </span>
+                    </div>
+
+                    {lowStockList.length > 0 ? (
+                        <ul className="divide-y divide-border">
+                            {lowStockList.map((item, index) => (
+                                <li key={index} className="py-3 flex justify-between items-center">
+                                    <div>
+                                        <div className="text-sm font-semibold text-foreground">{item.product_name}</div>
+                                        <div className="text-xs text-muted-foreground">{item.branch_name}</div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-sm font-bold text-red-600 dark:text-red-400">
+                                            {item.quantity} un.
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">Min: {item.min_stock}</div>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="text-center text-muted-foreground py-4 text-sm">
+                            ✅ Todo el inventario está saludable.
+                        </div>
+                    )}
+
+                    {lowStockList.length > 0 && (
+                        <div className="mt-4 text-center">
+                            <Link
+                                href={route('products.index')}
+                                className="text-sm font-medium text-primary hover:underline"
+                            >
+                                Ir a Inventario 
+                                <span aria-hidden>→</span>
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
         </AuthenticatedLayout>

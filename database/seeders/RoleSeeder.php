@@ -54,17 +54,36 @@ class RoleSeeder extends Seeder
         // Por simplicidad, el Gerente tiene acceso a todo EXCEPTO borrar compañías o roles super-admin (logic handle in code)
         // Vamos a darle lista blanca mejor para ser explícitos.
         $gerentePermissions = [
-            'view_products', 'create_products', 'edit_products', 'delete_products', 'export_products',
-            'view_clients', 'create_clients', 'edit_clients', 'delete_clients',
-            'view_users', 'create_users', 'edit_users', 'delete_users',
-            'view_roles', 'create_roles', 'edit_roles', 'delete_roles', // Roles de sus empleados
-            'view_branches', 'create_branches', 'edit_branches', 'delete_branches',
+            'view_products',
+            'create_products',
+            'edit_products',
+            'delete_products',
+            'export_products',
+            'view_clients',
+            'create_clients',
+            'edit_clients',
+            'delete_clients',
+            'view_users',
+            'create_users',
+            'edit_users',
+            'delete_users',
+            'view_branches',
+            'create_branches',
+            'edit_branches',
+            'delete_branches',
             'view_pos',
-            'view_sales', 'create_sales', 'delete_sales', 'cancel_sales',
-            'view_cash_registers', 'open_cash_registers', 'close_cash_registers',
-            'view_inventory', 'update_inventory',
+            'view_sales',
+            'create_sales',
+            'delete_sales',
+            'cancel_sales',
+            'view_cash_registers',
+            'open_cash_registers',
+            'close_cash_registers',
+            'view_inventory',
+            'update_inventory',
             'view_reports',
-            'view_settings', 'edit_settings',
+            'view_settings',
+            'edit_settings',
         ];
 
         // Validamos que existan antes de asignar (aunque acabamos de crearlos)
@@ -78,9 +97,11 @@ class RoleSeeder extends Seeder
             'view_products', // Para buscar en el POS
             'create_sales',
             'view_sales', // Ver sus ventas (controlado por policy/query scope)
-            'view_cash_registers', 'open_cash_registers', 'close_cash_registers',
+            'view_cash_registers',
+            'open_cash_registers',
+            'close_cash_registers',
         ];
-        
+
         $roleCajero->givePermissionTo(Permission::whereIn('name', $cajeroPermissions)->get());
     }
 }
