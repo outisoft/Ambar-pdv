@@ -164,6 +164,24 @@ export default function Edit({ auth, company, logoUrl }: any) {
                                 />
                                 <InputError message={errors.address} />
                             </div>
+
+                            {/* Ticket footer message */}
+                            <div className="grid gap-2">
+                                <Label htmlFor="ticket_footer_message">Mensaje en pie de ticket</Label>
+                                <textarea
+                                    id="ticket_footer_message"
+                                    className={cn(
+                                        "border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground flex min-h-[60px] w-full min-w-0 rounded-lg border bg-white dark:bg-gray-900 px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                                        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+                                        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+                                    )}
+                                    rows={2}
+                                    placeholder="Ej. Gracias por su compra"
+                                    value={data.ticket_footer_message}
+                                    onChange={(e) => setData('ticket_footer_message', e.target.value)}
+                                />
+                                <InputError message={errors.ticket_footer_message} />
+                            </div>
                         </div>
 
                         <div className="flex items-center gap-4">

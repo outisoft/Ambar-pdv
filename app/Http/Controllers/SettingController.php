@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Company;
 
 class SettingController extends Controller
 {
@@ -19,7 +20,11 @@ class SettingController extends Controller
             abort(403, 'No tienes una empresa asignada para configurar.');
         }
 
-        $company = $user->company; // Gracias a la relación belongsTo
+        // OJO: el middleware de Inertia carga la relación company solo con algunos campos
+        // (id, name, subscription_status, subscription_ends_at). Aquí necesitamos TODOS
+        // los campos, así que recargamos la empresa directamente desde la BD.
+
+        $company = Company::findOrFail($user->company_id);
 
         return Inertia::render('settings/Edit', [
             'company' => $company,

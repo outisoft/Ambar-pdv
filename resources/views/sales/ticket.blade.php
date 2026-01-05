@@ -218,8 +218,7 @@
         </p>
 
         <div class="footer">
-            <p>¡GRACIAS POR SU COMPRA!</p>
-            <p>Vuelva pronto</p>
+            <p>{{ $company->ticket_footer_message }}</p>
         </div>
     </div>
 

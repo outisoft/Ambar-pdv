@@ -53,6 +53,10 @@ class CompanyController extends Controller implements HasMiddleware
             'admin_email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
             'plan_id' => 'required|exists:plans,id',
+            'phone' => 'nullable|string|max:255',
+            'tax_id' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'ticket_footer_message' => 'nullable|string',
         ]);
 
         try {
@@ -68,6 +72,10 @@ class CompanyController extends Controller implements HasMiddleware
                     'subscription_status' => 'active',
                     // Calculamos fecha de vencimiento hoy + días del plan
                     'subscription_ends_at' => Carbon::now()->addDays($plan->duration_in_days),
+                    'phone' => $request->phone,
+                    'tax_id' => $request->tax_id,
+                    'address' => $request->address,
+                    'ticket_footer_message' => $request->ticket_footer_message,
                 ]);
 
                 // 3. Crear la SUCURSAL MATRIZ por defecto
@@ -119,6 +127,11 @@ class CompanyController extends Controller implements HasMiddleware
             'name' => 'required|string|max:255',
             'logo' => 'nullable|image|max:2048',
             'plan_id' => 'required|exists:plans,id',
+            'phone' => 'nullable|string|max:255',
+            'tax_id' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'ticket_footer_message' => 'nullable|string',
+            'remove_logo' => 'nullable|boolean',
         ]);
 
         // Handle Logo Upload
@@ -128,9 +141,18 @@ class CompanyController extends Controller implements HasMiddleware
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($company->logo_path);
             }
             $company->logo_path = $request->file('logo')->store('companies', 'public');
+        } elseif ($request->boolean('remove_logo')) {
+            if ($company->logo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($company->logo_path);
+            }
+            $company->logo_path = null;
         }
 
         $company->name = $request->name;
+        $company->phone = $request->phone;
+        $company->tax_id = $request->tax_id;
+        $company->address = $request->address;
+        $company->ticket_footer_message = $request->ticket_footer_message;
 
         // Actualizar plan y fecha de suscripción si cambió el plan
         if ($request->filled('plan_id') && (int) $request->plan_id !== (int) $company->plan_id) {

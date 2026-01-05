@@ -11,6 +11,10 @@ interface Company {
     id: number;
     name: string;
     logo_path: string | null;
+    phone?: string | null;
+    tax_id?: string | null;
+    address?: string | null;
+    ticket_footer_message?: string | null;
 }
 
 interface Plan {
@@ -31,6 +35,11 @@ export default function Edit({ company, plans }: Props) {
         name: company.name,
         logo: null as File | null,
         plan_id: company.plan_id ? String(company.plan_id) : '',
+        phone: company.phone || '',
+        tax_id: company.tax_id || '',
+        address: company.address || '',
+        ticket_footer_message: company.ticket_footer_message || '',
+        remove_logo: false,
     });
 
     const [preview, setPreview] = useState<string | null>(
@@ -41,6 +50,7 @@ export default function Edit({ company, plans }: Props) {
         const file = e.target.files?.[0];
         if (file) {
             setData('logo', file);
+            setData('remove_logo', false);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPreview(reader.result as string);
@@ -101,6 +111,61 @@ export default function Edit({ company, plans }: Props) {
                                         onChange={e => setData('name', e.target.value)}
                                     />
                                     {errors.name && <p className="text-destructive text-sm font-medium mt-1">{errors.name}</p>}
+                                </div>
+
+                                {/* Contact & tax info */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Teléfono</Label>
+                                        <Input
+                                            placeholder="Ej. 555-1234"
+                                            value={data.phone}
+                                            onChange={e => setData('phone', e.target.value)}
+                                        />
+                                        {errors.phone && (
+                                            <p className="text-destructive text-sm font-medium mt-1">{errors.phone}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>RFC / NIT / RUT</Label>
+                                        <Input
+                                            placeholder="Identificación fiscal"
+                                            value={data.tax_id}
+                                            onChange={e => setData('tax_id', e.target.value)}
+                                        />
+                                        {errors.tax_id && (
+                                            <p className="text-destructive text-sm font-medium mt-1">{errors.tax_id}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Dirección</Label>
+                                    <textarea
+                                        className="mt-1 block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                                        rows={3}
+                                        placeholder="Calle Principal #123, Ciudad"
+                                        value={data.address}
+                                        onChange={e => setData('address', e.target.value)}
+                                    />
+                                    {errors.address && (
+                                        <p className="text-destructive text-sm font-medium mt-1">{errors.address}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Mensaje en pie de ticket</Label>
+                                    <textarea
+                                        className="mt-1 block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                                        rows={2}
+                                        placeholder="Ej. Gracias por su compra"
+                                        value={data.ticket_footer_message}
+                                        onChange={e => setData('ticket_footer_message', e.target.value)}
+                                    />
+                                    {errors.ticket_footer_message && (
+                                        <p className="text-destructive text-sm font-medium mt-1">{errors.ticket_footer_message}</p>
+                                    )}
                                 </div>
 
                                 {/* Plan de suscripción */}
@@ -171,6 +236,7 @@ export default function Edit({ company, plans }: Props) {
                                                 {preview && (
                                                     <Button variant="ghost" size="sm" type="button" onClick={() => {
                                                         setData('logo', null);
+                                                        setData('remove_logo', true);
                                                         setPreview(null);
                                                     }}>
                                                         Quitar

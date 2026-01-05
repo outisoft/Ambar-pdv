@@ -25,6 +25,10 @@ export default function Create({ plans }: Props) {
         admin_email: '',
         password: '',
         plan_id: '',
+        phone: '',
+        tax_id: '',
+        address: '',
+        ticket_footer_message: '',
     });
 
     const submit = (e: FormEvent) => {
@@ -79,6 +83,60 @@ export default function Create({ plans }: Props) {
                                     />
                                     {errors.company_name && (
                                         <p className="text-destructive text-sm font-medium mt-1">{errors.company_name}</p>
+                                    )}
+                                </div>
+
+                                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Teléfono</Label>
+                                        <Input
+                                            placeholder="Ej. 555-1234"
+                                            value={data.phone}
+                                            onChange={e => setData('phone', e.target.value)}
+                                        />
+                                        {errors.phone && (
+                                            <p className="text-destructive text-sm font-medium mt-1">{errors.phone}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>RFC / NIT / RUT</Label>
+                                        <Input
+                                            placeholder="Identificación fiscal"
+                                            value={data.tax_id}
+                                            onChange={e => setData('tax_id', e.target.value)}
+                                        />
+                                        {errors.tax_id && (
+                                            <p className="text-destructive text-sm font-medium mt-1">{errors.tax_id}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 space-y-2">
+                                    <Label>Dirección</Label>
+                                    <textarea
+                                        className="mt-1 block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                                        rows={3}
+                                        placeholder="Calle Principal #123, Ciudad"
+                                        value={data.address}
+                                        onChange={e => setData('address', e.target.value)}
+                                    />
+                                    {errors.address && (
+                                        <p className="text-destructive text-sm font-medium mt-1">{errors.address}</p>
+                                    )}
+                                </div>
+
+                                <div className="mt-4 space-y-2">
+                                    <Label>Mensaje en pie de ticket</Label>
+                                    <textarea
+                                        className="mt-1 block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                                        rows={2}
+                                        placeholder="Ej. Gracias por su compra"
+                                        value={data.ticket_footer_message}
+                                        onChange={e => setData('ticket_footer_message', e.target.value)}
+                                    />
+                                    {errors.ticket_footer_message && (
+                                        <p className="text-destructive text-sm font-medium mt-1">{errors.ticket_footer_message}</p>
                                     )}
                                 </div>
                             </div>

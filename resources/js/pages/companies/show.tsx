@@ -14,6 +14,12 @@ interface Company {
     id: number;
     name: string;
     logo_path: string | null;
+    subscription_ends_at?: string | null;
+    subscription_status?: string | null;
+    phone?: string | null;
+    tax_id?: string | null;
+    address?: string | null;
+    ticket_footer_message?: string | null;
     plan?: {
         id: number;
         name: string;
@@ -28,6 +34,14 @@ interface Props {
 }
 
 export default function Show({ company }: Props) {
+    const formattedEndDate = company.subscription_ends_at
+        ? new Date(company.subscription_ends_at).toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+        })
+        : null;
+
     return (
         <AuthenticatedLayout>
             <Head title={`Empresa: ${company.name}`} />
@@ -52,6 +66,11 @@ export default function Show({ company }: Props) {
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
                                 Plan actual: {company.plan?.name ?? 'Sin plan'}
                             </span>
+                            {formattedEndDate && (
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    Vence el {formattedEndDate}
+                                </p>
+                            )}
                         </div>
                     </div>
                     <div className="ml-auto">
@@ -80,6 +99,39 @@ export default function Show({ company }: Props) {
                             </div>
                             <h2 className="font-bold text-xl">{company.name}</h2>
                             <p className="text-sm text-muted-foreground mt-1">{company.branches.length} Sucursales</p>
+
+                            <Separator className="my-4" />
+
+                            <div className="space-y-1 text-left text-sm">
+                                <p className="flex justify-between gap-2">
+                                    <span className="text-muted-foreground">Teléfono:</span>
+                                    <span className="font-medium text-foreground">
+                                        {company.phone || 'No registrado'}
+                                    </span>
+                                </p>
+                                <p className="flex justify-between gap-2">
+                                    <span className="text-muted-foreground">RFC / NIT / RUT:</span>
+                                    <span className="font-medium text-foreground truncate max-w-[150px]">
+                                        {company.tax_id || 'No registrado'}
+                                    </span>
+                                </p>
+                                {company.address && (
+                                    <div className="mt-2">
+                                        <p className="text-muted-foreground text-xs mb-0.5">Dirección</p>
+                                        <p className="text-sm text-foreground whitespace-pre-line line-clamp-3">
+                                            {company.address}
+                                        </p>
+                                    </div>
+                                )}
+                                {company.ticket_footer_message && (
+                                    <div className="mt-2">
+                                        <p className="text-muted-foreground text-xs mb-0.5">Mensaje en pie de ticket</p>
+                                        <p className="text-xs text-foreground italic whitespace-pre-line line-clamp-3">
+                                            “{company.ticket_footer_message}”
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
