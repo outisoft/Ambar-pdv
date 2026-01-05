@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/layouts/app-layout';
-import { Head, Link } from '@inertiajs/react';
-import { Building2, Plus, Pencil, Trash2, MoreHorizontal, Search, ArrowRight } from 'lucide-react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { Building2, Plus, Pencil, Trash2, MoreHorizontal, Search, ArrowRight, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -9,6 +9,15 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { useState } from 'react';
 
 interface Company {
     id: number;
@@ -24,6 +33,32 @@ interface Props {
 }
 
 export default function Index({ companies }: Props) {
+    const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+    const [isRenewalOpen, setIsRenewalOpen] = useState(false);
+    const { data, setData, post, processing, reset } = useForm({
+        months: 1,
+    });
+
+    const openRenewalModal = (company: Company) => {
+        setSelectedCompany(company);
+        setData('months', 1);
+        setIsRenewalOpen(true);
+    };
+
+    const closeRenewalModal = () => {
+        setIsRenewalOpen(false);
+        setSelectedCompany(null);
+        reset('months');
+    };
+
+    const handleRenewSubmit = () => {
+        if (!selectedCompany) return;
+        post(route('companies.renew', selectedCompany.id), {
+            preserveScroll: true,
+            onSuccess: () => closeRenewalModal(),
+        });
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="Empresas" />
@@ -121,6 +156,16 @@ export default function Index({ companies }: Props) {
                                                     </Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem asChild>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openRenewalModal(company)}
+                                                        className="flex w-full items-center text-emerald-600 focus:text-emerald-600"
+                                                    >
+                                                        <RefreshCw className="w-4 h-4 mr-2" />
+                                                        Renovar suscripción
+                                                    </button>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem asChild>
                                                     <Link
                                                         href={route('companies.destroy', company.id)}
                                                         method="delete"
@@ -161,6 +206,46 @@ export default function Index({ companies }: Props) {
                         </div>
                     </div>
                 )}
+
+                <Dialog open={isRenewalOpen} onOpenChange={(open) => !open && closeRenewalModal()}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Renovar suscripción</DialogTitle>
+                            <DialogDescription>
+                                Define por cuántos meses deseas extender la suscripción de esta empresa.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="mt-4 space-y-2">
+                            <p className="text-sm text-muted-foreground">
+                                Empresa seleccionada:{' '}
+                                <span className="font-medium text-foreground">
+                                    {selectedCompany?.name}
+                                </span>
+                            </p>
+                            <label className="flex flex-col gap-1 text-sm">
+                                <span className="text-muted-foreground">Meses a renovar</span>
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    value={data.months}
+                                    onChange={(e) => setData('months', Number(e.target.value) || 1)}
+                                    className="w-32"
+                                />
+                            </label>
+                        </div>
+
+                        <DialogFooter className="mt-6 flex justify-end gap-2">
+                            <Button type="button" variant="outline" onClick={closeRenewalModal} disabled={processing}>
+                                Cancelar
+                            </Button>
+                            <Button type="button" onClick={handleRenewSubmit} disabled={processing} className="gap-2">
+                                <RefreshCw className="w-4 h-4" />
+                                {processing ? 'Actualizando...' : 'Confirmar renovación'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AuthenticatedLayout>
     );

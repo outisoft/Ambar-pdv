@@ -38,7 +38,10 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        $user = $request->user()?->loadMissing(['company:id,name', 'branch:id,name']);
+        $user = $request->user()?->loadMissing([
+            'company:id,name,subscription_status,subscription_ends_at',
+            'branch:id,name',
+        ]);
 
         return [
             ...parent::share($request),
@@ -54,6 +57,8 @@ class HandleInertiaRequests extends Middleware
                     'company' => $user->company ? [
                         'id' => $user->company->id,
                         'name' => $user->company->name,
+                        'subscription_status' => $user->company->subscription_status,
+                        'subscription_ends_at' => $user->company->subscription_ends_at,
                     ] : null,
                     'branch' => $user->branch ? [
                         'id' => $user->branch->id,

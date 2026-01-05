@@ -153,4 +153,30 @@ class CompanyController extends Controller implements HasMiddleware
         $company->delete();
         return redirect()->route('companies.index')->with('success', 'Empresa eliminada correctamente.');
     }
+
+    // Método para renovar manualmente
+    public function renew(Request $request, Company $company)
+    {
+        $request->validate([
+            'months' => 'required|integer|min:1', // Cuántos meses pagó
+        ]);
+
+        // Lógica de fecha:
+        // Si ya venció hace mucho, la renovación empieza HOY.
+        // Si vence mañana, la renovación empieza DESPUÉS de mañana (se suma).
+        $currentEnd = Carbon::parse($company->subscription_ends_at);
+
+        if ($currentEnd->isPast()) {
+            $newEnd = Carbon::now()->addMonths($request->months);
+        } else {
+            $newEnd = $currentEnd->copy()->addMonths($request->months);
+        }
+
+        $company->update([
+            'subscription_ends_at' => $newEnd,
+            'subscription_status' => 'active'
+        ]);
+
+        return back()->with('success', "Empresa renovada hasta: " . $newEnd->format('d/m/Y'));
+    }
 }

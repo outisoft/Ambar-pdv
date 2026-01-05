@@ -51,7 +51,11 @@ Route::middleware(['auth', 'verified', 'check_register'])->group(function () {
     // ... (Perfil, etc.)
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::get('/subscription-expired', function () {
+    return Inertia::render('Subscription/Expired');
+})->name('subscription.expired')->middleware('auth');
+
+Route::middleware(['auth', 'verified', 'check_subscription'])->group(function () {
     Route::get('/accounts-receivable', [App\Http\Controllers\AccountsReceivableController::class, 'index'])
         ->name('accounts_receivable.index');
 
@@ -74,6 +78,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/configuracion', [SettingController::class, 'edit'])->name('configuracion.edit');
     Route::post('/configuracion', [SettingController::class, 'update'])->name('configuracion.update');
     Route::resource('companies', CompanyController::class);
+    Route::post('companies/{company}/renew', [CompanyController::class, 'renew'])->name('companies.renew');
     Route::resource('branches', \App\Http\Controllers\BranchController::class);
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
     Route::post('/inventory/{product}/update', [InventoryController::class, 'update'])->name('inventory.update');
