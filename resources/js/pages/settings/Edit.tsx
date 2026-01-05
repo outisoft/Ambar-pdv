@@ -34,6 +34,18 @@ export default function Edit({ auth, company, logoUrl }: any) {
     const [preview, setPreview] = useState(logoUrl);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const isManager = Array.isArray(auth?.user?.roles)
+        ? auth.user.roles.includes('gerente')
+        : false;
+
+    const formattedEndDate = company?.subscription_ends_at
+        ? new Date(company.subscription_ends_at).toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+        })
+        : null;
+
     const submit = (e: any) => {
         e.preventDefault();
         post(route('configuracion.update'), {
@@ -63,6 +75,31 @@ export default function Edit({ auth, company, logoUrl }: any) {
                         title="Perfil del Negocio"
                         description="Actualiza la información de tu tienda y la imagen de marca."
                     />
+
+                    {isManager && (
+                        <div className="rounded-xl border bg-card/60 p-4 md:p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                    Plan de suscripción
+                                </p>
+                                <p className="text-sm font-semibold text-foreground mt-1">
+                                    {company?.plan?.name ?? 'Sin plan asignado'}
+                                </p>
+                                {company?.subscription_status && (
+                                    <p className="text-xs mt-1 text-muted-foreground">
+                                        Estado: <span className="font-medium text-foreground">{company.subscription_status}</span>
+                                    </p>
+                                )}
+                            </div>
+
+                            {formattedEndDate && (
+                                <div className="text-sm text-muted-foreground text-right md:text-left">
+                                    <p className="text-xs">Fecha de vencimiento</p>
+                                    <p className="font-medium text-foreground">{formattedEndDate}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <form onSubmit={submit} className="space-y-6">
                         {/* Logo Section */}

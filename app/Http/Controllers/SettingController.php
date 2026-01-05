@@ -22,9 +22,10 @@ class SettingController extends Controller
 
         // OJO: el middleware de Inertia carga la relación company solo con algunos campos
         // (id, name, subscription_status, subscription_ends_at). Aquí necesitamos TODOS
-        // los campos, así que recargamos la empresa directamente desde la BD.
+        // los campos y también el plan asociado, así que recargamos la empresa
+        // directamente desde la BD incluyendo la relación 'plan'.
 
-        $company = Company::findOrFail($user->company_id);
+        $company = Company::with('plan')->findOrFail($user->company_id);
 
         return Inertia::render('settings/Edit', [
             'company' => $company,
