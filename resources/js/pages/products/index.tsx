@@ -1,8 +1,9 @@
 // resources/js/Pages/Products/Index.tsx
 import AuthenticatedLayout from '@/layouts/app-layout'; // Tu layout
 import Can from '@/components/can';
+import Modal from '@/components/Modal'; // Modal para importación
 import { PageProps, Product } from '@/types'; // Importamos el tipo Product
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { FileSpreadsheet, Plus, Search, MoreHorizontal, Pencil, Trash2, Package } from 'lucide-react';
@@ -37,6 +38,14 @@ export default function Index({ auth, products }: ProductIndexProps) {
         null,
     );
 
+    // Estado para el modal de importación
+    const [isImportModalOpen, setImportModalOpen] = useState(false);
+
+    // Formulario de importación masiva
+    const { data, setData, post, processing, errors, reset } = useForm({
+        file: null as File | null,
+    });
+
     const openDeleteModal = (product: Product) => {
         setProductToDelete(product);
         setShowDeleteModal(true);
@@ -54,6 +63,21 @@ export default function Index({ auth, products }: ProductIndexProps) {
                 onFinish: () => cancelDelete(),
             });
         }
+    };
+
+    const submitImport = (e: any) => {
+        e.preventDefault();
+        post(route('import.products'), {
+            // Inertia detecta automáticamente archivos y usa FormData
+            onSuccess: () => {
+                setImportModalOpen(false);
+                reset();
+                toast.success('Inventario importado correctamente.');
+            },
+            onError: () => {
+                toast.error('No se pudo importar el inventario.');
+            },
+        });
     };
 
     return (
@@ -81,6 +105,16 @@ export default function Index({ auth, products }: ProductIndexProps) {
                                 className="pl-9 w-full md:w-[250px]"
                             />
                         </div>
+                        {/* Botón Importar Inventario */}
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="gap-2"
+                            onClick={() => setImportModalOpen(true)}
+                        >
+                            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                            <span className="hidden sm:inline">Importar</span>
+                        </Button>
                         <a href={route('products.export')}>
                             <Button variant="outline" className="gap-2">
                                 <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
@@ -170,6 +204,62 @@ export default function Index({ auth, products }: ProductIndexProps) {
                     </Table>
                 </div>
             </div>
+
+            {/* Modal de Importación Masiva */}
+            <Modal show={isImportModalOpen} onClose={() => setImportModalOpen(false)}>
+                <div className="p-6">
+                    <h2 className="text-lg font-bold mb-4">Importación Masiva de Productos</h2>
+
+                    <div className="mb-4 text-sm text-muted-foreground">
+                        <p>1. Descarga la plantilla para ver el formato correcto.</p>
+                        <p>2. Llena tus datos respetando las columnas.</p>
+                        <p>3. Sube el archivo para importar el inventario.</p>
+                    </div>
+
+                    <a
+                        href={route('import.template')}
+                        className="block w-full text-center border border-border bg-muted py-2 rounded mb-6 text-primary hover:underline"
+                    >
+                        ⬇️ Descargar Plantilla CSV
+                    </a>
+
+                    <form onSubmit={submitImport}>
+                        <div className="mb-4">
+                            <label className="block font-semibold mb-2 text-sm">
+                                Seleccionar Archivo (.xlsx, .csv)
+                            </label>
+                            <input
+                                type="file"
+                                onChange={e => setData('file', e.target.files ? e.target.files[0] : null)}
+                                className="w-full border border-input p-2 rounded-md text-sm"
+                                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                            />
+                            {errors.file && (
+                                <div className="text-destructive text-xs mt-1">
+                                    {errors.file}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setImportModalOpen(false)}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={processing}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                                {processing ? 'Subiendo...' : 'Iniciar Importación'}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+            </Modal>
 
             {showDeleteModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

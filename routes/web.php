@@ -5,6 +5,7 @@ use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PermissionController;
@@ -80,6 +81,8 @@ Route::middleware(['auth', 'verified', 'check_subscription'])->group(function ()
     Route::resource('companies', CompanyController::class);
     Route::post('companies/{company}/renew', [CompanyController::class, 'renew'])->name('companies.renew');
     Route::resource('branches', \App\Http\Controllers\BranchController::class);
+    Route::post('/import/products', [ImportController::class, 'store'])->name('import.products');
+    Route::get('/import/template', [ImportController::class, 'downloadTemplate'])->name('import.template');
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
     Route::post('/inventory/{product}/update', [InventoryController::class, 'update'])->name('inventory.update');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
