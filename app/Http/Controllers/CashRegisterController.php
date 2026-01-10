@@ -11,6 +11,9 @@ use App\Notifications\LowStockAlert;
 use App\Notifications\CashRegisterDiscrepancy;
 use Illuminate\Support\Facades\Notification;
 use App\Models\User;
+use App\Mail\DailyCashReport;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class CashRegisterController extends Controller
 {
@@ -115,6 +118,108 @@ class CashRegisterController extends Controller
             'otherInputs' => $otherInputs,
             'expectedTotal' => $expectedCash,
         ]);
+    }
+
+    public function storeClose(Request $request)
+    {
+        // 1. Validar lo que el cajero contó físicamente
+        $request->validate([
+            'reported_amount' => 'required|numeric|min:0', // El dinero que hay en el cajón
+        ]);
+
+        $user = Auth::user();
+
+        // 2. Recuperar la caja abierta (Misma lógica que en tu close)
+        $register = CashRegister::where('user_id', $user->id)
+            ->where('branch_id', $user->branch_id)
+            ->where('status', 'open')
+            ->firstOrFail();
+
+        // ---------------------------------------------------------
+        // 3. RECALCULAR TODO (Por seguridad, no confíes en lo que venga del front)
+        // ---------------------------------------------------------
+
+        // Ventas Efectivo
+        $cashSales = $register->sales()
+            ->where('payment_method', 'cash')
+            ->where('status', '!=', 'cancelled')
+            ->sum('total');
+
+        // Ventas Tarjeta/Transferencia (Informativo)
+        $nonCashSales = $register->sales()
+            ->whereIn('payment_method', ['card', 'transfer'])
+            ->where('status', '!=', 'cancelled')
+            ->sum('total');
+
+        // Movimientos de Caja
+        $cashIn = $register->movements()->where('type', 'in')->sum('amount');
+        $cashOut = $register->movements()->where('type', 'out')->sum('amount');
+
+        // Cálculo del dinero que DEBERÍA haber
+        // Fórmula: Inicial + Ventas Efectivo + Entradas - Salidas
+        $expectedCash = ($register->initial_amount + $cashSales + $cashIn) - $cashOut;
+
+        // Diferencia (Sobrante o Faltante)
+        $discrepancy = $request->reported_amount - $expectedCash;
+
+        // ---------------------------------------------------------
+        // 4. GUARDAR EL CIERRE EN BASE DE DATOS
+        // ---------------------------------------------------------
+
+        $register->update([
+            'closing_amount' => $request->reported_amount, // Lo que contó el usuario
+            'closing_time'   => now(),
+            'status'         => 'closed',
+            // Si tienes una columna para guardar la diferencia, úsala:
+            // 'discrepancy' => $discrepancy 
+        ]);
+
+        // ---------------------------------------------------------
+        // 5. ENVIAR EL CORREO (Opción C)
+        // ---------------------------------------------------------
+
+        // Preparamos el resumen para la vista del correo
+        $summaryData = [
+            'initial'        => $register->initial_amount,
+            'cash_sales'     => $cashSales,
+            'card_sales'     => $nonCashSales,
+            'manual_entries' => $cashIn,
+            'manual_exits'   => $cashOut,
+            'expected'       => $expectedCash,
+            'reported'       => $request->reported_amount,
+            'discrepancy'    => $discrepancy
+        ];
+
+        $manager = \App\Models\User::where('company_id', $user->company_id)
+            ->role('gerente')
+            ->first();
+
+
+        try {
+            // Preparamos el envío
+            $mail = Mail::to($user->email); // Destinatario principal: El Cajero
+
+            // Si encontramos al gerente y NO es la misma persona (el gerente no se está cerrando a sí mismo)
+            if ($manager && $manager->id !== $user->id) {
+                $mail->cc($manager->email); // Copia visible al Gerente
+            }
+
+            $mail->send(new DailyCashReport($register, $summaryData));
+
+            // Opcional: Enviar copia al dueño/admin
+            // Mail::to('admin@tuempresa.com')->send(...);
+
+        } catch (\Exception $e) {
+            Log::error('Error enviando corte Z por correo: ' . $e->getMessage());
+            // No detenemos el flujo, solo logueamos el error
+        }
+
+        // ---------------------------------------------------------
+        // 6. RESPUESTA FINAL
+        // ---------------------------------------------------------
+
+        // Redirigir al dashboard o generar el PDF inmediatamente
+        return redirect()->route('dashboard')->with('success', 'Caja cerrada correctamente. Resumen enviado por correo.');
     }
 
     // 4. Guardar el cierre (POST desde el formulario)

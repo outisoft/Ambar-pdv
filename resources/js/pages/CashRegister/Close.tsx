@@ -44,18 +44,19 @@ export default function Close({
     expectedTotal,
 }: CloseProps) {
     const { data, setData, post, processing, errors } = useForm({
-        final_amount: '', // Lo que cuenta el cajero
+        reported_amount: '', // Lo que cuenta el cajero (coincide con el backend)
     });
 
     // Cálculos en tiempo real para mostrar diferencias
-    const currentFinal = parseFloat(data.final_amount) || 0;
+    const currentFinal = parseFloat(data.reported_amount) || 0;
     const difference = currentFinal - expectedTotal;
     const isNegative = difference < 0;
-    const isPerfect = difference === 0 && data.final_amount !== '';
+    const isPerfect = difference === 0 && data.reported_amount !== '';
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        post(route('cash_register.update', register.id));
+        // Usamos la ruta que dispara el envío del correo diario
+        post(route('cash_register.close_store'));
     };
 
     return (
@@ -184,21 +185,21 @@ export default function Close({
                                             type="number"
                                             step="0.01"
                                             min="0"
-                                            value={data.final_amount}
-                                            onChange={(e) => setData('final_amount', e.target.value)}
+                                            value={data.reported_amount}
+                                            onChange={(e) => setData('reported_amount', e.target.value)}
                                             className="pl-12 text-2xl h-14 font-bold tracking-tight text-right"
                                             placeholder="0.00"
                                             autoFocus
                                         />
                                     </div>
-                                    {errors.final_amount && (
+                                    {errors.reported_amount && (
                                         <p className="text-sm font-medium text-destructive">
-                                            {errors.final_amount}
+                                            {errors.reported_amount}
                                         </p>
                                     )}
                                 </div>
 
-                                {data.final_amount !== '' && (
+                                {data.reported_amount !== '' && (
                                     <Alert variant={isPerfect ? "default" : (isNegative ? "destructive" : "default")} className={`border-l-4 ${isPerfect ? 'border-l-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : (isNegative ? 'border-l-red-500 bg-red-50 dark:bg-red-900/10' : 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/10')}`}>
                                         {isPerfect ? <CheckCircle2 className="h-5 w-5 text-emerald-600" /> : <AlertTriangle className={`h-5 w-5 ${isNegative ? 'text-red-600' : 'text-yellow-600'}`} />}
                                         <AlertTitle className={isPerfect ? 'text-emerald-700' : (isNegative ? 'text-red-700' : 'text-yellow-700')}>

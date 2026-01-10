@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AccountsReceivableController;
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CashMovementController;
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\ClientController;
@@ -57,19 +59,21 @@ Route::get('/subscription-expired', function () {
 })->name('subscription.expired')->middleware('auth');
 
 Route::middleware(['auth', 'verified', 'check_subscription'])->group(function () {
-    Route::get('/accounts-receivable', [App\Http\Controllers\AccountsReceivableController::class, 'index'])
+    Route::get('/accounts-receivable', [AccountsReceivableController::class, 'index'])
         ->name('accounts_receivable.index');
 
-    Route::get('/accounts-receivable/{client}', [App\Http\Controllers\AccountsReceivableController::class, 'show'])
+    Route::get('/accounts-receivable/{client}', [AccountsReceivableController::class, 'show'])
         ->name('accounts_receivable.show');
 
-    Route::post('/accounts-receivable/{client}/pay', [App\Http\Controllers\AccountsReceivableController::class, 'storePayment'])
+    Route::post('/accounts-receivable/{client}/pay', [AccountsReceivableController::class, 'storePayment'])
         ->name('accounts_receivable.store_payment');
 
     Route::get('/cash-register/open', [CashRegisterController::class, 'create'])->name('cash_register.create');
     Route::post('/cash-register/open', [CashRegisterController::class, 'store'])->name('cash_register.store');
 
     Route::get('/cash-register/close', [CashRegisterController::class, 'close'])->name('cash_register.close');
+    Route::post('/cash-register/close', [CashRegisterController::class, 'storeClose'])
+        ->name('cash_register.close_store'); // Nombre distinto para no chocar con el GET
     Route::post('/cash-register/close/{id}', [CashRegisterController::class, 'update'])->name('cash_register.update');
     Route::get('/cash-registers/history', [CashRegisterController::class, 'history'])->name('cash_registers.history');
 
@@ -80,7 +84,7 @@ Route::middleware(['auth', 'verified', 'check_subscription'])->group(function ()
     Route::post('/configuracion', [SettingController::class, 'update'])->name('configuracion.update');
     Route::resource('companies', CompanyController::class);
     Route::post('companies/{company}/renew', [CompanyController::class, 'renew'])->name('companies.renew');
-    Route::resource('branches', \App\Http\Controllers\BranchController::class);
+    Route::resource('branches', BranchController::class);
     Route::post('/import/products', [ImportController::class, 'store'])->name('import.products');
     Route::get('/import/template', [ImportController::class, 'downloadTemplate'])->name('import.template');
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
