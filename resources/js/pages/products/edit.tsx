@@ -29,6 +29,7 @@ export default function Edit({ auth, product, companies, userBranches }: EditPro
         name: product.name,
         description: product.description || '', // Manejamos el caso null
         price: product.price,
+        cost_price: product.cost_price ?? 0,
         stock: product.stock,
     });
 
@@ -186,6 +187,24 @@ export default function Edit({ auth, product, companies, userBranches }: EditPro
                                         />
                                     </div>
                                     {errors.price && <p className="text-destructive text-sm font-medium mt-1">{errors.price}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label className="flex items-center gap-2">
+                                        <DollarSign className="w-4 h-4 text-muted-foreground" /> Costo del Producto
+                                    </Label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            placeholder="0.00"
+                                            className="pl-7"
+                                            value={data.cost_price}
+                                            onChange={(e) => setData('cost_price', parseFloat(e.target.value))}
+                                        />
+                                    </div>
+                                    {errors.cost_price && <p className="text-destructive text-sm font-medium mt-1">{errors.cost_price}</p>}
                                 </div>
 
                                 <div className="space-y-2 md:col-span-2">

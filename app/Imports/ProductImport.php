@@ -32,7 +32,8 @@ class ProductImport implements ToModel, WithHeadingRow, WithValidation
             [
                 'name'        => $row['nombre'],
                 'description' => $row['descripcion'] ?? null, // Campo opcional
-                'price'       => $row['precio'], // Tu campo real en la BD
+                'price'       => $row['precio'], // Precio de venta
+                'cost_price'  => $row['costo'] ?? null, // Costo unitario opcional
             ]
         );
 
@@ -54,6 +55,7 @@ class ProductImport implements ToModel, WithHeadingRow, WithValidation
             'nombre' => 'required',
             'codigo_barras' => 'required',
             'precio' => 'required|numeric|min:0', // Validamos 'precio'
+            'costo' => 'nullable|numeric|min:0',  // Validamos 'costo' si se envía
         ];
     }
 }

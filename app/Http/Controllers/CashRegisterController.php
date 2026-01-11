@@ -151,6 +151,12 @@ class CashRegisterController extends Controller
             ->where('status', '!=', 'cancelled')
             ->sum('total');
 
+        // Ventas a crédito (informativo y para total del turno)
+        $creditSales = $register->sales()
+            ->where('payment_method', 'credit')
+            ->where('status', '!=', 'cancelled')
+            ->sum('total');
+
         // Movimientos de Caja
         $cashIn = $register->movements()->where('type', 'in')->sum('amount');
         $cashOut = $register->movements()->where('type', 'out')->sum('amount');
@@ -158,6 +164,9 @@ class CashRegisterController extends Controller
         // Cálculo del dinero que DEBERÍA haber
         // Fórmula: Inicial + Ventas Efectivo + Entradas - Salidas
         $expectedCash = ($register->initial_amount + $cashSales + $cashIn) - $cashOut;
+
+        // Total vendido en el turno (todas las formas de pago)
+        $totalSales = $cashSales + $nonCashSales + $creditSales;
 
         // Diferencia (Sobrante o Faltante)
         $discrepancy = $request->reported_amount - $expectedCash;
@@ -167,11 +176,13 @@ class CashRegisterController extends Controller
         // ---------------------------------------------------------
 
         $register->update([
-            'closing_amount' => $request->reported_amount, // Lo que contó el usuario
-            'closing_time'   => now(),
-            'status'         => 'closed',
-            // Si tienes una columna para guardar la diferencia, úsala:
-            // 'discrepancy' => $discrepancy 
+            // Campos que realmente existen en la tabla cash_registers
+            'final_amount' => $request->reported_amount, // Lo que contó el usuario
+            'closed_at'    => now(),
+            'status'       => 'closed',
+            'total_sales'  => $totalSales,
+            // Si quieres guardar también la diferencia y tienes la columna:
+            // 'discrepancy' => $discrepancy,
         ]);
 
         // ---------------------------------------------------------

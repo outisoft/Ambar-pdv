@@ -19,6 +19,8 @@ class SaleItem extends Model
         'product_id',
         'quantity',
         'price',
+        'cost',
+        'total',
     ];
 
     // En app/Models/SaleItem.php

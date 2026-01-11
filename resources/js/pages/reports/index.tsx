@@ -1,11 +1,11 @@
 import AuthenticatedLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { FileText, Clock4, BarChart3 } from 'lucide-react';
+import { FileText, Clock4, BarChart3, Receipt } from 'lucide-react';
 
 export default function ReportsIndex({ auth, branches }: any) {
 
@@ -106,40 +106,57 @@ export default function ReportsIndex({ auth, branches }: any) {
 
                 {/* Tarjetas de reportes disponibles */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* Reporte de horarios / turnos */}
-                    <Card className=" bg-card text-card-foreground shadow-sm">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="flex items-center gap-2 text-base">
-                                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                    <Clock4 className="w-4 h-4" />
-                                </span>
-                                Horarios y turnos
-                            </CardTitle>
-                            <CardDescription className="mt-1">
-                                Detalle de horas de apertura, cierre y duración de turnos por cajero.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Button
-                                className="w-full justify-center gap-2"
-                                onClick={() => handleDownload(route('reports.shifts_pdf'))}
-                            >
-                                <FileText className="w-4 h-4" />
-                                Descargar PDF
-                            </Button>
-                        </CardContent>
-                    </Card>
+                            {/* Reporte de horarios / turnos */}
+                            <Card className="bg-card text-card-foreground shadow-sm">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="flex items-center gap-2 text-base">
+                                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                            <Clock4 className="w-4 h-4" />
+                                        </span>
+                                        Horarios y turnos
+                                    </CardTitle>
+                                    <CardDescription className="mt-1">
+                                        Detalle de horas de apertura, cierre y duración de turnos por cajero.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Button
+                                        className="w-full justify-center gap-2"
+                                        onClick={() => handleDownload(route('reports.shifts_pdf'))}
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                        Descargar PDF
+                                    </Button>
+                                </CardContent>
+                            </Card>
 
-                    {/* Placeholder próximos reportes */}
-                    <Card className="border-dashed border-border bg-muted/40 flex flex-col items-center justify-center text-center px-4 py-6">
-                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                            <BarChart3 className="w-6 h-6 opacity-70" />
-                            <p className="text-sm font-medium">Próximamente: Reportes de ventas e inventario</p>
-                            <p className="text-xs opacity-80">
-                                Aquí verás nuevos reportes detallados para tus análisis.
-                            </p>
-                        </div>
-                    </Card>
+                            {/* Reporte de utilidades */}
+                            <Card className="bg-card text-card-foreground shadow-sm">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="flex items-center gap-2 text-base">
+                                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                            <BarChart3 className="w-4 h-4" />
+                                        </span>
+                                        Reporte de utilidades
+                                    </CardTitle>
+                                    <CardDescription className="mt-1">
+                                        Analiza márgenes, costos y productos más rentables en pantalla.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Button className="w-full justify-center gap-2" asChild>
+                                        <Link
+                                            href={route('reports.profit', {
+                                                start_date: filters.start_date,
+                                                end_date: filters.end_date,
+                                            })}
+                                        >
+                                            <BarChart3 className="w-4 h-4" />
+                                            Ver reporte
+                                        </Link>
+                                    </Button>
+                                </CardContent>
+                            </Card>
                 </div>
             </div>
         </AuthenticatedLayout>

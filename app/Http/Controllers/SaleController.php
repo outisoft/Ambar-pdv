@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Notification;
 use App\Models\Sale;
 use App\Models\CashRegister;
 use App\Models\Client;
+use App\Models\Product;
+use App\Models\Branch;
 use App\Models\ClientTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -80,7 +82,7 @@ class SaleController extends Controller implements HasMiddleware
         $cartItems = $request->input('items');
 
         // Verificar caja abierta ANTES de la transacción
-        $register = \App\Models\CashRegister::where('user_id', Auth::id())
+        $register = CashRegister::where('user_id', Auth::id())
             ->where('branch_id', Auth::user()->branch_id)
             ->where('status', 'open')
             ->first();
@@ -208,8 +210,8 @@ class SaleController extends Controller implements HasMiddleware
                     if ($newStock <= $inventory->min_stock) {
 
                         // 1. Buscamos el Producto y Sucursal completos para la notificación
-                        $productModel = \App\Models\Product::find($item['id']);
-                        $branchModel = \App\Models\Branch::find($user->branch_id);
+                        $productModel = Product::find($item['id']);
+                        $branchModel = Branch::find($user->branch_id);
 
                         // 2. ¿A quién notificamos? 
                         // Al Gerente de ESTA empresa.
@@ -223,10 +225,15 @@ class SaleController extends Controller implements HasMiddleware
                     }
 
                     // E. Guardamos el detalle de la venta
+                    $product = Product::find($item['id']);
+                    $lineTotal = $item['quantity'] * $item['price'];
+
                     $sale->items()->create([
                         'product_id' => $item['id'],
                         'quantity' => $item['quantity'],
-                        'price' => $item['price'],
+                        'price'      => $item['price'], // Precio de venta (puede tener descuento)
+                        'cost'       => $product->cost_price ?? 0, // Costo base del producto
+                        'total'      => $lineTotal, // Total ya calculado
                     ]);
                 }
 

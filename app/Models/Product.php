@@ -15,15 +15,17 @@ class Product extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'company_id', // Ensure this is also fillable as we are using it
+        'company_id', // Empresa propietaria del producto
         'barcode',
         'name',
         'description',
         'price',
+        'cost_price', // Costo unitario del producto
     ];
 
     protected $casts = [
         'price' => 'float',
+        'cost_price' => 'float',
     ];
 
     // Un producto pertenece al catálogo de una empresa

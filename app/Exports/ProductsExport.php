@@ -16,7 +16,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping
 
     public function headings(): array
     {
-        return ['ID', 'Código', 'Nombre', 'Precio', 'Stock', 'Mínimo', 'Estado', 'Valor Total'];
+        return ['ID', 'Código', 'Nombre', 'Precio', 'Costo', 'Stock', 'Mínimo', 'Estado', 'Valor Total'];
     }
 
     public function map($product): array
@@ -30,6 +30,7 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping
             $product->barcode,
             $product->name,
             $product->price,
+            $product->cost_price,
             $product->stock,
             $product->min_stock,
             $status,

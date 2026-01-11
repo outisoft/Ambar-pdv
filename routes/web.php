@@ -13,6 +13,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Report\ProfitController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SaleController;
@@ -96,6 +97,9 @@ Route::middleware(['auth', 'verified', 'check_subscription'])->group(function ()
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/shifts-pdf', [ReportController::class, 'shiftsPdf'])->name('reports.shifts_pdf');
     Route::get('/reports/z-cut-pdf', [ReportController::class, 'zCutPdf'])->name('reports.z_cut_pdf');
+    Route::get('/reports/profit', [ProfitController::class, 'index'])
+        ->name('reports.profit')
+        ->middleware(['auth', 'verified', 'role:gerente|super-admin']); // Protegido!
     Route::resource('roles', RoleController::class);
     Route::resource('users', UserController::class);
 });

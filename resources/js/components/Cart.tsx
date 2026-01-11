@@ -34,7 +34,7 @@ export default function Cart({
         0,
     );
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         items: cartItems,
         payment_method: 'cash',
         client_id: '' as string | number,
@@ -58,6 +58,9 @@ export default function Cart({
     useEffect(() => {
         if (cartItems.length === 0) {
             setSelectedItemId(null);
+            // Limpiar monto entregado y cambio cuando se vacía el carrito (nueva venta)
+            setData('amount_tendered', '');
+            setData('change', 0);
         }
     }, [cartItems.length]);
 
@@ -134,6 +137,11 @@ export default function Cart({
             onError: (formErrors) => {
                 if (formErrors.stock) toast.error(formErrors.stock);
                 if (formErrors.general) toast.error(formErrors.general);
+            },
+            onFinish: () => {
+                // Asegurar que los campos de efectivo no "hereden" el valor para la siguiente venta
+                setData('amount_tendered', '');
+                setData('change', 0);
             },
         });
     };
@@ -548,6 +556,14 @@ export default function Cart({
                                 className="w-32 h-9 text-right text-sm"
                                 value={data.amount_tendered ?? ''}
                                 onChange={(e) => handleAmountTenderedChange(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        if (!validateCashBeforeSubmit()) return;
+                                        setShowCashDialog(false);
+                                        submit(undefined, true);
+                                    }
+                                }}
                                 disabled={processing}
                                 autoFocus
                             />

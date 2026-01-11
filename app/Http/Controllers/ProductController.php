@@ -28,7 +28,7 @@ class ProductController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         $user = $request->user();
-        
+
         // 1. Filtrar productos por la compañía del usuario
         $query = Product::with('branches')->latest();
 
@@ -38,7 +38,7 @@ class ProductController extends Controller implements HasMiddleware
 
         // NUEVO: Si el usuario tiene sucursal (Cajero), SOLO mostrar productos de ESA sucursal.
         if ($user->branch_id) {
-            $query->whereHas('branches', function($q) use ($user) {
+            $query->whereHas('branches', function ($q) use ($user) {
                 $q->where('branches.id', $user->branch_id);
             });
         }
@@ -53,7 +53,7 @@ class ProductController extends Controller implements HasMiddleware
                 // Si es GERENTE/ADMIN (sin sucursal fija), mostrar stock TOTAL de la empresa
                 $product->stock = $product->branches->sum('pivot.stock');
             }
-            
+
             return $product;
         });
 
@@ -99,6 +99,7 @@ class ProductController extends Controller implements HasMiddleware
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0', // Stock inicial
         ];
 
@@ -117,7 +118,7 @@ class ProductController extends Controller implements HasMiddleware
 
         // 2. Asignar company_id y separar stock
         $productData = collect($validatedData)->except(['stock', 'branch_id'])->toArray();
-        
+
         if ($isGlobalAdmin) {
             // El admin decide de quién es el producto
             $productData['company_id'] = $validatedData['company_id'];
@@ -141,7 +142,7 @@ class ProductController extends Controller implements HasMiddleware
                 // Verificar que pertenezca a su empresa
                 $requestedBranch = \App\Models\Branch::where('id', $request->branch_id)
                     ->where('company_id', $user->company_id)->first();
-                
+
                 if ($requestedBranch) {
                     $targetBranchId = $requestedBranch->id;
                 }
@@ -183,37 +184,37 @@ class ProductController extends Controller implements HasMiddleware
     public function edit(Product $product)
     {
         $user = auth()->user();
-        
+
         // Contexto para Global Admin
         $companies = [];
         $userBranches = [];
 
         if (!$user->company_id) {
-             $companies = \App\Models\Company::with('branches')->get();
+            $companies = \App\Models\Company::with('branches')->get();
         } elseif ($product->company_id !== $user->company_id) {
             abort(403, 'No tienes permiso para editar este producto.');
         } else {
             // Si es Gerente/Usuario normal, cargar sus sucursales
             $userBranches = \App\Models\Branch::where('company_id', $user->company_id)->get();
         }
-        
+
         // Cargar stock de la sucursal actual si existe, para mostrarlo en el form
         // Si es Admin Global, intentamos cargar el stock de pivot de la primera sucursal que encontremos vinculada
         // O idealmente deberíamos dejarle elegir qué stock ver, pero por simplicidad:
-        
+
         $stock = 0;
         $currentBranchId = $user->branch_id;
-        
+
         if ($currentBranchId) {
-             // Usuario de sucursal
-             $pivot = $product->branches()->where('branch_id', $currentBranchId)->first();
-             if ($pivot) $stock = $pivot->pivot->stock;
+            // Usuario de sucursal
+            $pivot = $product->branches()->where('branch_id', $currentBranchId)->first();
+            if ($pivot) $stock = $pivot->pivot->stock;
         } else {
-             // Admin o Gerente sin sucursal fija: mostrar stock de la primera vinculación
-             $firstBranch = $product->branches()->first();
-             if ($firstBranch) $stock = $firstBranch->pivot->stock;
+            // Admin o Gerente sin sucursal fija: mostrar stock de la primera vinculación
+            $firstBranch = $product->branches()->first();
+            if ($firstBranch) $stock = $firstBranch->pivot->stock;
         }
-        
+
         // Inyectamos el stock 'virtual'
         $product->stock = $stock;
 
@@ -239,6 +240,7 @@ class ProductController extends Controller implements HasMiddleware
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0',
         ];
 
@@ -255,7 +257,7 @@ class ProductController extends Controller implements HasMiddleware
 
         // Actualizar stock en la sucursal actual
         $targetBranchId = $user->branch_id;
-         if (!$targetBranchId && $user->company_id) {
+        if (!$targetBranchId && $user->company_id) {
             $firstBranch = \App\Models\Branch::where('company_id', $user->company_id)->first();
             if ($firstBranch) {
                 $targetBranchId = $firstBranch->id;
@@ -272,7 +274,7 @@ class ProductController extends Controller implements HasMiddleware
         return redirect()->route('products.index')->with('success', 'Producto actualizado correctamente.');
     }
 
-    public function export() 
+    public function export()
     {
         return Excel::download(new ProductsExport, 'inventario.xlsx');
     }
@@ -284,7 +286,7 @@ class ProductController extends Controller implements HasMiddleware
     {
         $user = auth()->user();
         if ($user->company_id && $product->company_id !== $user->company_id) {
-             abort(403, 'No tienes permiso para eliminar este producto.');
+            abort(403, 'No tienes permiso para eliminar este producto.');
         }
 
         $product->delete();

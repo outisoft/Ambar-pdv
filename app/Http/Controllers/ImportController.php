@@ -45,10 +45,11 @@ class ImportController extends Controller
         $columns = [
             'nombre',
             'codigo_barras',
-            'descripcion', // Nuevo
-            'precio',      // Nuevo (reemplaza a costo/venta)
+            'descripcion', // Opcional
+            'precio',      // Precio de venta (obligatorio)
+            'costo',       // Costo unitario (opcional)
             'stock_inicial',
-            'stock_minimo'
+            'stock_minimo',
         ];
 
         $callback = function () use ($columns) {
@@ -60,9 +61,10 @@ class ImportController extends Controller
                 'Paracetamol 500mg', // nombre
                 '7501000001',        // codigo_barras
                 'Caja con 10 tabletas', // descripcion
-                '45.00',             // precio
+                '45.00',             // precio de venta
+                '30.00',             // costo unitario (opcional)
                 '100',               // stock_inicial
-                '10'                 // stock_minimo
+                '10',                // stock_minimo
             ]);
 
             fclose($file);
