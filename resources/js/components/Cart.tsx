@@ -7,6 +7,7 @@ import { User, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Smartpho
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from "@/lib/utils";
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -37,6 +38,8 @@ export default function Cart({
         items: cartItems,
         payment_method: 'cash',
         client_id: '' as string | number,
+        amount_tendered: '' as string | number,
+        change: 0 as number,
     });
 
     const selectedClient = clients.find(
@@ -46,6 +49,7 @@ export default function Cart({
     const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
     const clientSelectRef = useRef<HTMLSelectElement | null>(null);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [showCashDialog, setShowCashDialog] = useState(false);
 
     useEffect(() => {
         setData('items', cartItems);
@@ -67,8 +71,38 @@ export default function Cart({
         onClearCart();
     };
 
-    const submit = (e?: FormEvent) => {
+    const openCashDialog = () => {
+        if (cartItems.length === 0 || processing) return;
+        if (data.payment_method !== 'cash') {
+            submit();
+            return;
+        }
+        setShowCashDialog(true);
+    };
+
+    const validateCashBeforeSubmit = (): boolean => {
+        const raw = String(data.amount_tendered ?? '').trim();
+        const parsed = Number(raw.replace(',', '.'));
+
+        if (!raw || !Number.isFinite(parsed) || parsed <= 0) {
+            toast.error('Ingresa el monto entregado en efectivo.');
+            return false;
+        }
+
+        if (parsed + 1e-6 < total) {
+            toast.error('El monto entregado es menor al total de la venta.');
+            return false;
+        }
+
+        return true;
+    };
+
+    const submit = (e?: FormEvent, skipCashValidation: boolean = false) => {
         e?.preventDefault();
+
+        if (!skipCashValidation && data.payment_method === 'cash') {
+            if (!validateCashBeforeSubmit()) return;
+        }
 
         if (data.payment_method === 'credit') {
             if (!selectedClient) {
@@ -106,6 +140,23 @@ export default function Cart({
 
     const handlePaymentChange = (method: string) => {
         setData('payment_method', method);
+        if (method !== 'cash') {
+            setData('amount_tendered', '');
+            setData('change', 0);
+        }
+    };
+
+    const handleAmountTenderedChange = (value: string) => {
+        setData('amount_tendered', value);
+
+        const numeric = Number(value.replace(',', '.'));
+        if (!Number.isFinite(numeric) || numeric <= 0 || data.payment_method !== 'cash') {
+            setData('change', 0);
+            return;
+        }
+
+        const diff = numeric - total;
+        setData('change', diff > 0 ? Number(diff.toFixed(2)) : 0);
     };
 
     // Atajo F3: enfocar selector de cliente
@@ -126,13 +177,13 @@ export default function Cart({
         'f12',
         () => {
             if (cartItems.length === 0 || processing) return;
-            submit();
+            openCashDialog();
         },
         {
             enableOnFormTags: true,
             preventDefault: true,
         },
-        [submit, cartItems.length, processing],
+        [openCashDialog, cartItems.length, processing, data.payment_method],
     );
 
     // Atajo Supr: eliminar producto seleccionado
@@ -432,7 +483,7 @@ export default function Cart({
                         Cancelar
                     </Button>
                     <Button
-                        onClick={submit}
+                        onClick={openCashDialog}
                         disabled={cartItems.length === 0 || processing}
                         className="col-span-3 text-lg font-bold shadow-md"
                         size="lg"
@@ -470,6 +521,62 @@ export default function Cart({
                                 disabled={processing}
                             >
                                 Sí, cancelar compra
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal pago en efectivo */}
+            <Dialog open={showCashDialog} onOpenChange={setShowCashDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Pago en efectivo</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 mt-2">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Total</span>
+                            <span className="text-2xl font-bold">${total.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-medium">Efectivo recibido</span>
+                            <Input
+                                type="number"
+                                inputMode="decimal"
+                                step="0.01"
+                                min="0"
+                                className="w-32 h-9 text-right text-sm"
+                                value={data.amount_tendered ?? ''}
+                                onChange={(e) => handleAmountTenderedChange(e.target.value)}
+                                disabled={processing}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Cambio</span>
+                            <span className="text-xl font-semibold">
+                                ${Number(data.change ?? 0).toFixed(2)}
+                            </span>
+                        </div>
+                        <div className="flex justify-end gap-2 pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setShowCashDialog(false)}
+                                disabled={processing}
+                            >
+                                Volver
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={() => {
+                                    if (!validateCashBeforeSubmit()) return;
+                                    setShowCashDialog(false);
+                                    submit(undefined, true);
+                                }}
+                                disabled={processing}
+                            >
+                                Confirmar cobro
                             </Button>
                         </div>
                     </div>

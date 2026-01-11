@@ -73,6 +73,8 @@ class SaleController extends Controller implements HasMiddleware
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'payment_method' => ['required', 'string', 'in:cash,card,transfer,credit'],
             'client_id' => ['nullable', 'exists:clients,id'],
+            'amount_tendered' => ['nullable', 'numeric', 'min:0'],
+            'change' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $cartItems = $request->input('items');
@@ -99,6 +101,31 @@ class SaleController extends Controller implements HasMiddleware
 
                 // Calculamos total una sola vez a partir de los ítems
                 $total = collect($request->items)->sum(fn($i) => $i['price'] * $i['quantity']);
+
+                // 0. Lógica de efectivo: validar monto entregado y calcular cambio
+                $amountTendered = null;
+                $change = 0;
+
+                if ($request->payment_method === 'cash') {
+                    $raw = $request->input('amount_tendered');
+
+                    if ($raw === null || $raw === '') {
+                        throw new \Exception('Debes ingresar el monto entregado en efectivo.');
+                    }
+
+                    $amountTendered = (float) $raw;
+
+                    if (!is_finite($amountTendered) || $amountTendered <= 0) {
+                        throw new \Exception('Monto entregado inválido.');
+                    }
+
+                    if ($amountTendered + 1e-6 < $total) {
+                        throw new \Exception('El monto entregado es menor al total de la venta.');
+                    }
+
+                    $amountTendered = round($amountTendered, 2);
+                    $change = max(0, round($amountTendered - $total, 2));
+                }
 
                 // 1. Lógica de Crédito
                 if ($request->payment_method === 'credit') {
@@ -146,6 +173,8 @@ class SaleController extends Controller implements HasMiddleware
                     'client_id' => $request->client_id,
                     'total' => $total,
                     'payment_method' => $request->payment_method,
+                    'amount_tendered' => $amountTendered,
+                    'change' => $change,
                 ]);
 
                 // 2. PROCESAR ITEMS Y STOCK (AQUÍ ESTÁ EL CAMBIO IMPORTANTE)

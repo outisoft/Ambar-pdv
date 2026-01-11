@@ -21,6 +21,8 @@ class Sale extends Model
         'client_id',
         'total',
         'status',
+        'amount_tendered',
+        'change',
     ];
 
     public function items(): HasMany
