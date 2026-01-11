@@ -210,6 +210,17 @@
             TOTAL: ${{ number_format($sale->total, 2) }}
         </div>
 
+        @if ($sale->payment_method === 'cash')
+            @if (!is_null($sale->amount_tendered))
+                <div style="margin-top:4px; font-size: 10px; text-align:right;">
+                    Pago: ${{ number_format($sale->amount_tendered, 2) }}
+                </div>
+            @endif
+            <div style="font-size: 11px; font-weight:700; text-align:right;">
+                Cambio: ${{ number_format($sale->change ?? 0, 2) }}
+            </div>
+        @endif
+
         <div class="line"></div>
 
         <p style="font-size: 10px; border-bottom: 1px dashed #000; padding-bottom: 5px;">
