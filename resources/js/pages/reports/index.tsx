@@ -107,7 +107,7 @@ export default function ReportsIndex({ auth, branches }: any) {
                 {/* Tarjetas de reportes disponibles */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Reporte de horarios / turnos */}
-                    <Card className="border-l-4 border-l-blue-500 bg-card text-card-foreground shadow-sm">
+                    <Card className=" bg-card text-card-foreground shadow-sm">
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">

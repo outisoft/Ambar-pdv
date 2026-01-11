@@ -1,13 +1,15 @@
 // resources/js/Components/Cart.tsx
 import { CartItem, Client } from '@/types';
 import { useForm } from '@inertiajs/react';
-import { FormEvent, useEffect } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { User, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from "@/lib/utils";
+import { useHotkeys } from 'react-hotkeys-hook';
 
 interface Props {
     cartItems: CartItem[];
@@ -41,13 +43,32 @@ export default function Cart({
         (client) => String(client.id) === String(data.client_id),
     );
     const hasCreditOption = (selectedClient?.credit_limit ?? 0) > 0;
+    const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+    const clientSelectRef = useRef<HTMLSelectElement | null>(null);
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
 
     useEffect(() => {
         setData('items', cartItems);
     }, [cartItems]);
 
-    const submit = (e: FormEvent) => {
-        e.preventDefault();
+    useEffect(() => {
+        if (cartItems.length === 0) {
+            setSelectedItemId(null);
+        }
+    }, [cartItems.length]);
+
+    const openCancelDialog = () => {
+        if (cartItems.length === 0 || processing) return;
+        setShowCancelDialog(true);
+    };
+
+    const handleConfirmCancel = () => {
+        setShowCancelDialog(false);
+        onClearCart();
+    };
+
+    const submit = (e?: FormEvent) => {
+        e?.preventDefault();
 
         if (data.payment_method === 'credit') {
             if (!selectedClient) {
@@ -87,6 +108,95 @@ export default function Cart({
         setData('payment_method', method);
     };
 
+    // Atajo F3: enfocar selector de cliente
+    useHotkeys(
+        'f3',
+        () => {
+            clientSelectRef.current?.focus();
+        },
+        {
+            enableOnFormTags: true,
+            preventDefault: true,
+        },
+        [],
+    );
+
+    // Atajo F12: cobrar
+    useHotkeys(
+        'f12',
+        () => {
+            if (cartItems.length === 0 || processing) return;
+            submit();
+        },
+        {
+            enableOnFormTags: true,
+            preventDefault: true,
+        },
+        [submit, cartItems.length, processing],
+    );
+
+    // Atajo Supr: eliminar producto seleccionado
+    useHotkeys(
+        'del',
+        () => {
+            if (!selectedItemId) return;
+            const exists = cartItems.some((item) => item.id === selectedItemId);
+            if (!exists) return;
+            onRemoveFromCart(selectedItemId);
+            setSelectedItemId(null);
+        },
+        {
+            enableOnFormTags: true,
+            preventDefault: true,
+        },
+        [selectedItemId, cartItems],
+    );
+
+    // Atajo ESC: cancelar compra
+    useHotkeys(
+        'esc',
+        () => {
+            if (!showCancelDialog) {
+                openCancelDialog();
+            }
+        },
+        {
+            enableOnFormTags: true,
+            preventDefault: true,
+        },
+        [openCancelDialog, cartItems.length, processing, showCancelDialog],
+    );
+
+    // Atajos + / - : modificar cantidad del producto seleccionado
+    useHotkeys(
+        '+',
+        () => {
+            if (!selectedItemId) return;
+            const item = cartItems.find((i) => i.id === selectedItemId);
+            if (!item) return;
+            if (item.quantity >= item.stock) return;
+            onUpdateQuantity(item.id, item.quantity + 1);
+        },
+        {
+            preventDefault: true,
+        },
+        [selectedItemId, cartItems],
+    );
+
+    useHotkeys(
+        '-',
+        () => {
+            if (!selectedItemId) return;
+            const item = cartItems.find((i) => i.id === selectedItemId);
+            if (!item) return;
+            onUpdateQuantity(item.id, item.quantity - 1);
+        },
+        {
+            preventDefault: true,
+        },
+        [selectedItemId, cartItems],
+    );
+
     return (
         <Card className="h-full flex flex-col shadow-lg border-2 overflow-hidden">
             <CardHeader className="bg-muted/50 p-4 pb-2">
@@ -103,12 +213,13 @@ export default function Cart({
             <CardContent className="flex-1 flex flex-col p-4 gap-4 min-h-0">
                 <div className="space-y-1">
                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                        <User className="w-3 h-3" /> Cliente
+                        <User className="w-3 h-3" /> Cliente (F3)
                     </label>
                     {/* Native select for reliability and speed in high-interaction POS */}
                     <div className="relative">
                         <select
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            ref={clientSelectRef}
                             value={data.client_id}
                             onChange={(e) => {
                                 const value = e.target.value;
@@ -146,7 +257,11 @@ export default function Cart({
                                 {cartItems.map((item) => (
                                     <div
                                         key={item.id}
-                                        className="flex flex-col gap-2 rounded-lg border bg-background p-3 shadow-sm"
+                                        className={cn(
+                                            "flex flex-col gap-2 rounded-lg border bg-background p-3 shadow-sm cursor-pointer",
+                                            selectedItemId === item.id && "ring-2 ring-primary border-primary"
+                                        )}
+                                        onClick={() => setSelectedItemId(item.id)}
                                     >
                                         <div className="flex justify-between items-start gap-2">
                                             <span className="font-medium text-sm line-clamp-2 leading-tight">
@@ -310,7 +425,7 @@ export default function Cart({
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={onClearCart}
+                        onClick={openCancelDialog}
                         disabled={cartItems.length === 0 || processing}
                         className="col-span-1"
                     >
@@ -325,7 +440,41 @@ export default function Cart({
                         {processing ? 'Procesando...' : 'COBRAR'}
                     </Button>
                 </div>
+                <p className="w-full text-[11px] text-muted-foreground text-right mt-1">
+                    ESC: Cancelar · F12: Cobrar
+                </p>
             </CardFooter>
+
+            {/* Modal cancelar compra */}
+            <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Cancelar compra</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 mt-2">
+                        <p className="text-sm text-muted-foreground">
+                            ¿Seguro que deseas cancelar la compra actual? Se eliminarán todos los productos del carrito.
+                        </p>
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setShowCancelDialog(false)}
+                            >
+                                No, volver
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                onClick={handleConfirmCancel}
+                                disabled={processing}
+                            >
+                                Sí, cancelar compra
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </Card>
     );
 }

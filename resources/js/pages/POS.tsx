@@ -4,7 +4,7 @@ import ProductCard from '@/components/ProductCard';
 import AuthenticatedLayout from '@/layouts/app-layout';
 import { CartItem, PageProps, Product, Client } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { Search, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useCashMovement } from '@/Contexts/CashMovementContext';
 import useBarcodeScanner from '@/hooks/use-barcode-scanner';
+import { useHotkeys } from 'react-hotkeys-hook';
 import {
     Dialog,
     DialogContent,
@@ -31,6 +32,8 @@ export default function POS({ auth, products, clients, suspended_sales }: PosPro
     const flash = props.flash as any;
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [selectedClientId, setSelectedClientId] = useState<string | number | ''>('');
+    const [lastAddedProductId, setLastAddedProductId] = useState<number | null>(null);
+    const searchInputRef = useRef<HTMLInputElement | null>(null);
 
     const handleAddToCart = (productToAdd: Product) => {
         const existingItem = cartItems.find((item) => item.id === productToAdd.id);
@@ -44,12 +47,14 @@ export default function POS({ auth, products, clients, suspended_sales }: PosPro
                             : item,
                     ),
                 );
+                setLastAddedProductId(productToAdd.id);
             } else {
                 toast.error(`Stock máximo alcanzado para ${productToAdd.name}`);
             }
         } else {
             if (productToAdd.stock > 0) {
                 setCartItems([...cartItems, { ...productToAdd, quantity: 1 }]);
+                setLastAddedProductId(productToAdd.id);
             } else {
                 toast.error(`Producto ${productToAdd.name} sin stock.`);
             }
@@ -80,10 +85,15 @@ export default function POS({ auth, products, clients, suspended_sales }: PosPro
     const handleRemoveFromCart = (productIdToRemove: number) => {
         const newCart = cartItems.filter((item) => item.id !== productIdToRemove);
         setCartItems(newCart);
+        if (lastAddedProductId === productIdToRemove) {
+            setLastAddedProductId(null);
+        }
     };
 
     const handleClearCart = () => {
         setCartItems([]);
+        setLastAddedProductId(null);
+        setSelectedClientId('');
     };
 
     // --- ESCÁNER DE CÓDIGO DE BARRAS ---
@@ -118,6 +128,76 @@ export default function POS({ auth, products, clients, suspended_sales }: PosPro
             }
         }
     };
+
+    // --- ATAJOS DE TECLADO GLOBALES PARA POS ---
+    useHotkeys(
+        'f2',
+        () => {
+            searchInputRef.current?.focus();
+        },
+        {
+            enableOnFormTags: true,
+            preventDefault: true,
+        },
+        [],
+    );
+
+    useHotkeys(
+        'f4',
+        () => {
+            if (!lastAddedProductId) return;
+            const lastItem = cartItems.find((item) => item.id === lastAddedProductId);
+            if (!lastItem) return;
+
+            const result = window.prompt(
+                `Nueva cantidad para ${lastItem.name}`,
+                String(lastItem.quantity),
+            );
+
+            if (!result) return;
+
+            const parsed = Number(result.replace(',', '.'));
+            if (!Number.isFinite(parsed) || parsed <= 0) {
+                toast.error('Cantidad inválida');
+                return;
+            }
+
+            handleUpdateQuantity(lastAddedProductId, parsed);
+        },
+        {
+            enableOnFormTags: true,
+            preventDefault: true,
+        },
+        [cartItems, lastAddedProductId],
+    );
+
+    // Atajo F8: abrir modal de suspender venta
+    useHotkeys(
+        'f8',
+        () => {
+            if (cartItems.length === 0) return;
+            setShowSuspendModal(true);
+        },
+        {
+            enableOnFormTags: true,
+            preventDefault: true,
+        },
+        [cartItems.length],
+    );
+
+    // Atajo F9: abrir modal de recuperar ventas suspendidas
+    useHotkeys(
+        'f9',
+        () => {
+            if (!suspended_sales || suspended_sales.length === 0) return;
+            setShowRecoverDialog(true);
+        },
+        {
+            enableOnFormTags: true,
+            preventDefault: true,
+        },
+        [suspended_sales?.length],
+    );
 
     // --- SUSPENDER VENTA ---
     const [showSuspendModal, setShowSuspendModal] = useState(false);
@@ -186,8 +266,9 @@ export default function POS({ auth, products, clients, suspended_sales }: PosPro
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             type="text"
-                            placeholder="Escanea código o busca..."
+                            placeholder="Escanea código o busca... (F2)"
                             className="pl-9 bg-background"
+                            ref={searchInputRef}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             onKeyDown={handleSearchKeyDown}
@@ -259,7 +340,7 @@ export default function POS({ auth, products, clients, suspended_sales }: PosPro
                                 onClick={() => setShowSuspendModal(true)}
                             >
                                 ⏸️
-                                <span className="hidden sm:inline">Suspender</span>
+                                <span className="hidden sm:inline">Suspender (F8)</span>
                             </Button>
 
                             {suspended_sales && suspended_sales.length > 0 && (
@@ -271,7 +352,7 @@ export default function POS({ auth, products, clients, suspended_sales }: PosPro
                                         onClick={() => setShowRecoverDialog(true)}
                                     >
                                         📂
-                                        <span className="hidden sm:inline">Recuperar</span>
+                                        <span className="hidden sm:inline">Recuperar (F9)</span>
                                     </Button>
                                     <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                                         {suspended_sales.length}
