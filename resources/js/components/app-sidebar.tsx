@@ -105,6 +105,11 @@ const footerNavItems: NavItem[] = [
         icon: Settings,
         permissions: ['view_settings'],
     },
+    {
+        title: 'Help Manual',
+        href: '/manual',
+        icon: Folder,
+    }
 ];
 
 export function AppSidebar() {

@@ -9,6 +9,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\ManualController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\POSController;
@@ -90,6 +91,9 @@ Route::middleware(['auth', 'verified', 'check_subscription'])->group(function ()
     Route::get('/import/template', [ImportController::class, 'downloadTemplate'])->name('import.template');
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
     Route::post('/inventory/{product}/update', [InventoryController::class, 'update'])->name('inventory.update');
+    Route::get('/manual', [ManualController::class, 'index'])
+        ->name('manual.index')
+        ->middleware(['auth', 'verified']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
     Route::resource('permissions', PermissionController::class);
