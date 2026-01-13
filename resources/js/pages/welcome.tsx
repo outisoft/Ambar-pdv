@@ -1,5 +1,6 @@
 import { dashboard, login} from '@/routes';
 import { type SharedData } from '@/types';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     Activity,
@@ -85,8 +86,8 @@ export default function Welcome({
             <nav className="fixed w-full z-50 top-0 start-0 border-b border-gray-200 dark:border-[#3E3E3A] bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-md">
                 <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between p-4">
                     <Link href="/" className="flex items-center space-x-3 rtl:space-x-reverse group">
-                        <div className="p-2 rounded-lg bg-gradient-to-br from-[#FF750F] to-[#FF4433] group-hover:scale-105 transition-transform duration-300">
-                            <LayoutDashboard className="w-6 h-6 text-white" />
+                        <div className="p-2 rounded-lg bg-gradient-to-br from-[#FF750F] to-[#FF4433] group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
+                            <AppLogoIcon className="size-6 fill-current text-white" />
                         </div>
                         <span className="self-center text-2xl font-bold whitespace-nowrap dark:text-white tracking-tight">Ambar<span className="text-[#FF750F]">.</span></span>
                     </Link>
@@ -219,47 +220,47 @@ export default function Welcome({
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {/* Benefit 1 */}
+                        {/* Benefit 1: Punto de venta rápido */}
                         <div className="bg-white dark:bg-[#0a0a0a] p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-[#3E3E3A] group">
                             <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                                 <Activity className="w-6 h-6 text-[#FF750F]" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Control Total en Tiempo Real</h3>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Punto de venta ágil y seguro</h3>
                             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                                Monitorea tus ventas, inventario y personal desde cualquier lugar. Toma decisiones basadas en datos actualizados al segundo.
+                                Cobra en segundos con atajos de teclado (F12, Enter), diferentes métodos de pago, tickets listos para imprimir y control de cancelaciones y devoluciones.
                             </p>
                         </div>
 
-                        {/* Benefit 2 */}
+                        {/* Benefit 2: Caja y cortes */}
                         <div className="bg-white dark:bg-[#0a0a0a] p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-[#3E3E3A] group">
                             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                                 <Store className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Multi-Sucursal Nativo</h3>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Control de caja y cortes Z</h3>
                             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                                Gestiona múltiples ubicaciones desde una sola cuenta. Sincroniza productos y precios al instante en todas tus tiendas.
+                                Lleva el control de aperturas, arqueos y cierres de caja. El sistema calcula sobrantes o faltantes y envía cortes diarios al correo del gerente.
                             </p>
                         </div>
 
-                        {/* Benefit 3 */}
+                        {/* Benefit 3: Inventario y stock */}
                         <div className="bg-white dark:bg-[#0a0a0a] p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-[#3E3E3A] group">
                             <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                                 <Smartphone className="w-6 h-6 text-green-600 dark:text-green-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Diseño Responsive</h3>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Inventario por sucursal y alertas</h3>
                             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                                Funciona perfectamente en computadoras, tablets y celulares. Lleva tu punto de venta en tu bolsillo sin perder funcionalidad.
+                                Controla existencias por sucursal, configura stock mínimo, recibe alertas de productos críticos y actualiza masivamente desde Excel en segundos.
                             </p>
                         </div>
 
-                        {/* Benefit 4 */}
+                        {/* Benefit 4: Reportes y crédito */}
                         <div className="bg-white dark:bg-[#0a0a0a] p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-[#3E3E3A] group">
                             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                                 <BarChart3 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Reportes Detallados</h3>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Utilidades, créditos y cuentas por cobrar</h3>
                             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                                Analiza tendencias de venta, productos más vendidos y rendimiento de empleados con gráficos intuitivos y exportables.
+                                Analiza ganancias reales por periodo y por producto, gestiona ventas a crédito, controla cuentas por cobrar y descarga reportes listos para compartir.
                             </p>
                         </div>
                     </div>
@@ -483,8 +484,8 @@ export default function Welcome({
             <footer className="bg-white dark:bg-[#0a0a0a] border-t border-gray-100 dark:border-[#3E3E3A] py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="flex items-center space-x-2">
-                        <div className="p-1.5 rounded bg-[#FF750F]">
-                            <LayoutDashboard className="w-5 h-5 text-white" />
+                        <div className="p-1.5 rounded bg-[#FF750F] flex items-center justify-center">
+                            <AppLogoIcon className="size-6 fill-current text-white" />
                         </div>
                         <span className="text-xl font-bold dark:text-white">Ambar</span>
                     </div>

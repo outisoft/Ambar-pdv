@@ -3,6 +3,7 @@ import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { ThemeSwitch } from '@/components/theme-switch';
 import { usePermission } from '@/hooks/use-permission';
+import AppLogoIcon from '@/components/app-logo-icon';
 import {
     Sidebar,
     SidebarContent,
@@ -150,7 +151,7 @@ export function AppSidebar() {
                         <SidebarMenuButton size="lg" asChild>
                             <Link href={dashboard()} prefetch className="flex items-center gap-3">
                                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#FF750F] to-[#FF4433] text-sidebar-primary-foreground">
-                                    <LayoutDashboard className="size-4" />
+                                    <AppLogoIcon className="size-6 fill-current text-white" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-semibold">Ambar<span className="text-[#FF750F]">.</span></span>
