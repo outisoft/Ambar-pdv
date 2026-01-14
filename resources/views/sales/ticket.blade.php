@@ -4,6 +4,11 @@
 <head>
     <meta charset="utf-8" />
     <title>Ticket #{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</title>
+
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/assets/images/symbol.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
     <style>
         /* Optimización para impresora térmica 80mm */
         @page {
