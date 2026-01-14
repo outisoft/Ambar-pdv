@@ -41,4 +41,10 @@ class Product extends Model
             ->withPivot('stock', 'min_stock')
             ->withTimestamps();
     }
+
+    // Un producto puede estar presente en muchos items de venta
+    public function saleItems()
+    {
+        return $this->hasMany(SaleItem::class);
+    }
 }

@@ -8,6 +8,8 @@ use Inertia\Inertia;
 use App\Exports\ProductsExport;
 use Maatwebsite\Excel\Facades\Excel;
 
+use Illuminate\Validation\ValidationException;
+
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
@@ -287,6 +289,16 @@ class ProductController extends Controller implements HasMiddleware
         $user = auth()->user();
         if ($user->company_id && $product->company_id !== $user->company_id) {
             abort(403, 'No tienes permiso para eliminar este producto.');
+        }
+
+        // Verificar si el producto tiene ventas asociadas
+        $hasSales = $product->saleItems()->exists();
+
+        if ($hasSales) {
+            // Lanzamos una validación para que Inertia capture el error en onError
+            throw ValidationException::withMessages([
+                'delete' => 'No se puede eliminar este producto porque ya tiene ventas registradas. Puedes desactivarlo o dejarlo con stock en cero.',
+            ]);
         }
 
         $product->delete();

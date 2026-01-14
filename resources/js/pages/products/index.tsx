@@ -57,9 +57,16 @@ export default function Index({ auth, products }: ProductIndexProps) {
     const confirmDelete = () => {
         if (productToDelete) {
             router.delete(route('products.destroy', productToDelete.id), {
-                onSuccess: () =>
-                    toast.success('Producto eliminado correctamente.'),
-                onError: () => toast.error('No se pudo eliminar el producto.'),
+                onSuccess: () => {
+                    toast.success('Producto eliminado correctamente.');
+                },
+                onError: (errors: Record<string, string>) => {
+                    const message =
+                        errors?.delete ||
+                        errors?.general ||
+                        'No se pudo eliminar el producto.';
+                    toast.error(message);
+                },
                 onFinish: () => cancelDelete(),
             });
         }
