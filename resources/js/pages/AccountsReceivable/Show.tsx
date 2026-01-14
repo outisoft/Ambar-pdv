@@ -11,7 +11,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { ArrowLeft, CreditCard, DollarSign, History } from 'lucide-react';
+import { ArrowLeft, CreditCard, DollarSign, History, Printer } from 'lucide-react';
 
 interface ClientTransaction {
     id: number;
@@ -123,6 +123,7 @@ export default function Show({ client }: ShowProps) {
                                 <TableHead className="text-right">Saldo anterior</TableHead>
                                 <TableHead className="text-right">Saldo nuevo</TableHead>
                                 <TableHead>Descripción</TableHead>
+                                <TableHead className="text-right">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -184,6 +185,30 @@ export default function Show({ client }: ShowProps) {
                                                 <span className="text-sm text-muted-foreground">
                                                     {tx.description || '-'}
                                                 </span>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                {isPayment ? (
+                                                    <a
+                                                        href={route(
+                                                            'receivable.print_ticket',
+                                                            tx.id,
+                                                        )}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                        >
+                                                            <Printer className="w-4 h-4" />
+                                                        </Button>
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        -
+                                                    </span>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     );

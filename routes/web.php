@@ -104,6 +104,8 @@ Route::middleware(['auth', 'verified', 'check_subscription'])->group(function ()
     Route::get('/reports/profit', [ProfitController::class, 'index'])
         ->name('reports.profit')
         ->middleware(['auth', 'verified', 'role:gerente|super-admin']); // Protegido!
+    Route::get('/receivable/transaction/{transaction}/print', [AccountsReceivableController::class, 'printTicket'])
+        ->name('receivable.print_ticket');
     Route::resource('roles', RoleController::class);
     Route::resource('users', UserController::class);
 });

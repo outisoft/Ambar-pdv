@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/layouts/app-layout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { PageProps, Client } from '@/types';
-import { useMemo, useState, FormEvent } from 'react';
+import { useMemo, useState, FormEvent, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,9 @@ type AccountsReceivableIndexProps = PageProps<{
 }>;
 
 export default function AccountsReceivableIndex({ auth, debtors }: AccountsReceivableIndexProps) {
+    const { props } = usePage<PageProps>();
+    const flash: any = (props as any).flash || {};
+
     const [search, setSearch] = useState('');
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedClient, setSelectedClient] = useState<Debtor | null>(null);
@@ -86,6 +89,13 @@ export default function AccountsReceivableIndex({ auth, debtors }: AccountsRecei
         });
     };
 
+    // Escucha si el servidor envió una URL de ticket y la abre automáticamente
+    useEffect(() => {
+        if (flash?.ticket_url) {
+            window.open(flash.ticket_url as string, '_blank');
+        }
+    }, [flash?.ticket_url]);
+
     return (
         <AuthenticatedLayout>
             <Head title="Cuentas por Cobrar" />
@@ -114,6 +124,24 @@ export default function AccountsReceivableIndex({ auth, debtors }: AccountsRecei
                         </div>
                     </div>
                 </div>
+
+                {/* Aviso de ticket de abono */}
+                {flash?.ticket_url && (
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-md text-sm flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                        <div>
+                            <span className="font-semibold">¡Abono registrado!</span>{' '}
+                            <span>El comprobante se está abriendo en una nueva pestaña.</span>
+                        </div>
+                        <a
+                            href={flash.ticket_url as string}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline font-semibold"
+                        >
+                            ¿No abrió? Clic aquí para ver el ticket
+                        </a>
+                    </div>
+                )}
 
                 {/* Summary cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

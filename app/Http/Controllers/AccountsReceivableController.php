@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\ClientTransaction;
 use App\Models\CashRegister;
+use App\Models\CashMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf; // Asegúrate de importar esto
 
 class AccountsReceivableController extends Controller
 {
@@ -57,22 +60,28 @@ class AccountsReceivableController extends Controller
         }
 
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:0.01|max:' . $client->current_balance, // No puede pagar más de lo que debe
+            'amount' => 'required|numeric|min:0.01|max:' . $client->current_balance,
             'notes' => 'nullable|string|max:500',
         ]);
 
-        DB::transaction(function () use ($validated, $client, $user) {
+        // 1. Capturamos el resultado de la transacción en una variable
+        $transaction = DB::transaction(function () use ($validated, $client, $user) {
             $oldBalance = $client->current_balance;
             $newBalance = $oldBalance - $validated['amount'];
 
-            // Verificar que exista una caja abierta para este usuario y sucursal
+            // Buscar caja abierta para este usuario y sucursal
             $register = CashRegister::where('user_id', $user->id)
                 ->where('branch_id', $user->branch_id)
                 ->where('status', 'open')
-                ->firstOrFail();
+                ->first();
 
-            // Registrar Transacción (Abono)
-            ClientTransaction::create([
+            if (! $register) {
+                throw ValidationException::withMessages([
+                    'amount' => 'Debes tener una caja abierta para registrar abonos.',
+                ]);
+            }
+            // Creamos la transacción
+            $trx = ClientTransaction::create([
                 'client_id' => $client->id,
                 'user_id' => $user->id,
                 'type' => 'payment',
@@ -82,17 +91,53 @@ class AccountsReceivableController extends Controller
                 'description' => $validated['notes'] ?? 'Abono a Cuenta',
             ]);
 
-            // Actualizar Saldo Cliente
             $client->update(['current_balance' => $newBalance]);
 
-            \App\Models\CashMovement::create([
+            CashMovement::create([
                 'cash_register_id' => $register->id,
                 'type' => 'in',
                 'amount' => $validated['amount'],
                 'description' => 'Abono cliente: ' . $client->name,
             ]);
+
+            // IMPORTANTE: Retornamos la transacción para usarla fuera de este bloque
+            return $trx;
         });
 
-        return back()->with('success', 'Abono registrado correctamente');
+        // 2. Retornamos con la URL del ticket en la sesión flash
+        return back()->with([
+            'success' => 'Abono registrado correctamente',
+            'ticket_url' => route('receivable.print_ticket', $transaction->id) // Generamos la ruta aquí
+        ]);
+    }
+
+    // app/Http/Controllers/AccountsReceivableController.php
+    public function printTicket($transactionId)
+    {
+        // 0. Buscar la transacción manualmente por ID
+        $transaction = ClientTransaction::findOrFail($transactionId);
+
+        // 1. Seguridad: Verificar que el cliente pertenezca a la empresa del usuario
+        $client = $transaction->client;
+        if ($client->company_id !== Auth::user()->company_id) {
+            abort(403, 'No autorizado');
+        }
+
+        // 2. Cálculos para el ticket
+        // El "Disponible" se calcula: Límite de Crédito - El Saldo que quedó después del pago
+        $availableCredit = $client->credit_limit - $transaction->new_balance;
+
+        // 3. Generar PDF
+        $pdf = Pdf::loadView('tickets.payment', [
+            'transaction' => $transaction,
+            'client' => $client,
+            'company' => Auth::user()->company,
+            'available_credit' => $availableCredit
+        ]);
+
+        // Configurar tamaño de papel (aprox 80mm de ancho térmico)
+        $pdf->setPaper([0, 0, 226, 600], 'portrait');
+
+        return $pdf->stream('ticket-abono-' . $transaction->id . '.pdf');
     }
 }

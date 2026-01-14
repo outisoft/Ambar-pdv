@@ -80,6 +80,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn() => $request->session()->get('error'),
                 'last_sale_id' => fn() => $request->session()->get('last_sale_id'), // <--- Ticket última venta
                 'restoredSale' => fn() => $request->session()->get('restoredSale'), // Venta suspendida restaurada
+                'ticket_url' => fn() => $request->session()->get('ticket_url'), // URL comprobante de abono
             ],
         ];
     }
