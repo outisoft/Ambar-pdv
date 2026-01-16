@@ -31,11 +31,5 @@ class DatabaseSeeder extends Seeder
             PlanSeeder::class,
             //ProductSeeder::class,
         ]);
-
-        \App\Models\Setting::create([
-            'shop_name' => 'Mi TPV Laravel',
-            'address' => 'Calle Configuración 123',
-            'phone' => '555-0000',
-        ]);
     }
 }

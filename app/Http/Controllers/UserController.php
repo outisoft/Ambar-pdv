@@ -152,6 +152,7 @@ class UserController extends Controller implements HasMiddleware
             'password' => Hash::make($request->password),
             'company_id' => $companyId,
             'branch_id' => $request->branch_id,
+            'must_change_password' => true, // ¡IMPORTANTE! Forzar cambio de contraseña
         ]);
 
         // Asignar el rol seleccionado

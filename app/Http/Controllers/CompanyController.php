@@ -93,6 +93,7 @@ class CompanyController extends Controller implements HasMiddleware
                     'password' => Hash::make($request->password),
                     'company_id' => $company->id,
                     'branch_id' => $branch->id, // Lo asignamos a la matriz
+                    'must_change_password' => true, // ¡IMPORTANTE! Forzar cambio de contraseña
                 ]);
 
                 // Asignar rol de Gerente (Spatie)

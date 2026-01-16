@@ -25,6 +25,7 @@ class User extends Authenticatable
         'password',
         'company_id',
         'branch_id',
+        'must_change_password',
     ];
 
     /**
@@ -50,8 +51,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'must_change_password' => 'boolean',
         ];
     }
-    public function company() { return $this->belongsTo(Company::class); }
-    public function branch() { return $this->belongsTo(Branch::class); }
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 }

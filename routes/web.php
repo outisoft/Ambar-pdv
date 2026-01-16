@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use App\Http\Controllers\AccountsReceivableController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CashMovementController;
@@ -87,6 +88,11 @@ Route::middleware(['auth', 'verified', 'check_subscription'])->group(function ()
     Route::resource('companies', CompanyController::class);
     Route::post('companies/{company}/renew', [CompanyController::class, 'renew'])->name('companies.renew');
     Route::resource('branches', BranchController::class);
+    Route::get('/force-password-change', [ForcePasswordChangeController::class, 'edit'])
+        ->name('password.force_change');
+
+    Route::post('/force-password-change', [ForcePasswordChangeController::class, 'update'])
+        ->name('password.force_update');
     Route::post('/import/products', [ImportController::class, 'store'])->name('import.products');
     Route::get('/import/template', [ImportController::class, 'downloadTemplate'])->name('import.template');
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
