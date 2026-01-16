@@ -12,7 +12,8 @@ import {
     Smartphone,
     Store,
     Zap,
-    X
+    X,
+    MessageCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -499,6 +500,17 @@ export default function Welcome({
                     </div>
                 </div>
             </footer>
+
+            {/* Botón flotante de WhatsApp */}
+            <a
+                href="https://wa.me/529841786031?text=Hola%20me%20gustar%C3%ADa%20m%C3%A1s%20informaci%C3%B3n%20sobre%20Ambar%20PDV"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg hover:shadow-xl hover:bg-[#1ebe5d] focus:outline-none focus:ring-2 focus:ring-[#25D366] focus:ring-offset-2 focus:ring-offset-background"
+                aria-label="Contactar por WhatsApp"
+            >
+                <MessageCircle className="w-6 h-6" />
+            </a>
 
             {isTrialModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
