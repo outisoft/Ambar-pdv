@@ -22,6 +22,7 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SuspendedSaleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TermsController;
 use App\Http\Controllers\TrialRequestController;
 use Illuminate\Support\Facades\Route;
 use App\Models\Plan;
@@ -36,6 +37,9 @@ Route::get('/', function () {
         'plans' => $plans,
     ]);
 })->name('home');
+
+Route::get('/terms', [TermsController::class, 'show'])->name('terms.show');
+Route::get('/privacy-policy', [TermsController::class, 'privacy'])->name('privacy.show');
 
 Route::post('/trial-requests', [TrialRequestController::class, 'store'])
     ->name('trial-requests.store');

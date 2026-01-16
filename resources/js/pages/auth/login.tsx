@@ -14,13 +14,11 @@ import { Form, Head } from '@inertiajs/react';
 interface LoginProps {
     status?: string;
     canResetPassword: boolean;
-    canRegister: boolean;
 }
 
 export default function Login({
     status,
     canResetPassword,
-    canRegister,
 }: LoginProps) {
     return (
         <AuthLayout
@@ -98,14 +96,23 @@ export default function Login({
                             </Button>
                         </div>
 
-                        {canRegister && (
-                            <div className="text-center text-sm text-muted-foreground">
-                                Don't have an account?{' '}
-                                <TextLink href={register()} tabIndex={5} className="hover:text-[#FF750F] transition-colors font-medium">
-                                    Sign up
-                                </TextLink>
-                            </div>
-                        )}
+                        <p className="mt-4 text-center text-[11px] leading-relaxed text-muted-foreground">
+                            By continuing, you agree to our{' '}
+                            <TextLink
+                                href={route('terms.show')}
+                                className="underline-offset-2 hover:text-[#FF750F] hover:underline"
+                            >
+                                Terms & Conditions
+                            </TextLink>{' '}
+                            and{' '}
+                            <TextLink
+                                href={route('privacy.show')}
+                                className="underline-offset-2 hover:text-[#FF750F] hover:underline"
+                            >
+                                Privacy Policy
+                            </TextLink>
+                            .
+                        </p>
                     </>
                 )}
             </Form>

@@ -491,9 +491,8 @@ export default function Welcome({
                         <span className="text-xl font-bold dark:text-white">Ambar</span>
                     </div>
                     <div className="flex space-x-6 text-sm text-gray-500 dark:text-gray-400">
-                        <a href="#" className="hover:text-[#FF750F] transition-colors">Politica de Privacidad</a>
-                        <a href="#" className="hover:text-[#FF750F] transition-colors">Términos de Servicio</a>
-                        <a href="#" className="hover:text-[#FF750F] transition-colors">Contacto</a>
+                        <a href={route('privacy.show')} className="hover:text-[#FF750F] transition-colors">Política de Privacidad</a>
+                        <a href={route('terms.show')} className="hover:text-[#FF750F] transition-colors">Términos y Condiciones</a>
                     </div>
                     <div className="text-sm text-gray-400 dark:text-gray-600">
                         &copy; {new Date().getFullYear()} Ambar PDV. Todos los derechos reservados.
