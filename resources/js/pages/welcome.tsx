@@ -428,7 +428,7 @@ export default function Welcome({
                                                 onClick={() => openTrialModal(plan)}
                                                 className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-[#FF750F] text-white hover:bg-[#e0660d] transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
                                             >
-                                                Solicitar prueba gratis
+                                                Solicita una Cuenta Gratis
                                             </button>
                                         </div>
                                     </div>
@@ -439,23 +439,83 @@ export default function Welcome({
                 </section>
             )}
 
-            {/* Testimonial / Social Proof (Simplified) */}
-            <section className="py-20 border-t border-gray-100 dark:border-[#3E3E3A] bg-white dark:bg-[#0a0a0a]">
-                <div className="max-w-4xl mx-auto px-4 text-center">
-                    <h2 className="text-2xl font-bold mb-8 dark:text-white">Confían en nosotros</h2>
-                    <div className="flex flex-wrap justify-center gap-8 opacity-50 grayscale transition-all hover:grayscale-0 hover:opacity-100">
-                        {/* Placeholder Logos */}
-                        <div className="flex items-center space-x-2 font-bold text-xl text-gray-400 dark:text-gray-600 select-none">
-                            <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-                            <span>Empresa A</span>
+            {/* About / Quiénes somos */}
+            <section className="py-24 border-t border-gray-100 dark:border-[#3E3E3A] bg-white dark:bg-[#0a0a0a] relative overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 opacity-60 dark:opacity-40">
+                    <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-orange-100 blur-3xl dark:bg-[#FF750F]/10" />
+                    <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-blue-100 blur-3xl dark:bg-blue-500/10" />
+                </div>
+
+                <div className="relative max-w-6xl mx-auto px-4">
+                    <div className="grid gap-12 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] items-start">
+                        <div className="space-y-6">
+                            <div className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-[#FF750F] border border-orange-100 dark:bg-[#1D0002] dark:border-[#3E3E3A]">
+                                <span className="h-1.5 w-1.5 rounded-full bg-[#FF750F]" />
+                                Sobre nosotros
+                            </div>
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">
+                                Un equipo obsesionado con el día a día de tu negocio
+                            </h2>
+                            <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                                Ambar PDV nace en Outisoft tras años acompañando a pequeños y medianos comercios que
+                                necesitaban una herramienta moderna, simple y pensada para la realidad de Latinoamérica.
+                                No somos solo un sistema: somos un aliado que entiende turnos largos, cierres de caja y
+                                temporadas altas.
+                            </p>
+                            <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                                Diseñamos Ambar escuchando a cajeros, encargados y dueños. Cada mejora nace de una
+                                conversación real: desde cómo acelerar el cobro en hora pico, hasta cómo simplificar los
+                                reportes para tomar decisiones sin depender de hojas de cálculo complejas.
+                            </p>
+
+                            <div className="grid gap-4 sm:grid-cols-3 pt-4">
+                                <div className="rounded-xl border border-gray-100 bg-white p-4 text-left shadow-sm dark:border-[#3E3E3A] dark:bg-[#161615]">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Experiencia</p>
+                                    <p className="mt-1 text-2xl font-extrabold text-gray-900 dark:text-white">+5 años</p>
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Construyendo soluciones para comercios físicos.</p>
+                                </div>
+                                {/* About / Quiénes somos 
+                                <div className="rounded-xl border border-gray-100 bg-white p-4 text-left shadow-sm dark:border-[#3E3E3A] dark:bg-[#161615]">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Operación</p>
+                                    <p className="mt-1 text-2xl font-extrabold text-gray-900 dark:text-white">+50,000</p>
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Tickets procesados cada mes en la plataforma.</p>
+                                </div>
+                                */}
+                                <div className="rounded-xl border border-gray-100 bg-white p-4 text-left shadow-sm dark:border-[#3E3E3A] dark:bg-[#161615]">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Disponibilidad</p>
+                                    <p className="mt-1 text-2xl font-extrabold text-gray-900 dark:text-white">99.9%</p>
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Infraestructura en la nube lista para crecer contigo.</p>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex items-center space-x-2 font-bold text-xl text-gray-400 dark:text-gray-600 select-none">
-                            <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-                            <span>Mercado B</span>
-                        </div>
-                        <div className="flex items-center space-x-2 font-bold text-xl text-gray-400 dark:text-gray-600 select-none">
-                            <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-                            <span>Tienda C</span>
+
+                        <div className="space-y-4 rounded-2xl border border-gray-100 bg-gray-50/90 p-6 text-left shadow-sm backdrop-blur-sm dark:border-[#3E3E3A] dark:bg-[#161615]/90">
+                            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                Cómo trabajamos
+                            </h3>
+                            <ol className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                                <li>
+                                    <span className="font-semibold text-gray-900 dark:text-white">1. Escuchamos tu operación</span>
+                                    <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Analizamos tu flujo de venta, turnos y tipos de productos para adaptar la configuración inicial.</p>
+                                </li>
+                                <li>
+                                    <span className="font-semibold text-gray-900 dark:text-white">2. Te acompañamos en el arranque</span>
+                                    <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Te ayudamos a cargar inventario, configurar sucursales y capacitar a tu equipo de caja.</p>
+                                </li>
+                                <li>
+                                    <span className="font-semibold text-gray-900 dark:text-white">3. Mejoramos contigo</span>
+                                    <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Tomamos tus comentarios para priorizar nuevas funciones y reportes que generen valor real.</p>
+                                </li>
+                            </ol>
+
+                            <div className="mt-4 pt-4 border-t border-gray-200 flex items-center gap-3 text-xs text-gray-500 dark:border-[#3E3E3A] dark:text-gray-400">
+                                <div className="h-9 w-9 flex items-center justify-center">
+                                    <AppLogoIcon className="size-5 fill-current text-[#FF750F]" />
+                                </div>
+                                <p>
+                                    Equipo con base en México, comprometido con negocios locales que quieren dar el siguiente paso en su digitalización.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -524,7 +584,7 @@ export default function Welcome({
                         </button>
 
                         <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
-                            Solicitar prueba gratis
+                            Solicita una Cuenta Gratis
                         </h2>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                             Déjanos tus datos y nos pondremos en contacto contigo para activar tu periodo de prueba.
