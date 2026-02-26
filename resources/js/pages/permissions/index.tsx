@@ -147,15 +147,11 @@ export default function PermissionsIndex({ permissions }: PermissionsIndexProps)
 
                 <ConfirmDeleteModal
                     open={!!permissionToDelete}
-                    onOpenChange={() => setPermissionToDelete(null)}
+                    itemName={permissionToDelete?.name}
+                    onCancel={() => setPermissionToDelete(null)}
                     onConfirm={handleDelete}
                     title="Delete Permission?"
-                    description={
-                        <span>
-                            Are you sure you want to delete the permission <span className="font-medium text-foreground">{permissionToDelete?.name}</span>? This action cannot be undone.
-                        </span>
-                    }
-                    processing={isDeleting}
+                    confirming={isDeleting}
                 />
             </AppShell>
         </AuthenticatedLayout>

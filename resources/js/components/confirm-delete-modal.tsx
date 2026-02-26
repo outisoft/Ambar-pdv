@@ -1,58 +1,51 @@
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-interface ConfirmDeleteModalProps {
+type ConfirmDeleteModalProps = {
     open: boolean;
-    onOpenChange: (open: boolean) => void;
-    onConfirm: () => void;
+    itemName?: string | null;
     title?: string;
-    description?: React.ReactNode;
-    processing?: boolean;
-    confirmText?: string;
-    cancelText?: string;
-}
+    confirmLabel?: string;
+    cancelLabel?: string;
+    confirming?: boolean;
+    onCancel: () => void;
+    onConfirm: () => void;
+};
 
-export function ConfirmDeleteModal({
+function ConfirmDeleteModal({
     open,
-    onOpenChange,
+    itemName,
+    title = 'Confirmar eliminación',
+    confirmLabel = 'Eliminar',
+    cancelLabel = 'Cancelar',
+    confirming = false,
+    onCancel,
     onConfirm,
-    title = 'Are you absolutely sure?',
-    description = 'This action cannot be undone. This will permanently delete the resource and remove it from our servers.',
-    processing = false,
-    confirmText = 'Delete',
-    cancelText = 'Cancel',
 }: ConfirmDeleteModalProps) {
+    if (!open) {
+        return null;
+    }
+
     return (
-        <AlertDialog open={open} onOpenChange={onOpenChange}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>{title}</AlertDialogTitle>
-                    <AlertDialogDescription>{description}</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel disabled={processing}>{cancelText}</AlertDialogCancel>
-                    <AlertDialogAction
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onConfirm();
-                        }}
-                        className="bg-destructive text-white hover:bg-destructive/90"
-                        disabled={processing}
-                    >
-                        {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {confirmText}
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+            <div className="relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-lg">
+                <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    ¿Seguro que deseas eliminar{' '}
+                    <span className="font-medium text-foreground">{itemName}</span>? Esta acción no se puede deshacer.
+                </p>
+                <div className="mt-6 flex justify-end gap-3">
+                    <Button variant="outline" onClick={onCancel} disabled={confirming}>
+                        {cancelLabel}
+                    </Button>
+                    <Button variant="destructive" onClick={onConfirm} disabled={confirming}>
+                        {confirming ? 'Eliminando...' : confirmLabel}
+                    </Button>
+                </div>
+            </div>
+        </div>
     );
 }
+
+export default ConfirmDeleteModal;
+export { ConfirmDeleteModal };

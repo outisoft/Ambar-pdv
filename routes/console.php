@@ -14,3 +14,6 @@ Schedule::call(function () {
         ->where('subscription_ends_at', '<', now())
         ->update(['subscription_status' => 'expired']);
 })->daily();
+
+Schedule::command('backup:clean')->dailyAt('01:00');
+Schedule::command('backup:run --only-db')->dailyAt('01:30');

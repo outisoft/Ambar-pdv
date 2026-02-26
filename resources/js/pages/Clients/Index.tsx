@@ -1,6 +1,7 @@
 // resources/js/Pages/Clients/Index.tsx
 import AuthenticatedLayout from '@/layouts/app-layout';
 import Can from '@/components/can';
+import ConfirmDeleteModal from '@/components/confirm-delete-modal';
 import { PageProps, Client } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
@@ -196,31 +197,12 @@ export default function Index({ auth, clients }: ClientIndexProps) {
                 </div>
             </div>
 
-            {showDeleteModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-                    <div className="relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-lg">
-                        <h3 className="text-lg font-semibold text-foreground">
-                            Confirmar eliminación
-                        </h3>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                            ¿Seguro que deseas eliminar a{' '}
-                            <span className="font-medium text-foreground">
-                                {clientToDelete?.name}
-                            </span>
-                            ? Esta acción no se puede deshacer.
-                        </p>
-                        <div className="mt-6 flex justify-end gap-3">
-                            <Button variant="outline" onClick={cancelDelete}>
-                                Cancelar
-                            </Button>
-                            <Button variant="destructive" onClick={confirmDelete}>
-                                Eliminar
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ConfirmDeleteModal
+                open={showDeleteModal}
+                itemName={clientToDelete?.name}
+                onCancel={cancelDelete}
+                onConfirm={confirmDelete}
+            />
         </AuthenticatedLayout>
     );
 }

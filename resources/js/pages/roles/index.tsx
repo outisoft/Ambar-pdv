@@ -159,15 +159,11 @@ export default function RolesIndex({ roles }: RolesIndexProps) {
 
                 <ConfirmDeleteModal
                     open={!!roleToDelete}
-                    onOpenChange={() => setRoleToDelete(null)}
+                    itemName={roleToDelete?.name}
+                    onCancel={() => setRoleToDelete(null)}
                     onConfirm={handleDelete}
                     title="Delete Role?"
-                    description={
-                        <span>
-                            Are you sure you want to delete the role <span className="font-medium text-foreground">{roleToDelete?.name}</span>? This action cannot be undone.
-                        </span>
-                    }
-                    processing={isDeleting}
+                    confirming={isDeleting}
                 />
             </AppShell>
         </AuthenticatedLayout>

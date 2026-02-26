@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\BackupController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,4 +26,20 @@ Route::middleware('auth')->group(function () {
 
     Route::get('settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
         ->name('two-factor.show');
+
+    Route::get('settings/backups', [BackupController::class, 'index'])
+        ->middleware('role:super-admin')
+        ->name('settings.backups.index');
+
+    Route::post('settings/backups', [BackupController::class, 'run'])
+        ->middleware('role:super-admin')
+        ->name('settings.backups.run');
+
+    Route::get('settings/backups/download', [BackupController::class, 'download'])
+        ->middleware('role:super-admin')
+        ->name('settings.backups.download');
+
+    Route::delete('settings/backups', [BackupController::class, 'destroy'])
+        ->middleware('role:super-admin')
+        ->name('settings.backups.destroy');
 });
