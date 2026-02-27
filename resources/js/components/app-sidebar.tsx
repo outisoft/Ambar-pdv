@@ -102,7 +102,7 @@ const footerNavItems: NavItem[] = [
     },
     {
         title: 'Settings',
-        href: '/configuracion',
+        href: '/settings/profile',
         icon: Settings,
         permissions: ['view_settings'],
     },
